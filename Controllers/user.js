@@ -1,4 +1,6 @@
 const User = require("../models/User");
+const nodemailer = require("nodemailer");
+require("dotenv").config();
 
 exports.createUser = async (req, res) => {
   //   try {
@@ -27,16 +29,6 @@ exports.createUser = async (req, res) => {
   //       return res.status(400).send("Username or Email already exists");
   //     }
 
-  //     // 3) Validate phone
-  //     const phoneRegex = /^[0-9]{10}$/;
-  //     if (!phoneRegex.test(phone)) {
-  //       return res.status(400).send("Invalid phone number");
-  //     }
-
-  //     // 4) Create temporary password
-  //     const tempPass = Math.random().toString(36).slice(-8);
-  //     const hashed = await bcrypt.hash(tempPass, 10);
-
   //     // 5) Save employee
   //     const newUser = new User({
   //       user_name,
@@ -64,6 +56,42 @@ exports.createUser = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).send("Server error");
+  }
+};
+
+exports.createUsersendEmail = async (req, res) => {
+  try {
+    const { user_name, user_email } = req.body;
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.PASSWORD,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL,
+      to: user_email,
+      subject: `New account created for ${user_name}`,
+      text: `Your account has been created successfully.`,
+    };
+
+    transporter.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        console.error("Error sending email:", err);
+        return res.status(500).send("Error sending email");
+      }
+
+      console.log("Email sent:", info.response);
+      return res.status(200).json({
+        message: "Email sent successfully!",
+      });
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Server error" });
   }
 };
 

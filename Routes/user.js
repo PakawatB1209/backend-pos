@@ -8,6 +8,7 @@ const {
   remove,
   update,
   removeall,
+  createUsersendEmail,
 } = require("../Controllers/user");
 
 router.get("/user", list);
@@ -15,6 +16,8 @@ router.get("/user", list);
 router.get("/user/:id", read);
 
 router.post("/user", createUser);
+
+router.post("/userE", createUsersendEmail);
 
 router.put("/user/:id", update);
 

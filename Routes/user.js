@@ -7,6 +7,8 @@ const {
   createUser,
   remove,
   update,
+  updateUserbyuser,
+  resetPassUserbyAdmin_send,
   removeall,
   createUsersendEmail,
   createAdminsendEmail,
@@ -23,6 +25,10 @@ router.post("/userU", createUsersendEmail);
 router.post("/userA", createAdminsendEmail);
 
 router.put("/user/:id", update);
+
+router.put("/userU/:id", updateUserbyuser);
+
+router.put("/userR/:id", resetPassUserbyAdmin_send);
 
 router.delete("/user/:id", remove);
 

@@ -5,8 +5,14 @@ require("dotenv").config();
 
 exports.createUser = async (req, res) => {
   try {
-    const { user_name, user_email, user_password, user_phone, comp_id } =
-      req.body;
+    const {
+      user_name,
+      user_email,
+      user_password,
+      user_role,
+      user_phone,
+      comp_id,
+    } = req.body;
 
     // 1.Limited to no more than 3 per company
     const countUsers = await User.countDocuments({ comp_id });
@@ -35,6 +41,7 @@ exports.createUser = async (req, res) => {
     const newUser = await User.create({
       user_name,
       user_email,
+      user_role,
       user_password: hashedPassword,
       user_phone,
       //   permission_id,
@@ -53,8 +60,14 @@ exports.createUser = async (req, res) => {
 
 exports.createUsersendEmail = async (req, res) => {
   try {
-    const { user_name, user_email, user_password, user_phone, comp_id } =
-      req.body;
+    const {
+      user_name,
+      user_email,
+      user_password,
+      user_role,
+      user_phone,
+      comp_id,
+    } = req.body;
 
     // 1.Limited to no more than 3 per company
     const countUsers = await User.countDocuments({ comp_id });
@@ -83,6 +96,7 @@ exports.createUsersendEmail = async (req, res) => {
       user_name,
       user_email,
       user_password: hashedPassword,
+      user_role,
       user_phone,
       //   permission_id,
       comp_id,
@@ -137,6 +151,7 @@ Thank You.
 };
 
 exports.createAdminsendEmail = async (req, res) => {
+  //ถ้าเป็นการสร้างครั้กเเรกให้กำหนดเป็น adminเลย ดูจากบริษัท
   try {
     const { user_name, user_email, user_password } = req.body;
 
@@ -147,6 +162,7 @@ exports.createAdminsendEmail = async (req, res) => {
       user_name,
       user_email,
       user_password: hashedPassword,
+      user_role,
       status: true,
     });
 
@@ -194,11 +210,12 @@ Thank You.
   }
 };
 
-exports.read = async (req, res) => {
+exports.getOneUser = async (req, res) => {
   try {
     const id = req.params.id;
-    const usered = await User.findOne({ _id: id }).populate("comp_id");
-    //   .populate("permission_id");
+    const usered = await User.findOne({ _id: id })
+      .populate("comp_id")
+      .populate("permission_id");
     res.send(usered);
   } catch (error) {
     console.log(err);
@@ -264,6 +281,33 @@ exports.updateUserbyuser = async (req, res) => {
     await user.save();
     return res.status(200).json({
       message: "User updated",
+      user,
+    });
+  } catch (err) {
+    console.log("Server Error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+exports.updatePasswordbyuser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { user_password } = req.body;
+
+    // Check existing user
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    // Update fields
+    if (user_password) {
+      const salt = await bcrypt.genSalt(10);
+      user.user_password = await bcrypt.hash(user_password, salt);
+    }
+
+    await user.save();
+    return res.status(200).json({
+      message: "User update Password ",
       user,
     });
   } catch (err) {

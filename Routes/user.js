@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const {
-  read,
+  getOneUser,
   list,
   createUser,
   remove,
@@ -16,7 +16,7 @@ const {
 
 router.get("/user", list);
 
-router.get("/user/:id", read);
+router.get("/user/:id", getOneUser);
 
 router.post("/user", createUser);
 

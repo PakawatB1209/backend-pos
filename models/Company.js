@@ -4,9 +4,6 @@ const CompanySchema = new mongoose.Schema(
   {
     comp_name: String,
     comp_addr: String,
-    // comp_alley: String,
-    // comp_vill_no: String,
-    // comp_road: String,
     comp_subdist: String,
     comp_dist: String,
     comp_prov: String,

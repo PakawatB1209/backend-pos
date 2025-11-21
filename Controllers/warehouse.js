@@ -1,21 +1,21 @@
-const preminssion = require("../models/Permission");
+const Warehouse = require("../models/Warehouse");
 
-exports.create = async (req, res) => {
+exports.createWarehouse = async (req, res) => {
   try {
     console.log(req.body);
-    const premissioned = await new preminssion(req.body).save();
-    res.send(premissioned);
+    const warehouse = await new Warehouse(req.body).save();
+    res.send(warehouse);
   } catch (error) {
     console.log(error);
     res.status(500).send("Server error");
   }
 };
 
-exports.getOne = async (req, res) => {
+exports.getOneWarehouse = async (req, res) => {
   try {
     const id = req.params.id;
-    const premissioned = await preminssion.findOne({ _id: id });
-    res.send(premissioned);
+    const warehouse = await Warehouse.findOne({ _id: id });
+    res.send(warehouse);
   } catch (error) {
     console.log(err);
     res.status(500).send("Server error");
@@ -24,34 +24,34 @@ exports.getOne = async (req, res) => {
 
 exports.list = async (req, res) => {
   try {
-    const premissioned = await preminssion.find();
-    res.send(premissioned);
+    const warehouses = await Warehouse.find();
+    res.send(warehouses);
   } catch (error) {
     console.log(err);
     res.status(500).send("Server error");
   }
 };
 
-exports.update = async (req, res) => {
+exports.updateWarehouse = async (req, res) => {
   try {
     const id = req.params.id;
-    const update_premis = await preminssion.findOneAndUpdate(
+    const update_warehouse = await Warehouse.findOneAndUpdate(
       { _id: id },
       req.body,
       { new: true }
     );
-    res.send(update_premis);
+    res.send(update_warehouse);
   } catch (error) {
     console.log(err);
     res.status(500).send("Server error");
   }
 };
 
-exports.remove = async (req, res) => {
+exports.removeOneWarehouse = async (req, res) => {
   try {
     const id = req.params.id;
-    const remove_permis = await preminssion.findOneAndDelete({ _id: id });
-    res.send(remove_permis);
+    const remove_warehouse = await Warehouse.findOneAndDelete({ _id: id });
+    res.send(remove_warehouse);
   } catch (error) {
     console.log(err);
     res.status(500).send("Server error");

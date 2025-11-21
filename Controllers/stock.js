@@ -1,21 +1,21 @@
-const Company = require("../models/Company");
+const Stock = require("../models/Stock");
 
-exports.createCompany = async (req, res) => {
+exports.createStock = async (req, res) => {
   try {
     console.log(req.body);
-    const companyed = await new Company(req.body).save();
-    res.send(companyed);
+    const stock = await new Stock(req.body).save();
+    res.send(stock);
   } catch (error) {
     console.log(error);
     res.status(500).send("Server error");
   }
 };
 
-exports.getOneCompany = async (req, res) => {
+exports.getOneStock = async (req, res) => {
   try {
     const id = req.params.id;
-    const companyed = await Company.findOne({ _id: id });
-    res.send(companyed);
+    const stock = await Stock.findOne({ _id: id });
+    res.send(stock);
   } catch (error) {
     console.log(err);
     res.status(500).send("Server error");
@@ -24,32 +24,32 @@ exports.getOneCompany = async (req, res) => {
 
 exports.list = async (req, res) => {
   try {
-    const companyed = await Company.find();
-    res.send(companyed);
+    const stock = await Stock.find();
+    res.send(stock);
   } catch (error) {
     console.log(err);
     res.status(500).send("Server error");
   }
 };
 
-exports.updateCompany = async (req, res) => {
+exports.updateStock = async (req, res) => {
   try {
     const id = req.params.id;
-    const update_comp = await Company.findOneAndUpdate({ _id: id }, req.body, {
+    const update_stock = await Stock.findOneAndUpdate({ _id: id }, req.body, {
       new: true,
     });
-    res.send(update_comp);
+    res.send(update_stock);
   } catch (error) {
     console.log(err);
     res.status(500).send("Server error");
   }
 };
 
-exports.removeOneCompany = async (req, res) => {
+exports.removeOneStock = async (req, res) => {
   try {
     const id = req.params.id;
-    const remove = await Company.findOneAndDelete({ _id: id });
-    res.send(remove);
+    const remove_stock = await Stock.findOneAndDelete({ _id: id });
+    res.send(remove_stock);
   } catch (error) {
     console.log(err);
     res.status(500).send("Server error");

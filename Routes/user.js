@@ -1,37 +1,44 @@
 const express = require("express");
 const router = express.Router();
+const { auth, adminCheck } = require("../Middleware/auth");
 
 const {
   getOneUser,
+  getUserRole,
   list,
   createUser,
   remove,
-  update,
+  updateUserByAdmin,
   updateUserbyuser,
+  resetPassUserbyAdmin,
   resetPassUserbyAdmin_send,
-  removeall,
+  removeAll,
   createUsersendEmail,
-  createAdminsendEmail,
+  changeStatus,
 } = require("../Controllers/user");
 
-router.get("/user", list);
+router.get("/user", auth, list);
 
-router.get("/user/:id", getOneUser);
+router.get("/user/:id", auth, getOneUser);
 
-router.post("/user", createUser);
+router.get("/userR/:id", auth, getUserRole);
 
-router.post("/userU", createUsersendEmail);
+router.post("/user", auth, adminCheck, createUser);
 
-router.post("/userA", createAdminsendEmail);
+router.post("/userU", auth, adminCheck, createUsersendEmail);
 
-router.put("/user/:id", update);
+router.put("/user/:id", auth, adminCheck, updateUserByAdmin);
 
-router.put("/userU/:id", updateUserbyuser);
+router.put("/userU/:id", auth, updateUserbyuser);
 
-router.put("/userR/:id", resetPassUserbyAdmin_send);
+router.put("/userR/:id", auth, adminCheck, resetPassUserbyAdmin);
 
-router.delete("/user/:id", remove);
+router.put("/userRS/:id", auth, adminCheck, resetPassUserbyAdmin_send);
 
-router.delete("/user", removeall);
+router.put("/userCS/:id", auth, adminCheck, changeStatus);
+
+router.delete("/user/:id", auth, adminCheck, remove);
+
+router.delete("/user", auth, adminCheck, removeAll);
 
 module.exports = router;

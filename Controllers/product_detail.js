@@ -6,12 +6,7 @@ exports.createProductDetail = async (req, res) => {
       unit,
       color,
       size,
-      metal_id,
-      itemtype_id,
-      shape_id,
-      group_id,
-      cuting_id,
-      clarity_id,
+      masters,
       quality,
       gross_weight,
       net_weight,
@@ -20,16 +15,12 @@ exports.createProductDetail = async (req, res) => {
       cost,
       description,
     } = req.body;
+
     const newProductDetail = await ProductDetail.create({
       unit,
       color,
       size,
-      metal_id,
-      itemtype_id,
-      shape_id,
-      group_id,
-      cuting_id,
-      clarity_id,
+      masters,
       quality,
       gross_weight,
       net_weight,
@@ -38,9 +29,10 @@ exports.createProductDetail = async (req, res) => {
       cost,
       description,
     });
+
     return res.status(200).json({
       message: "ProductDetail created",
-      newProductDetail,
+      data: newProductDetail,
     });
   } catch (err) {
     console.log("Server Error:", err);
@@ -51,13 +43,9 @@ exports.createProductDetail = async (req, res) => {
 exports.getOneProductDetail = async (req, res) => {
   try {
     const id = req.params.id;
-    const productdetail = await ProductDetail.findOne({ _id: id })
-      .populate("metal_id")
-      .populate("itemtype_id")
-      .populate("shape_id")
-      .populate("group_id")
-      .populate("cuting_id")
-      .populate("clarity_id");
+    const productdetail = await ProductDetail.findOne({ _id: id }).populate(
+      "masters"
+    );
     res.send(productdetail);
   } catch (error) {
     console.log(err);

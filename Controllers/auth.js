@@ -6,22 +6,25 @@ const nodemailer = require("nodemailer");
 
 exports.login = async (req, res) => {
   try {
-    const { user_name, user_password } = req.body;
+    const { identifier, user_password } = req.body;
 
     console.log("req.body:", req.body);
 
-    if (!user_name || !user_password) {
-      return res.status(400).send("username or password missing");
+    if (!identifier || !user_password) {
+      return res.status(400).send("identifier or password missing");
     }
 
-    const user = await User.findOne({ user_name });
+    const isEmail = identifier.includes("@");
+
+    const user = await User.findOne(
+      isEmail ? { user_email: identifier } : { user_name: identifier }
+    );
 
     if (!user) {
       return res.status(400).send("User not found");
     }
 
     const isMatch = await bcrypt.compare(user_password, user.user_password);
-
     if (!isMatch) {
       return res.status(400).send("Password wrong");
     }
@@ -34,7 +37,29 @@ exports.login = async (req, res) => {
 
     jwt.sign(payload, "jwtsecret", { expiresIn: 3600 }, (err, token) => {
       if (err) throw err;
-      return res.json({ token, payload });
+
+      let forceChangePassword = false;
+
+      if (user.user_role === "User" && user.password_changed_at === null) {
+        forceChangePassword = true;
+      }
+
+      return res.json({
+        success: true,
+        token,
+        user: {
+          id: user._id,
+          name: user.user_name,
+          pass: user.user_password,
+          email: user.user_email,
+          role: user.user_role,
+          phone: user.user_phone,
+          status: user.status,
+          permissionId: user.permission_id,
+          companyId: user.comp_id,
+        },
+        forceChangePassword,
+      });
     });
   } catch (error) {
     console.log(error);
@@ -63,19 +88,19 @@ exports.userForgotPassword = async (req, res) => {
       to: process.env.ADMIN_EMAIL,
       subject: `Forgot Password Request: ${user.user_name}`,
       text: `
-Admin ครับ,
+Admin,
 
-พนักงานคนนี้กดลืมรหัสผ่าน:
+The following employee has requested a password reset:
 
-ชื่อ: ${user.user_name}
-อีเมล: ${user.user_email}
-เบอร์: ${user.user_phone}
+Name: ${user.user_name}
+Email: ${user.user_email}
+Phone: ${user.user_phone}
 
-กรุณาเข้าไปรีเซ็ตรหัสผ่านให้พนักงานคนนี้:
-URL: รอURLของ${user._id}
+Please proceed to reset the password for this user:
+URL: (Pending URL for ${user._id})
 
-ขอบคุณครับ
-      `,
+Thank you.
+`,
     };
 
     transporter.sendMail(mailOptions, (err, info) => {

@@ -2,20 +2,23 @@ const express = require("express");
 const router = express.Router();
 
 const {
-  getOne,
+  getOnePermission,
   list,
-  create,
+  createPermission,
   remove,
-  update,
+  removeByMenu,
+  updatePermission,
 } = require("../Controllers/permission");
 
 router.get("/permission", list);
 
-router.get("/permission/:id", getOne);
+router.get("/permission/:id", getOnePermission);
 
-router.post("/permission", create);
+router.post("/permission", createPermission);
 
-router.put("/permission/:id", update);
+router.put("/permission/:id", updatePermission);
+
+router.delete("/permission/menu", removeByMenu);
 
 router.delete("/permission/:id", remove);
 

@@ -28,6 +28,7 @@ exports.createUser = async (req, res) => {
       const currentUsersCount = await User.countDocuments({
         comp_id: comp_id,
         user_role: "User",
+        status: true
       });
 
       if (currentUsersCount >= 3) {
@@ -259,12 +260,16 @@ exports.getUserRole = async (req, res) => {
 exports.list = async (req, res) => {
   try {
     //Get comp_id from Query String (e.g., /users?comp_id=xxxx)
-    const { comp_id } = req.query;
+    const { comp_id, user_role } = req.query;
 
-    let query = {};
+    const query = {};
 
     if (comp_id) {
       query.comp_id = comp_id;
+    }
+
+    if (user_role) {
+      query.user_role = user_role;
     }
 
     const users = await User.find(query)
@@ -274,14 +279,14 @@ exports.list = async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count: users.length,
       data: users,
     });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ success: false, message: "Server error" });
+    console.log("Error list users:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -377,6 +382,7 @@ exports.updateUserByAdmin = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
 
 exports.updateUserbyuser = async (req, res) => {
   try {

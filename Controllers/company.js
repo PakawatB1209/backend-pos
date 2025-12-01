@@ -2,6 +2,7 @@ const Company = require("../models/Company");
 const User = require("../models/User");
 const Warehouse = require("../models/Warehouse");
 const Product = require("../models/Product");
+const Masters = require("../models/masters");
 
 exports.createCompany = async (req, res) => {
   try {
@@ -95,7 +96,27 @@ exports.createCompany = async (req, res) => {
       { master_name: "Pendant", master_type: "item_type" },
 
       {
-        master_name: "Gold",
+        master_name: "10K Gold",
+        master_type: "metal",
+        master_color: "Yellow",
+      },
+      {
+        master_name: "14K Gold",
+        master_type: "metal",
+        master_color: "Yellow",
+      },
+      {
+        master_name: "18K Gold",
+        master_type: "metal",
+        master_color: "Yellow",
+      },
+      {
+        master_name: "22K Gold",
+        master_type: "metal",
+        master_color: "Yellow",
+      },
+      {
+        master_name: "24K Gold",
         master_type: "metal",
         master_color: "Yellow",
       },

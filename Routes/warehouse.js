@@ -11,7 +11,7 @@ const {
   // updateWarehouse,
 } = require("../Controllers/warehouse");
 
-router.get("/warehouse",auth, list);
+router.get("/warehouse", auth, list);
 
 router.get("/warehouse/:id", getOneWarehouse);
 

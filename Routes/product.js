@@ -12,7 +12,7 @@ const {
   updateProduct,
 } = require("../Controllers/product");
 
-router.get("/product", list);
+router.get("/product", auth, list);
 
 router.get("/product/:id", getOneProduct);
 

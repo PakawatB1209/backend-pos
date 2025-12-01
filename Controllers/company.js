@@ -70,6 +70,7 @@ exports.createCompany = async (req, res) => {
       comp_person_phone,
     });
 
+    //default warehouse
     const warehouseTemplates = [
       { name: "Product Master", type: "productmaster" },
       { name: "Stone", type: "stone" },
@@ -83,6 +84,194 @@ exports.createCompany = async (req, res) => {
       comp_id: newCompany._id,
     }));
     await Warehouse.insertMany(warehousesToSave);
+
+    //default masters
+    const masterTemplates = [
+      { master_name: "Ring", master_type: "item_type" },
+      { master_name: "Necklace", master_type: "item_type" },
+      { master_name: "Earrings", master_type: "item_type" },
+      { master_name: "Bracelet", master_type: "item_type" },
+      { master_name: "Bangle", master_type: "item_type" },
+      { master_name: "Pendant", master_type: "item_type" },
+
+      {
+        master_name: "Gold",
+        master_type: "metal",
+        master_color: "Yellow",
+      },
+      {
+        master_name: "White Gold",
+        master_type: "metal",
+        master_color: "White",
+      },
+      {
+        master_name: "Rose Gold",
+        master_type: "metal",
+        master_color: "Rose",
+      },
+      {
+        master_name: "Platinum",
+        master_type: "metal",
+        master_color: "Platinum",
+      },
+      {
+        master_name: "Silver",
+        master_type: "metal",
+        master_color: "Silver",
+      },
+
+      { master_name: "Round Brilliant", master_type: "shape" },
+      { master_name: "Princess", master_type: "shape" },
+      { master_name: "Cushion", master_type: "shape" },
+      { master_name: "Oval", master_type: "shape" },
+      { master_name: "Pear", master_type: "shape" },
+      { master_name: "Marquise", master_type: "shape" },
+      { master_name: "Emerald", master_type: "shape" },
+      { master_name: "Asscher", master_type: "shape" },
+      { master_name: "Heart", master_type: "shape" },
+      { master_name: "Trilliant", master_type: "shape" },
+      { master_name: "Old European", master_type: "shape" },
+      { master_name: "Radiant", master_type: "shape" },
+
+      { master_name: "Excellent", master_type: "cuting" },
+      { master_name: "Very Good", master_type: "cuting" },
+      { master_name: "Good", master_type: "cuting" },
+      { master_name: "Fair", master_type: "cuting" },
+      { master_name: "Poor", master_type: "cuting" },
+      { master_name: "n/a", master_type: "cuting" },
+
+      { master_name: "FL (Flawless)", master_type: "clarity" },
+      { master_name: "IF (Internally Flawless)", master_type: "clarity" },
+      { master_name: "VVS1", master_type: "clarity" },
+      { master_name: "VVS2", master_type: "clarity" },
+      { master_name: "VS1", master_type: "clarity" },
+      { master_name: "VS2", master_type: "clarity" },
+      { master_name: "SI1", master_type: "clarity" },
+      { master_name: "SI2", master_type: "clarity" },
+      { master_name: "I1", master_type: "clarity" },
+      { master_name: "I2", master_type: "clarity" },
+      { master_name: "I3", master_type: "clarity" },
+
+      // Precious
+      {
+        master_name: "Diamond",
+        master_type: "stone_name",
+        master_color: "White",
+      },
+      {
+        master_name: "Ruby",
+        master_type: "stone_name",
+        master_color: "Red",
+      },
+      {
+        master_name: "Blue Sapphire",
+        master_type: "stone_name",
+        master_color: "Blue",
+      },
+      {
+        master_name: "Yellow Sapphire",
+        master_type: "stone_name",
+        master_color: "Yellow",
+      },
+      {
+        master_name: "Emerald",
+        master_type: "stone_name",
+        master_color: "Green",
+      },
+
+      // กลุ่ม Semi-Precious
+      {
+        master_name: "Amethyst",
+        master_type: "stone_name",
+        master_color: "Purple",
+      },
+      {
+        master_name: "Garnet",
+        master_type: "stone_name",
+        master_color: "Dark Red",
+      },
+      {
+        master_name: "Peridot",
+        master_type: "stone_name",
+        master_color: "Green",
+      },
+      {
+        master_name: "Topaz",
+        master_type: "stone_name",
+        master_color: "Yellow",
+      },
+      {
+        master_name: "Blue Topaz",
+        master_type: "stone_name",
+        master_color: "Light Blue",
+      },
+      {
+        master_name: "Citrine",
+        master_type: "stone_name",
+        master_color: "Yellow",
+      },
+      {
+        master_name: "Aquamarine",
+        master_type: "stone_name",
+        master_color: "Light Blue",
+      },
+      {
+        master_name: "Tourmaline",
+        master_type: "stone_name",
+        master_color: "Pink",
+      },
+      {
+        master_name: "Opal",
+        master_type: "stone_name",
+        master_color: "White",
+      },
+      {
+        master_name: "Spinel",
+        master_type: "stone_name",
+        master_color: "Red",
+      },
+      {
+        master_name: "Zircon",
+        master_type: "stone_name",
+        master_color: "Blue",
+      },
+      {
+        master_name: "Tanzanite",
+        master_type: "stone_name",
+        master_color: "Violet",
+      },
+      {
+        master_name: "Turquoise",
+        master_type: "stone_name",
+        master_color: "Turquoise",
+      },
+      {
+        master_name: "Jade",
+        master_type: "stone_name",
+        master_color: "Green",
+      },
+      {
+        master_name: "Onyx",
+        master_type: "stone_name",
+        master_color: "Black",
+      },
+
+      // กลุ่ม Organic
+      {
+        master_name: "Pearl",
+        master_type: "stone_name",
+        master_color: "White",
+      },
+    ];
+
+    const mastersToSave = masterTemplates.map((t) => ({
+      master_name: t.master_name,
+      master_type: t.master_type,
+      master_color: t.master_color,
+      comp_id: newCompany._id,
+    }));
+
+    await Masters.insertMany(mastersToSave);
 
     const updatedUser = await User.findByIdAndUpdate(
       adminId,
@@ -269,7 +458,7 @@ exports.removeOneCompany = async (req, res) => {
 
     await Product.deleteMany({ comp_id: id });
 
-    await Warehouse.deleteMany({ comp_id: id })
+    await Warehouse.deleteMany({ comp_id: id });
 
     await Company.findByIdAndDelete(id);
 

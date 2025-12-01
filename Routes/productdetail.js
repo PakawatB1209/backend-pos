@@ -1,13 +1,31 @@
 const express = require("express");
 const router = express.Router();
 
-// const {
-//   createProductDetail,
-//   getOneProductDetail,
-// } = require("../Controllers/product_detail");
+const { auth } = require("../Middleware/auth");
+const { validateSchema } = require("../Middleware/productValidator");
 
-// router.post("/productdetail",createProductDetail)
+const {
+  createProductDetail,
+  getOneProductDetail,
+} = require("../Controllers/product_detail");
 
-// router.get("/productdetail/:id",getOneProductDetail)
+// //Product Master
+// router.post("/master", auth, validateSchema("master"), createProductDetail);
+
+// //Stone
+// router.post("/stone", auth, validateSchema("stone"), createProductDetail);
+
+// //Semi-mount
+// router.post(
+//   "/semimount",
+//   auth,
+//   validateSchema("semimount"),
+//   createProductDetail
+// );
+
+// //Others
+// router.post("/others", auth, validateSchema("others"), createProductDetail);
+
+// router.get("/productdetail/:id", getOneProductDetail);
 
 module.exports = router;

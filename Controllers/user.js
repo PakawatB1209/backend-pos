@@ -446,6 +446,66 @@ exports.updateUserbyuser = async (req, res) => {
   }
 };
 
+exports.userRequestResetPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ user_email: email }).populate(
+      "comp_id",
+      "comp_name"
+    );
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Email not found",
+      });
+    }
+    const companyInfo = user.comp_id
+      ? `${user.comp_id.comp_name} (ID: ${user.comp_id._id})`
+      : "No Company Assigned";
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.ADMIN_EMAIL,
+        pass: process.env.ADMIN_PASS,
+      },
+    });
+
+    const mailOptions = {
+      from: `"System Notification" <${process.env.ADMIN_EMAIL}>`,
+      to: process.env.ADMIN_EMAIL,
+      subject: `[Request] Password Reset Request from ${user.user_name}`,
+      text: `
+Admin,
+
+User has requested a password reset.
+
+User Details:
+-------------
+Username : ${user.user_name}
+Email    : ${user.user_email}
+Company  : ${companyInfo}
+Role     : ${user.user_role}
+
+Please login to the Admin Panel and reset the password for this user manually.
+
+System Auto-Message
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({
+      success: true,
+      message: "Admin notified. Please wait for the new password via email.",
+    });
+  } catch (err) {
+    console.error("Error requesting reset:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
 exports.resetPassUserbyAdmin = async (req, res) => {
   try {
     const { id } = req.params;

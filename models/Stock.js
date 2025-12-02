@@ -9,6 +9,11 @@ const StockSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    comp_id: {
+      type: mongoose.Schema.ObjectId,
+      ref: "comp",
+      required: true,
+    },
   },
   { timestamps: true }
 );

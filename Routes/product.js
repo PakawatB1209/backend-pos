@@ -28,7 +28,7 @@ router.post(
 );
 router.post("/others", auth, validateSchema("others"), upload, createProduct);
 
-router.put("/product/:id", updateProduct);
+router.put("/product/:id", auth, validateSchema("update"), updateProduct);
 
 router.delete("/product/:id", removeOneProduct);
 

@@ -12,6 +12,7 @@ const {
   updateUserbyuser,
   resetPassUserbyAdmin,
   resetPassUserbyAdmin_send,
+  userRequestResetPassword,
   removeAll,
   createUsersendEmail,
   changeStatus,
@@ -45,6 +46,8 @@ router.put(
   adminCheck,
   resetPassUserbyAdmin_send
 );
+
+router.post("/request-reset-password", userRequestResetPassword);
 
 router.put("/changefirstpassword-user/:id", auth, changeFirstPassword);
 

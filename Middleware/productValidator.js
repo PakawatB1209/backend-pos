@@ -87,6 +87,36 @@ const othersSchema = Joi.object({
   weight: Joi.number().required(),
 });
 
+const updateProductSchema = Joi.object({
+  product_name: Joi.string().optional(),
+  code: Joi.string().optional(),
+  description: Joi.string().allow("").optional(),
+  image: Joi.string().allow("").optional(),
+
+  cost: Joi.number().min(0).optional(),
+  sale_price: Joi.number().min(0).optional(),
+
+  item_type: objectId.optional(),
+  metal: objectId.optional(),
+  stone_name: objectId.optional(),
+  shape: objectId.optional(),
+  cutting: objectId.optional(),
+  quality: objectId.optional(),
+  clarity: objectId.optional(),
+
+  metal_color: Joi.string().optional(),
+  color: Joi.string().optional(),
+
+  product_size: Joi.string().optional(),
+  size: Joi.string().optional(),
+
+  gross_weight: Joi.number().optional(),
+  net_weight: Joi.number().optional(),
+  weight: Joi.number().optional(),
+
+  product_type: Joi.string().optional(),
+});
+
 exports.validateSchema = (schemaName) => {
   return (req, res, next) => {
     let schema;
@@ -103,6 +133,9 @@ exports.validateSchema = (schemaName) => {
         break;
       case "others":
         schema = othersSchema;
+        break;
+      case "update":
+        schema = updateProductSchema;
         break;
       default:
         return res.status(500).json({ message: "Schema not found" });

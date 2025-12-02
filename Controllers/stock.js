@@ -1,13 +1,64 @@
 const Stock = require("../models/Stock");
+//const StockTransaction = require("../models/StockTransaction");
+const User = require("../models/User");
 
 exports.createStock = async (req, res) => {
   try {
-    console.log(req.body);
-    const stock = await new Stock(req.body).save();
-    res.send(stock);
+    const userId = req.user.id;
+
+    const user = await User.findById(userId).select("comp_id");
+    if (!user || !user.comp_id) {
+      return res.status(400).json({
+        success: false,
+        message: "User is not associated with a company.",
+      });
+    }
+
+    const { warehouse_id, product_id, quantity } = req.body;
+
+    if (!warehouse_id || !product_id || !quantity) {
+      return res.status(400).json({
+        success: false,
+        message: "Please specify Warehouse, Product, and Quantity.",
+      });
+    }
+
+    const updatedStock = await Stock.findOneAndUpdate(
+      {
+        warehouse_id: warehouse_id,
+        product_id: product_id,
+        comp_id: user.comp_id,
+      },
+      {
+        $inc: { quantity: quantity },
+        $setOnInsert: {
+          comp_id: user.comp_id,
+          warehouse_id: warehouse_id,
+          product_id: product_id,
+        },
+      },
+      { new: true, upsert: true }
+    );
+
+    // await StockTransaction.create({
+    //   product_id: product_id,
+    //   from_warehouse_id: null, // รับเข้า (ไม่มีต้นทาง)
+    //   to_warehouse_id: warehouse_id,
+    //   quantity: quantity,
+    //   action_type: "IN", // IN = รับเข้า
+    //   by_user_id: userId,
+    //   comp_id: user.comp_id,
+    //   remark: "Stock In",
+    // });
+
+    res.status(200).json({
+      success: true,
+      message: "Stock added successfully.",
+      data: updatedStock,
+    });
   } catch (error) {
-    console.log(error);
-    res.status(500).send("Server error");
+    console.log("Error create stock:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 

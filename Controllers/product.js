@@ -4,30 +4,6 @@ const User = require("../models/User");
 const fs = require("fs");
 const mongoose = require("mongoose");
 
-// exports.createProduct = async (req, res) => {
-//   try {
-//     const { product_detail, ...product_data } = req.body;
-
-//     // 1) Create Product Detail
-//     const detail = await ProductDetail.create(product_detail);
-
-//     // 2) Create Product and link product_detail_id
-//     const newProduct = await Product.create({
-//       ...product_data,
-//       product_detail_id: detail._id,
-//     });
-
-//     return res.status(201).json({
-//       message: "Product created successfully",
-//       product: newProduct,
-//       product_detail: detail,
-//     });
-//   } catch (err) {
-//     console.log("Server Error:", err);
-//     return res.status(500).json({ error: "Server error" });
-//   }
-// };
-
 exports.createProduct = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -201,33 +177,174 @@ exports.list = async (req, res) => {
   }
 };
 
+// exports.updateProduct = async (req, res) => {
+//   try {
+//     const id = req.params.id;
+
+//     const { product_detail, ...product_data } = req.body;
+
+//     const product = await Product.findOneAndUpdate({ _id: id }, product_data, {
+//       new: true,
+//     });
+
+//     if (!product) return res.status(404).json({ error: "Product not found" });
+
+//     if (product_detail) {
+//       await ProductDetail.findByIdAndUpdate(
+//         product.product_detail_id,
+//         product_detail,
+//         { new: true }
+//       );
+//     }
+
+//     return res.json({
+//       message: "Product updated successfully",
+//       product,
+//     });
+//   } catch (err) {
+//     console.log(err);
+//     res.status(500).send("Server error");
+//   }
+// };
+
 exports.updateProduct = async (req, res) => {
   try {
-    const id = req.params.id;
+    const { id } = req.params;
+    const userId = req.user.id;
+    const user = await User.findById(userId).select("comp_id");
 
-    const { product_detail, ...product_data } = req.body;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: "Invalid ID" });
+    }
 
-    const product = await Product.findOneAndUpdate({ _id: id }, product_data, {
+    const currentProduct = await Product.findOne({
+      _id: id,
+      comp_id: user.comp_id,
+    });
+    if (!currentProduct) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
+    }
+
+    const currentDetail = await ProductDetail.findById(
+      currentProduct.product_detail_id
+    )
+      .populate("masters.master_id")
+      .lean();
+
+    let oldData = {
+      item_type: null,
+      metal: null,
+      metal_color: null,
+      stone_name: null,
+      shape: null,
+      size: null,
+      color: null,
+      cutting: null,
+      quality: null,
+      clarity: null,
+    };
+
+    if (currentDetail && currentDetail.masters) {
+      currentDetail.masters.forEach((m) => {
+        if (m.master_id) {
+          const type = m.master_id.master_type;
+          const id = m.master_id._id.toString();
+          if (type === "item_type") oldData.item_type = id;
+          if (type === "metal") oldData.metal = id;
+          if (type === "stone_name") oldData.stone_name = id;
+          if (type === "shape") oldData.shape = id;
+          if (oldData[type] !== undefined) oldData[type] = id;
+        }
+      });
+    }
+
+    const data = req.body;
+
+    if (req.file) {
+      data.image = req.file.filename;
+    }
+
+    const mastersArray = [];
+    const pushMaster = (masterId, qty = 0, weight = 0) => {
+      if (masterId) mastersArray.push({ master_id: masterId, qty, weight });
+    };
+
+    pushMaster(data.item_type || oldData.item_type, 1);
+
+    const finalMetal = data.metal || oldData.metal;
+    if (finalMetal) {
+      const finalNetWt =
+        data.net_weight !== undefined
+          ? data.net_weight
+          : currentDetail.net_weight;
+      pushMaster(finalMetal, 1, finalNetWt);
+
+      pushMaster(data.metal_color || oldData.metal_color, 1);
+    }
+
+    const finalStone = data.stone_name || oldData.stone_name;
+    let stoneWeight = 0;
+    if (!finalMetal && finalStone) {
+      stoneWeight =
+        data.net_weight !== undefined
+          ? data.net_weight
+          : currentDetail.net_weight;
+    }
+    pushMaster(finalStone, 1, stoneWeight);
+
+    pushMaster(data.shape || oldData.shape);
+    pushMaster(data.size || oldData.size);
+    pushMaster(data.color || oldData.color);
+    pushMaster(data.cutting || oldData.cutting);
+    pushMaster(data.quality || oldData.quality);
+    pushMaster(data.clarity || oldData.clarity);
+
+    const detailUpdate = {
+      unit: data.unit,
+      size: data.product_size || data.size,
+      gross_weight: data.gross_weight,
+      net_weight: data.net_weight,
+      cost: data.cost,
+      price: data.sale_price,
+      description: data.description,
+
+      masters: mastersArray,
+    };
+
+    Object.keys(detailUpdate).forEach(
+      (key) => detailUpdate[key] === undefined && delete detailUpdate[key]
+    );
+
+    await ProductDetail.findByIdAndUpdate(
+      currentProduct.product_detail_id,
+      detailUpdate,
+      { new: true }
+    );
+
+    const productUpdate = {
+      product_code: data.code,
+      product_name: data.product_name,
+      product_Image: data.image,
+      sale_price: data.sale_price,
+    };
+    Object.keys(productUpdate).forEach(
+      (key) => productUpdate[key] === undefined && delete productUpdate[key]
+    );
+
+    const updatedProduct = await Product.findByIdAndUpdate(id, productUpdate, {
       new: true,
     });
 
-    if (!product) return res.status(404).json({ error: "Product not found" });
-
-    if (product_detail) {
-      await ProductDetail.findByIdAndUpdate(
-        product.product_detail_id,
-        product_detail,
-        { new: true }
-      );
-    }
-
-    return res.json({
-      message: "Product updated successfully",
-      product,
+    res.status(200).json({
+      success: true,
+      message: "Product updated successfully (Partial Update)",
+      data: updatedProduct,
     });
   } catch (err) {
-    console.log(err);
-    res.status(500).send("Server error");
+    console.log("Error update product:", err);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 

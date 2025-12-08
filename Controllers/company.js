@@ -76,6 +76,7 @@ exports.createCompany = async (req, res) => {
       { name: "Product Master", type: "productmaster" },
       { name: "Stone", type: "stone" },
       { name: "Semi-mount", type: "semimount" },
+      { name: "Accessory", type: "accessory" },
       { name: "Others", type: "others" },
     ];
 

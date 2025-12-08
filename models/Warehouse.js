@@ -5,7 +5,7 @@ const WarehouseSchema = new mongoose.Schema(
     warehouse_name: String,
     warehouse_type: {
       type: String,
-      enum: ["productmaster", "stone", "semimount", "others"],
+      enum: ["productmaster", "stone", "semimount", "accessory", "others"],
       required: true,
     },
     comp_id: {

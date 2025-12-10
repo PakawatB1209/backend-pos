@@ -20,6 +20,7 @@ exports.createCompany = async (req, res) => {
       comp_phone,
       comp_person_name,
       comp_person_phone,
+      comp_person_email,
     } = req.body;
 
     const requiredFields = [
@@ -34,6 +35,7 @@ exports.createCompany = async (req, res) => {
       "comp_phone",
       "comp_person_name",
       "comp_person_phone",
+      "comp_person_email",
     ];
 
     const missingFields = requiredFields.filter((field) => !req.body[field]);
@@ -69,6 +71,7 @@ exports.createCompany = async (req, res) => {
       comp_phone,
       comp_person_name,
       comp_person_phone,
+      comp_person_email,
     });
 
     //default warehouse

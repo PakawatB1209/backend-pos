@@ -22,8 +22,8 @@ exports.createProduct = async (req, res) => {
 
     const data = req.body;
 
+    // --- 1. จัดการรูปภาพ ---
     let filesArray = [];
-
     if (req.files && req.files.length > 0) {
       const uploadDir = "./uploads";
       if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
@@ -48,6 +48,7 @@ exports.createProduct = async (req, res) => {
       );
     }
 
+    // --- 2. เช็คสินค้าซ้ำ ---
     const existingProduct = await Product.findOne({
       product_code: data.code,
       comp_id: user.comp_id,
@@ -60,53 +61,81 @@ exports.createProduct = async (req, res) => {
       });
     }
 
+    // --- 3. ฟังก์ชันช่วยค้นหา ID จากชื่อ (Helper) ---
+    const getMasterId = async (name) => {
+      if (!name) return null;
+      // ค้นหาโดยดู comp_id ด้วย เพื่อความปลอดภัย
+      const master = await Masters.findOne({
+        master_name: name,
+        comp_id: user.comp_id,
+      });
+      if (master) return master._id;
+      return null;
+    };
+
     const mastersArray = [];
     const pushMaster = (masterId, qty = 0, weight = 0) => {
+      // ต้องมี ID เท่านั้นถึงจะ push ลงไป (กัน Error Cast Failed)
       if (masterId) {
         mastersArray.push({ master_id: masterId, qty, weight });
       }
     };
 
-    pushMaster(data.item_type, 1);
+    // --- 4. 🔥 แปลงชื่อเป็น ID แล้วค่อย Push (จุดที่แก้) ---
 
+    // 4.1 Item Type
+    const itemTypeId = await getMasterId(data.item_type);
+    pushMaster(itemTypeId, 1);
+
+    // 4.2 Metal
     if (data.metal) {
-      pushMaster(data.metal, 1, data.net_weight || 0);
-      pushMaster(data.metal_color, 1);
+      const metalId = await getMasterId(data.metal);
+      const metalColorId = await getMasterId(data.metal_color);
+
+      pushMaster(metalId, 1, data.net_weight || 0);
+      pushMaster(metalColorId, 1);
     }
 
+    // 4.3 Stone & Attributes
     let stoneWeight = 0;
     if (!data.metal && data.stone_name) {
       stoneWeight = data.net_weight || data.weight || 0;
     }
 
-    pushMaster(data.stone_name, 1, stoneWeight);
-    pushMaster(data.shape);
-    pushMaster(data.size);
-    pushMaster(data.color);
-    pushMaster(data.cutting);
-    pushMaster(data.quality);
-    pushMaster(data.clarity);
+    // ⚠️ ต้องใช้ await getMasterId ทุกตัว
+    const stoneNameId = await getMasterId(data.stone_name);
+    const shapeId = await getMasterId(data.shape);
+    const sizeId = await getMasterId(data.size);
+    const colorId = await getMasterId(data.color);
+    const cuttingId = await getMasterId(data.cutting);
+    const qualityId = await getMasterId(data.quality);
+    const clarityId = await getMasterId(data.clarity);
 
+    // ส่ง ID ที่แปลงแล้วเข้าไป
+    pushMaster(stoneNameId, 1, stoneWeight);
+    pushMaster(shapeId);
+    pushMaster(sizeId);
+    pushMaster(colorId);
+    pushMaster(cuttingId);
+    pushMaster(qualityId);
+    pushMaster(clarityId);
+
+    // --- 5. สร้าง Detail ---
     const newDetail = await ProductDetail.create({
       unit: data.unit || "pcs",
       size: data.product_size || data.size,
       gross_weight: data.gross_weight || data.weight || 0,
       net_weight: data.net_weight || data.weight || 0,
-      // cost: data.cost,
-      // price: data.sale_price,
-      masters: mastersArray,
+      masters: mastersArray, // ตอนนี้ในนี้จะมีแต่ ObjectId ล้วนๆ แล้ว
       description: data.description,
       comp_id: user.comp_id,
     });
 
     try {
-      let itemTypeNameString = "";
-      if (data.item_type) {
-        const masterItem = await Masters.findById(data.item_type);
-        if (masterItem) {
-          itemTypeNameString = masterItem.master_name;
-        }
-      }
+      // --- 6. สร้าง Product Main ---
+
+      // หมายเหตุ: data.item_type เป็นชื่อ (String) อยู่แล้ว เอาไปบันทึกได้เลย
+      // ไม่ต้องไป findById อีกรอบ เพราะจะ Error
 
       const newProduct = await Product.create({
         product_code: data.code,
@@ -115,7 +144,7 @@ exports.createProduct = async (req, res) => {
         comp_id: user.comp_id,
         file: filesArray,
         product_category: data.category,
-        product_item_type: itemTypeNameString,
+        product_item_type: data.item_type, // ใช้ชื่อที่ส่งมาจากหน้าบ้านได้เลย (เช่น "Ring")
       });
 
       res.status(201).json({

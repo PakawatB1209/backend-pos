@@ -450,18 +450,45 @@ exports.userRequestResetPassword = async (req, res) => {
   try {
     const { email } = req.body;
 
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter email.",
+      });
+    }
+
     const user = await User.findOne({ user_email: email }).populate(
       "comp_id",
       "comp_name"
     );
+
     if (!user) {
       return res.status(404).json({
         success: false,
         message: "Email not found",
       });
     }
+
+    let compId = user.comp_id;
+    if (compId && typeof compId === "object" && compId._id) {
+      compId = compId._id;
+    }
+
+    const admin = await User.findOne({
+      comp_id: compId,
+      user_role: "Admin",
+      status: true,
+    }).select("user_email user_name");
+
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        message: "Admin for this company not found",
+      });
+    }
+
     const companyInfo = user.comp_id
-      ? `${user.comp_id.comp_name} (ID: ${user.comp_id._id})`
+      ? `${user.comp_id.comp_name} (ID: ${compId})`
       : "No Company Assigned";
 
     const transporter = nodemailer.createTransport({
@@ -474,7 +501,7 @@ exports.userRequestResetPassword = async (req, res) => {
 
     const mailOptions = {
       from: `"System Notification" <${process.env.ADMIN_EMAIL}>`,
-      to: process.env.ADMIN_EMAIL,
+      to: admin.user_email,
       subject: `[Request] Password Reset Request from ${user.user_name}`,
       text: `
 Admin,
@@ -488,7 +515,9 @@ Email    : ${user.user_email}
 Company  : ${companyInfo}
 Role     : ${user.user_role}
 
-Please login to the Admin Panel and reset the password for this user manually.
+Please login to the system and reset the password for this user manually.
+
+Login URL: http://localhost:5173/
 
 System Auto-Message
       `,
@@ -496,13 +525,13 @@ System Auto-Message
 
     await transporter.sendMail(mailOptions);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Admin notified. Please wait for the new password via email.",
     });
   } catch (err) {
     console.error("Error requesting reset:", err);
-    res.status(500).json({ success: false, message: "Server error" });
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
 

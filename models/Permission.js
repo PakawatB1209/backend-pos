@@ -10,7 +10,7 @@ const permissionSchema = new mongoose.Schema(
     permission_action: {
       type: String,
       required: true,
-      enum: ["add", "view", "update", "delete", "export"],
+      enum: ["add", "view", "update", "delete", "export", "print"],
     },
   },
   { timestamps: true }

@@ -14,14 +14,14 @@ const baseSchema = {
     .messages({ "any.required": "Product Code is required" }),
   description: Joi.string().allow("").optional(),
 
-  cost: Joi.number()
-    .min(0)
-    .required()
-    .messages({ "any.required": "Cost is required" }),
-  sale_price: Joi.number()
-    .min(0)
-    .required()
-    .messages({ "any.required": "Selling Price is required" }),
+  // cost: Joi.number()
+  //   .min(0)
+  //   .required()
+  //   .messages({ "any.required": "Cost is required" }),
+  // sale_price: Joi.number()
+  //   .min(0)
+  //   .required()
+  //   .messages({ "any.required": "Selling Price is required" }),
 };
 
 const productMasterSchema = Joi.object({
@@ -80,6 +80,15 @@ const semiMountSchema = Joi.object({
   shape: objectId.optional(),
 });
 
+const accessorySchema = Joi.object({
+  ...baseSchema,
+
+  metal: objectId.required(),
+  product_size: Joi.string().required(),
+  weight: Joi.number().required(),
+  unit: Joi.number().required(),
+});
+
 const othersSchema = Joi.object({
   ...baseSchema,
 
@@ -93,8 +102,8 @@ const updateProductSchema = Joi.object({
   description: Joi.string().allow("").optional(),
   image: Joi.string().allow("").optional(),
 
-  cost: Joi.number().min(0).optional(),
-  sale_price: Joi.number().min(0).optional(),
+  // cost: Joi.number().min(0).optional(),
+  // sale_price: Joi.number().min(0).optional(),
 
   item_type: objectId.optional(),
   metal: objectId.optional(),
@@ -130,6 +139,9 @@ exports.validateSchema = (schemaName) => {
         break;
       case "semimount":
         schema = semiMountSchema;
+        break;
+      case "accessory":
+        schema = accessorySchema;
         break;
       case "others":
         schema = othersSchema;

@@ -3,7 +3,6 @@ const User = require("../models/User");
 
 // create warehoues at company
 
-
 // exports.createWarehouse = async (req, res) => {
 //   try {
 //     console.log(req.body);
@@ -96,26 +95,24 @@ exports.list = async (req, res) => {
     const user = await User.findById(userId).select("comp_id");
 
     if (!user || !user.comp_id) {
-        return res.status(400).json({ 
-            success: false, 
-            message: "User has no company. Cannot view warehouses." 
-        });
+      return res.status(400).json({
+        success: false,
+        message: "User has no company. Cannot view warehouses.",
+      });
     }
     const warehouses = await Warehouse.find({ comp_id: user.comp_id })
-      .sort({ createdAt: 1 }) 
-      .lean();                
+      .sort({ createdAt: 1 })
+      .lean();
 
-    // 3. ส่งข้อมูลกลับ
     res.status(200).json({
       success: true,
       data: warehouses,
     });
-
-  } catch (error) { 
-    console.log("Error list warehouses:", error); 
-    res.status(500).json({ 
-        success: false, 
-        message: "Server error" 
+  } catch (error) {
+    console.log("Error list warehouses:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
     });
   }
 };

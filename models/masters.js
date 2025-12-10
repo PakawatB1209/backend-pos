@@ -4,6 +4,7 @@ const mastersSchema = new mongoose.Schema({
   master_name: { type: String, required: true },
   master_color: { type: String, default: null },
   master_type: { type: String, required: true },
+  // master_weight: { type: Number },
   comp_id: {
     type: mongoose.Schema.ObjectId,
     ref: "comp",

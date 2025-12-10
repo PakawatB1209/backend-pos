@@ -16,7 +16,6 @@ router.get("/product", auth, list);
 
 router.get("/product/:id", getOneProduct);
 
-// router.post("/product", createProduct);
 router.post("/master", auth, validateSchema("master"), upload, createProduct);
 router.post("/stone", auth, validateSchema("stone"), upload, createProduct);
 router.post(
@@ -26,6 +25,14 @@ router.post(
   upload,
   createProduct
 );
+router.post(
+  "/accessory",
+  auth,
+  validateSchema("accessory"),
+  upload,
+  createProduct
+);
+
 router.post("/others", auth, validateSchema("others"), upload, createProduct);
 
 router.put("/product/:id", auth, validateSchema("update"), updateProduct);

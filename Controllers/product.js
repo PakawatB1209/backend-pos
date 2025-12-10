@@ -1,8 +1,12 @@
 const Product = require("../models/Product");
 const ProductDetail = require("../models/Product_detail");
 const User = require("../models/User");
-const fs = require("fs");
+const Masters = require("../models/masters");
 const mongoose = require("mongoose");
+
+const fs = require("fs");
+const sharp = require("sharp");
+const path = require("path");
 
 exports.createProduct = async (req, res) => {
   try {
@@ -17,8 +21,31 @@ exports.createProduct = async (req, res) => {
     }
 
     const data = req.body;
-    if (req.file) {
-      data.file = req.file.filename;
+
+    let filesArray = [];
+
+    if (req.files && req.files.length > 0) {
+      const uploadDir = "./uploads";
+      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+
+      await Promise.all(
+        req.files.map(async (file, index) => {
+          const filename = `product-${Date.now()}-${Math.round(
+            Math.random() * 1e9
+          )}-${index}.jpeg`;
+          const outputPath = path.join(uploadDir, filename);
+
+          await sharp(file.buffer)
+            .resize(1200, 1200, {
+              fit: sharp.fit.inside,
+              withoutEnlargement: true,
+            })
+            .toFormat("jpeg", { quality: 80 })
+            .toFile(outputPath);
+
+          filesArray.push(filename);
+        })
+      );
     }
 
     const existingProduct = await Product.findOne({
@@ -63,33 +90,39 @@ exports.createProduct = async (req, res) => {
     const newDetail = await ProductDetail.create({
       unit: data.unit || "pcs",
       size: data.product_size || data.size,
-
       gross_weight: data.gross_weight || data.weight || 0,
       net_weight: data.net_weight || data.weight || 0,
-
-      cost: data.cost,
-      price: data.sale_price,
-
+      // cost: data.cost,
+      // price: data.sale_price,
       masters: mastersArray,
       description: data.description,
       comp_id: user.comp_id,
     });
 
     try {
+      let itemTypeNameString = "";
+      if (data.item_type) {
+        const masterItem = await Masters.findById(data.item_type);
+        if (masterItem) {
+          itemTypeNameString = masterItem.master_name;
+        }
+      }
+
       const newProduct = await Product.create({
         product_code: data.code,
         product_name: data.product_name,
-        file: data.file || "",
-        sale_price: data.sale_price,
         product_detail_id: newDetail._id,
         comp_id: user.comp_id,
+        file: filesArray,
+        product_category: data.category,
+        product_item_type: itemTypeNameString,
       });
 
       res.status(201).json({
         success: true,
         message: "Product created successfully.",
         data: newProduct,
-        file: data.file || "",
+        file: filesArray,
       });
     } catch (productError) {
       console.log("Error creating main product, rolling back detail...");
@@ -155,7 +188,28 @@ exports.list = async (req, res) => {
       });
     }
 
-    const products = await Product.find({ comp_id: user.comp_id })
+    const { category, item_type, search } = req.query;
+
+    let query = { comp_id: user.comp_id };
+
+    if (category) {
+      query.category = { $in: category.split(",") };
+    }
+
+    if (item_type) {
+      query.item_type = { $in: item_type.split(",") };
+    }
+
+    if (search) {
+      query.$or = [
+        { product_name: { $regex: search, $options: "i" } },
+        { product_code: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    console.log("🔍 Filtering with:", JSON.stringify(query));
+
+    const products = await Product.find(query)
       .populate({
         path: "product_detail_id",
         populate: {
@@ -176,36 +230,6 @@ exports.list = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
-
-// exports.updateProduct = async (req, res) => {
-//   try {
-//     const id = req.params.id;
-
-//     const { product_detail, ...product_data } = req.body;
-
-//     const product = await Product.findOneAndUpdate({ _id: id }, product_data, {
-//       new: true,
-//     });
-
-//     if (!product) return res.status(404).json({ error: "Product not found" });
-
-//     if (product_detail) {
-//       await ProductDetail.findByIdAndUpdate(
-//         product.product_detail_id,
-//         product_detail,
-//         { new: true }
-//       );
-//     }
-
-//     return res.json({
-//       message: "Product updated successfully",
-//       product,
-//     });
-//   } catch (err) {
-//     console.log(err);
-//     res.status(500).send("Server error");
-//   }
-// };
 
 exports.updateProduct = async (req, res) => {
   try {
@@ -306,8 +330,8 @@ exports.updateProduct = async (req, res) => {
       size: data.product_size || data.size,
       gross_weight: data.gross_weight,
       net_weight: data.net_weight,
-      cost: data.cost,
-      price: data.sale_price,
+      // cost: data.cost,
+      // price: data.sale_price,
       description: data.description,
 
       masters: mastersArray,
@@ -327,7 +351,7 @@ exports.updateProduct = async (req, res) => {
       product_code: data.code,
       product_name: data.product_name,
       product_Image: data.image,
-      sale_price: data.sale_price,
+      // sale_price: data.sale_price,
     };
     Object.keys(productUpdate).forEach(
       (key) => productUpdate[key] === undefined && delete productUpdate[key]

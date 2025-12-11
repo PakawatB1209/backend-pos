@@ -6,13 +6,24 @@ require("dotenv").config();
 
 exports.createUser = async (req, res) => {
   try {
+    const adminId = req.user.id;
+
+    const adminUser = await User.findById(adminId);
+
+    if (!adminUser || !adminUser.comp_id) {
+      return res.status(403).json({
+        success: false,
+        error: "คุณไม่มีสังกัดบริษัท ไม่สามารถสร้าง User ได้",
+      });
+    }
+    const targetCompId = adminUser.comp_id;
+
     const {
       user_name,
       user_email,
       user_password,
       user_role,
       user_phone,
-      comp_id,
       permissions,
     } = req.body;
 
@@ -26,7 +37,7 @@ exports.createUser = async (req, res) => {
 
     if (roleToBeCreated === "User") {
       const currentUsersCount = await User.countDocuments({
-        comp_id: comp_id,
+        comp_id: targetCompId,
         user_role: "User",
         status: true,
       });
@@ -58,7 +69,7 @@ exports.createUser = async (req, res) => {
       user_role: roleToBeCreated,
       user_password: hashedPassword,
       user_phone,
-      comp_id,
+      comp_id: targetCompId,
       permissions: permissions || [],
       status: true,
     });

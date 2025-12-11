@@ -13,7 +13,7 @@ exports.createUser = async (req, res) => {
     if (!adminUser || !adminUser.comp_id) {
       return res.status(403).json({
         success: false,
-        error: "คุณไม่มีสังกัดบริษัท ไม่สามารถสร้าง User ได้",
+        error: "User is not associated with a company (Cannot create User).",
       });
     }
     const targetCompId = adminUser.comp_id;
@@ -546,8 +546,61 @@ System Auto-Message
   }
 };
 
+// exports.resetPassUserbyAdmin = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const { user_password } = req.body;
+
+//     if (!mongoose.isValidObjectId(id)) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Invalid ID format",
+//       });
+//     }
+
+//     if (!user_password) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Please enter the new password.",
+//       });
+//     }
+
+//     const user = await User.findById(id);
+//     if (!user) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "User not found",
+//       });
+//     }
+
+//     const salt = await bcrypt.genSalt(10);
+//     user.user_password = await bcrypt.hash(user_password, salt);
+//     user.password_changed_at = null;
+
+//     await user.save();
+
+//     const userResponse = user.toObject();
+//     // delete userResponse.user_password;
+//     delete userResponse.__v;
+
+//     return res.status(200).json({
+//       success: true,
+//       message: "Reset Password Success",
+//       data: userResponse,
+//     });
+//   } catch (err) {
+//     console.log("Server Error reset password:", err);
+//     res.status(500).json({
+//       success: false,
+//       message: "Server error",
+//     });
+//   }
+// };
+
 exports.resetPassUserbyAdmin = async (req, res) => {
   try {
+    const adminId = req.user.id;
+
     const { id } = req.params;
     const { user_password } = req.body;
 
@@ -564,12 +617,28 @@ exports.resetPassUserbyAdmin = async (req, res) => {
         message: "Please enter the new password.",
       });
     }
-
     const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found",
+      });
+    }
+
+    const adminUser = await User.findById(adminId).select("comp_id");
+
+    if (!adminUser || !adminUser.comp_id || !user.comp_id) {
+      return res.status(403).json({
+        success: false,
+        message: "Permission Denied: Company information missing.",
+      });
+    }
+
+    if (adminUser.comp_id.toString() !== user.comp_id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message:
+          "Permission Denied: You cannot reset password for user in another company.",
       });
     }
 
@@ -597,38 +666,139 @@ exports.resetPassUserbyAdmin = async (req, res) => {
   }
 };
 
+// exports.resetPassUserbyAdmin_send = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const { user_password } = req.body;
+
+//     if (!mongoose.isValidObjectId(id)) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Invalid ID format",
+//       });
+//     }
+
+//     if (!user_password) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Please enter the new password.",
+//       });
+//     }
+
+//     const user = await User.findById(id);
+//     if (!user) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "User not found",
+//       });
+//     }
+
+//     const salt = await bcrypt.genSalt(10);
+//     user.user_password = await bcrypt.hash(user_password, salt);
+//     user.password_changed_at = null;
+
+//     await user.save();
+
+//     const transporter = nodemailer.createTransport({
+//       service: "gmail",
+//       auth: {
+//         user: process.env.ADMIN_EMAIL,
+//         pass: process.env.ADMIN_PASS,
+//       },
+//     });
+
+//     const mailOptions = {
+//       from: `"System Admin" <${process.env.ADMIN_EMAIL}>`,
+//       to: user.user_email,
+//       subject: `[Notification] Your password has been reset by Admin`,
+//       text: `
+// Hello ${user.user_name},
+
+// This is a notification that your password has been reset by the Administrator.
+
+// --------------------------
+//  NEW LOGIN CREDENTIALS
+// --------------------------
+// Username : ${user.user_name}
+// Password : ${user_password}
+// Date     : ${new Date().toLocaleString("th-TH")}
+
+// Please login and change your password immediately if this was not requested by you.
+
+// Best regards,
+// IT Support Team
+//       `,
+//     };
+
+//     await transporter.sendMail(mailOptions);
+//     console.log(`Email sent to ${user.user_email}`);
+
+//     const userResponse = user.toObject();
+//     // delete userResponse.user_password;
+//     delete userResponse.__v;
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Password changed and notification email sent.",
+//       data: userResponse,
+//     });
+//   } catch (err) {
+//     console.error("Error resetting password:", err);
+//     res.status(500).json({
+//       success: false,
+//       message: "Server error",
+//     });
+//   }
+// };
+
 exports.resetPassUserbyAdmin_send = async (req, res) => {
   try {
+    const adminId = req.user.id;
+
     const { id } = req.params;
     const { user_password } = req.body;
 
     if (!mongoose.isValidObjectId(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid ID format",
-      });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid ID format" });
     }
 
     if (!user_password) {
-      return res.status(400).json({
+      return res
+        .status(400)
+        .json({ success: false, message: "Please enter the new password." });
+    }
+
+    const userToReset = await User.findById(id);
+    if (!userToReset) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    const adminUser = await User.findById(adminId).select("comp_id user_role");
+
+    if (!adminUser || !adminUser.comp_id || !userToReset.comp_id) {
+      return res.status(403).json({
         success: false,
-        message: "Please enter the new password.",
+        message: "Permission Denied: Company information missing.",
       });
     }
 
-    const user = await User.findById(id);
-    if (!user) {
-      return res.status(404).json({
+    if (adminUser.comp_id.toString() !== userToReset.comp_id.toString()) {
+      return res.status(403).json({
         success: false,
-        message: "User not found",
+        message:
+          "Permission Denied: You can only manage users within your own company.",
       });
     }
 
     const salt = await bcrypt.genSalt(10);
-    user.user_password = await bcrypt.hash(user_password, salt);
-    user.password_changed_at = null;
+    userToReset.user_password = await bcrypt.hash(user_password, salt);
+    userToReset.password_changed_at = null;
 
-    await user.save();
+    await userToReset.save();
 
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -640,17 +810,17 @@ exports.resetPassUserbyAdmin_send = async (req, res) => {
 
     const mailOptions = {
       from: `"System Admin" <${process.env.ADMIN_EMAIL}>`,
-      to: user.user_email,
+      to: userToReset.user_email,
       subject: `[Notification] Your password has been reset by Admin`,
       text: `
-Hello ${user.user_name},
+Hello ${userToReset.user_name},
 
 This is a notification that your password has been reset by the Administrator.
 
 --------------------------
  NEW LOGIN CREDENTIALS
 --------------------------
-Username : ${user.user_name}
+Username : ${userToReset.user_name}
 Password : ${user_password}
 Date     : ${new Date().toLocaleString("th-TH")}
 
@@ -662,10 +832,10 @@ IT Support Team
     };
 
     await transporter.sendMail(mailOptions);
-    console.log(`Email sent to ${user.user_email}`);
+    console.log(`Email sent to ${userToReset.user_email}`);
 
-    const userResponse = user.toObject();
-    // delete userResponse.user_password;
+    const userResponse = userToReset.toObject();
+    delete userResponse.user_password;
     delete userResponse.__v;
 
     res.status(200).json({

@@ -20,12 +20,12 @@ const {
   getProvinces,
   getDistricts,
   getSubDistricts,
-  syncDataTest,
+  syncAllAuto,
 } = require("../Controllers/address");
 
 router.get("/address/provinces", getProvinces);
 router.get("/address/districts", getDistricts);
 router.get("/address/sub-districts", getSubDistricts);
-router.get("/address/sync-test", syncDataTest);
+router.get("/address/sync-test", syncAllAuto);
 
 module.exports = router;

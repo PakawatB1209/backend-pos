@@ -15,8 +15,15 @@ const CustomerSchema = new mongoose.Schema(
     tax_addr: { type: String, required: true },
     contact_person: { type: String, required: true },
     company_name: { type: String, required: true },
+    comp_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "comp",
+      required: true,
+    },
   },
   { timestamps: true }
 );
+
+CustomerSchema.index({ comp_id: 1, customer_name: 1 }, { unique: true });
 
 module.exports = mongoose.model("customer", CustomerSchema);

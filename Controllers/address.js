@@ -1,5 +1,7 @@
 const Address = require("../models/Address");
 const axios = require("axios");
+const path = require("path");
+const fs = require("fs");
 
 const { USERNAME } = require("../Config/geonames");
 
@@ -7,12 +9,21 @@ const COUNTRY_ID_TH = 1605651;
 
 const fetchChildren = async (geonameId) => {
   try {
-    const url = `http://api.geonames.org/childrenJSON?geonameId=${geonameId}&username=${USERNAME}`;
-    const response = await axios.get(url);
+    const response = await axios.get(`http://api.geonames.org/childrenJSON`, {
+      params: {
+        geonameId: geonameId,
+        username: process.env.GEONAMES_USERNAME,
+        lang: "th",
+      },
+    });
+    if (!response.data.geonames) {
+      console.log("❌ API Response Error:", response.data);
+    } else {
+      console.log(`✅ Found ${response.data.geonames.length} items`);
+    }
     return response.data.geonames || [];
   } catch (error) {
-    console.error("Error fetching children:", error.message);
-    return [];
+    throw new Error(`Fetch Children Failed: ${error.message}`);
   }
 };
 
@@ -34,16 +45,22 @@ const findGeonameIdByName = async (name, featureCode) => {
 
 const fetchPostalData = async (districtName, provinceName) => {
   try {
-    const url = `http://api.geonames.org/postalCodeSearchJSON?placename=${encodeURIComponent(
-      districtName
-    )}&country=TH&username=${USERNAME}`;
-    const response = await axios.get(url);
-    const rawData = response.data.postalCodes || [];
-
-    return rawData.filter((item) => item.adminName1 === provinceName);
+    const response = await axios.get(
+      `http://api.geonames.org/postalCodeSearchJSON`,
+      {
+        params: {
+          placename: districtName,
+          adminName1: provinceName,
+          country: "TH",
+          username: process.env.GEONAMES_USERNAME,
+          maxRows: 500,
+          lang: "th",
+        },
+      }
+    );
+    return response.data.postalCodes || [];
   } catch (error) {
-    console.error("Error fetching postal data:", error.message);
-    return [];
+    throw new Error(`Fetch Postal Failed: ${error.message}`);
   }
 };
 
@@ -193,119 +210,18 @@ exports.getSubDistricts = async (req, res) => {
   }
 };
 
-// exports.syncDataBatch = async (req, res) => {
-//   req.setTimeout(600000);
-
-//   try {
-//     const skip = parseInt(req.query.skip) || 0;
-//     const limit = parseInt(req.query.limit) || 20;
-
-//     console.log(
-//       `\n--- Start Syncing Batch (Skip: ${skip}, Limit: ${limit}) ---`
-//     );
-
-//     const allProvinces = await fetchChildren(COUNTRY_ID_TH);
-
-//     const targetProvinces = allProvinces.slice(skip, skip + limit);
-
-//     if (targetProvinces.length === 0) {
-//       return res.json({ message: "No provinces left to sync in this range." });
-//     }
-
-//     console.log(
-//       `Processing ${targetProvinces.length} provinces: ${targetProvinces
-//         .map((p) => p.name)
-//         .join(", ")}`
-//     );
-
-//     let totalSaved = 0;
-//     let totalSkipped = 0;
-
-//     for (const province of targetProvinces) {
-//       console.log(`\n[${province.name}] Processing...`);
-
-//       const districtList = await fetchChildren(province.geonameId);
-
-//       for (const district of districtList) {
-//         const exists = await Address.findOne({
-//           province: province.name,
-//           district: district.name,
-//         });
-
-//         if (exists) {
-//           totalSkipped++;
-//           continue;
-//         }
-
-//         console.log(`  - [FETCH] Downloading data for ${district.name}...`);
-
-//         const subDistricts = await fetchPostalData(
-//           district.name,
-//           province.name
-//         );
-
-//         if (subDistricts.length > 0) {
-//           const bulkOps = subDistricts.map((item) => {
-//             const fixedDistrict = item.adminName2 || district.name;
-//             return {
-//               updateOne: {
-//                 filter: {
-//                   province: item.adminName1,
-//                   district: fixedDistrict,
-//                   sub_district: item.placeName,
-//                   zipcode: item.postalCode,
-//                 },
-//                 update: {
-//                   $set: {
-//                     country: "Thailand",
-//                     province: item.adminName1,
-//                     district: fixedDistrict,
-//                     sub_district: item.placeName,
-//                     zipcode: item.postalCode,
-//                   },
-//                 },
-//                 upsert: true,
-//               },
-//             };
-//           });
-
-//           await Address.bulkWrite(bulkOps);
-//           totalSaved += subDistricts.length;
-//           await delay(300);
-//         }
-//       }
-//     }
-
-//     console.log("\n--- Batch Sync Complete! ---");
-
-//     res.json({
-//       success: true,
-//       message: `Sync complete for provinces ${skip + 1} to ${
-//         skip + targetProvinces.length
-//       }`,
-//       range: { skip, limit, count: targetProvinces.length },
-//       stats: {
-//         saved_records: totalSaved,
-//         skipped_districts: totalSkipped,
-//         provinces_list: targetProvinces.map((p) => p.name),
-//       },
-//     });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: "Sync failed", details: err.message });
-//   }
-// };
-
 exports.syncAllAuto = async (req, res) => {
-  req.setTimeout(60 * 60 * 1000);
+  // 1. Set Timeout to 2 hours
+  req.setTimeout(2 * 60 * 60 * 1000);
 
+  // Helper: Retry Function
   const fetchWithRetry = async (fn, retries = 3, delayMs = 2000) => {
     try {
       return await fn();
     } catch (err) {
       if (retries > 0) {
         console.log(
-          `      ⚠️ Connection Error (${err.message}). Retrying in ${
+          `      ⚠️ Connection hiccup (${err.message})... Retrying in ${
             delayMs / 1000
           }s...`
         );
@@ -317,11 +233,14 @@ exports.syncAllAuto = async (req, res) => {
   };
 
   try {
-    console.log("🚀 Start Auto Syncing (Smart Retry Mode)...");
+    console.log("🚀 Start Auto Syncing (Force Thai Data + Smart Retry)...");
 
+    // Fetch provinces (We get Thai names here because of our helper)
     const allProvinces = await fetchChildren(COUNTRY_ID_TH);
     const totalProvinces = allProvinces.length;
-    const BATCH_SIZE = 20;
+
+    // Batch size 5 to avoid Geonames limit
+    const BATCH_SIZE = 5;
 
     let currentSkip = 0;
     let totalSaved = 0;
@@ -333,9 +252,9 @@ exports.syncAllAuto = async (req, res) => {
         currentSkip + BATCH_SIZE
       );
       console.log(
-        `\n📦 Batch Processing: ${currentSkip + 1} to ${
+        `\n📦 Processing Batch: ${currentSkip + 1} to ${
           currentSkip + targetProvinces.length
-        } ...`
+        }`
       );
 
       for (const province of targetProvinces) {
@@ -343,39 +262,48 @@ exports.syncAllAuto = async (req, res) => {
 
         let districtList = [];
         try {
+          // Fetch Districts
           districtList = await fetchWithRetry(() =>
             fetchChildren(province.geonameId)
           );
+          // Rest 1s
+          await delay(1000);
         } catch (e) {
           console.log(
-            `      ❌ Skip Province ${province.name} due to repeated errors.`
+            `      ❌ Skipping Province ${province.name} (Error Fetching Children)`
           );
           continue;
         }
 
         for (const district of districtList) {
           try {
+            // Fetch Sub-districts/Postal Codes
             const subDistricts = await fetchWithRetry(() =>
               fetchPostalData(district.name, province.name)
             );
 
             if (subDistricts && subDistricts.length > 0) {
               const bulkOps = subDistricts.map((item) => {
-                const fixedDistrict = item.adminName2 || district.name;
+                // 🔥 Logic: Force Thai Language from Parent Loop
+                // We ignore item.adminName1 (which might be "Bangkok") and use province.name ("กรุงเทพ") instead
+                const finalProvince = province.name;
+                const finalDistrict = district.name;
+                const finalSubDistrict = item.placeName;
+
                 return {
                   updateOne: {
                     filter: {
-                      province: item.adminName1,
-                      district: fixedDistrict,
-                      sub_district: item.placeName,
+                      province: finalProvince,
+                      district: finalDistrict,
+                      sub_district: finalSubDistrict,
                       zipcode: item.postalCode,
                     },
                     update: {
                       $set: {
-                        country: "Thailand",
-                        province: item.adminName1,
-                        district: fixedDistrict,
-                        sub_district: item.placeName,
+                        country: "ไทย", // Keep data in Thai
+                        province: finalProvince,
+                        district: finalDistrict,
+                        sub_district: finalSubDistrict,
                         zipcode: item.postalCode,
                       },
                     },
@@ -389,31 +317,121 @@ exports.syncAllAuto = async (req, res) => {
             }
           } catch (err) {
             console.log(
-              `      ❌ Failed to fetch ${district.name}: ${err.message}`
+              `      ❌ Error District ${district.name}: ${err.message}`
             );
           }
-          await delay(300);
+
+          // Safe Mode Delay (2s)
+          await delay(2000);
         }
         processedCount++;
       }
 
-      console.log(`✅ Finished Batch. Waiting 2s...`);
-      await delay(2000);
-
+      console.log(`✅ Batch finished. Resting 5s...`);
+      await delay(5000);
       currentSkip += BATCH_SIZE;
     }
 
-    console.log("\n🎉 All Sync Complete!");
+    console.log("\n🎉 All Sync Complete! Data is saved in Thai.");
     res.json({
       success: true,
-      message: "Sync completed with Smart Retry System.",
+      message: "Sync Completed (Thai Data / English Logs)",
       stats: {
         total_provinces_processed: processedCount,
-        total_records_updated: totalSaved,
+        total_records_saved: totalSaved,
       },
     });
   } catch (err) {
-    console.error("❌ Fatal Sync Error:", err);
+    console.error("❌ Fatal Error:", err);
     res.status(500).json({ error: "Sync failed", details: err.message });
+  }
+};
+
+exports.importStaticData = async (req, res) => {
+  try {
+    const provincesData = JSON.parse(
+      fs.readFileSync(path.join(__dirname, "../data/provinces.json"), "utf-8")
+    );
+    const districtsData = JSON.parse(
+      fs.readFileSync(path.join(__dirname, "../data/districts.json"), "utf-8")
+    );
+    const subDistrictsData = JSON.parse(
+      fs.readFileSync(
+        path.join(__dirname, "../data/subdistricts.json"),
+        "utf-8"
+      )
+    );
+
+    const provinceMap = {};
+    provincesData.forEach((p) => {
+      provinceMap[String(p.PROV_KEY)] = p.PROV_NAME;
+    });
+
+    const districtMap = {};
+    districtsData.forEach((d) => {
+      districtMap[String(d.DSTRCT_KEY)] = {
+        name_th: d.DSTRCT_NAME,
+        province_id: String(d.DSTRCT_PROV),
+      };
+    });
+
+    const bulkOps = [];
+
+    subDistrictsData.forEach((sub) => {
+      const distId = String(sub.SBDSTRIC_DSTRIC);
+      const district = districtMap[distId];
+
+      if (!district) return;
+
+      const provinceName = provinceMap[district.province_id];
+      const districtName = district.name_th;
+
+      const subDistrictName = sub.SBDSTRIC_NAME;
+      const zipCode = sub.SBDSTRIC_ZIPCODE ? String(sub.SBDSTRIC_ZIPCODE) : "";
+
+      if (provinceName && districtName && subDistrictName && zipCode) {
+        bulkOps.push({
+          updateOne: {
+            filter: {
+              province: provinceName,
+              district: districtName,
+              sub_district: subDistrictName,
+              zipcode: zipCode,
+            },
+            update: {
+              $set: {
+                country: "ไทย",
+                province: provinceName,
+                district: districtName,
+                sub_district: subDistrictName,
+                zipcode: zipCode,
+              },
+            },
+            upsert: true,
+          },
+        });
+      }
+    });
+
+    if (bulkOps.length > 0) {
+      console.log(`Found ${bulkOps.length} records. Saving to Database...`);
+      await Address.bulkWrite(bulkOps);
+      console.log("Import Successful!");
+
+      res.json({
+        success: true,
+        message: "Import Thai Data Successful",
+        total_records: bulkOps.length,
+      });
+    } else {
+      res
+        .status(400)
+        .json({ success: false, message: "No matched data found." });
+    }
+  } catch (err) {
+    console.error("Import Error:", err);
+    res
+      .status(500)
+      .json({ success: false, message: "Import failed", error: err.message });
   }
 };

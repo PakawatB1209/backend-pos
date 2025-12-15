@@ -1,0 +1,6498 @@
+[
+  {
+    "DSTRCT_KEY": 1,
+    "DSTRCT_CODE": "001001",
+    "DSTRCT_NAME": "พระนคร",
+    "DSTRCT_E_NAME": "Phra Nakhon",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 2,
+    "DSTRCT_CODE": "001002",
+    "DSTRCT_NAME": "ดุสิต",
+    "DSTRCT_E_NAME": "Dusit",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 3,
+    "DSTRCT_CODE": "001003",
+    "DSTRCT_NAME": "หนองจอก",
+    "DSTRCT_E_NAME": "Nong Chok",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 4,
+    "DSTRCT_CODE": "001004",
+    "DSTRCT_NAME": "บางรัก",
+    "DSTRCT_E_NAME": "Bang Rak",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 5,
+    "DSTRCT_CODE": "001005",
+    "DSTRCT_NAME": "บางเขน",
+    "DSTRCT_E_NAME": "Bang Khen",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 6,
+    "DSTRCT_CODE": "001006",
+    "DSTRCT_NAME": "บางกะปิ",
+    "DSTRCT_E_NAME": "Bang Kapi",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 7,
+    "DSTRCT_CODE": "001007",
+    "DSTRCT_NAME": "ปทุมวัน",
+    "DSTRCT_E_NAME": "Pathum Wan",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 8,
+    "DSTRCT_CODE": "001008",
+    "DSTRCT_NAME": "ป้อมปราบศัตรูพ่าย",
+    "DSTRCT_E_NAME": "Pom Prap Sattruphai",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 9,
+    "DSTRCT_CODE": "001009",
+    "DSTRCT_NAME": "พระโขนง",
+    "DSTRCT_E_NAME": "Phra Khanong",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 10,
+    "DSTRCT_CODE": "001010",
+    "DSTRCT_NAME": "มีนบุรี",
+    "DSTRCT_E_NAME": "Min Buri",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 11,
+    "DSTRCT_CODE": "001011",
+    "DSTRCT_NAME": "ลาดกระบัง",
+    "DSTRCT_E_NAME": "Lat Krabang",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 12,
+    "DSTRCT_CODE": "001012",
+    "DSTRCT_NAME": "ยานนาวา",
+    "DSTRCT_E_NAME": "Yannawa",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 13,
+    "DSTRCT_CODE": "001013",
+    "DSTRCT_NAME": "สัมพันธวงศ์",
+    "DSTRCT_E_NAME": "Samphanthawong",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 14,
+    "DSTRCT_CODE": "001014",
+    "DSTRCT_NAME": "พญาไท",
+    "DSTRCT_E_NAME": "Phaya Thai",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 15,
+    "DSTRCT_CODE": "001015",
+    "DSTRCT_NAME": "ธนบุรี",
+    "DSTRCT_E_NAME": "Thon Buri",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 16,
+    "DSTRCT_CODE": "001016",
+    "DSTRCT_NAME": "บางกอกใหญ่",
+    "DSTRCT_E_NAME": "Bangkok Yai",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 17,
+    "DSTRCT_CODE": "001017",
+    "DSTRCT_NAME": "ห้วยขวาง",
+    "DSTRCT_E_NAME": "Huai Khwang",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 18,
+    "DSTRCT_CODE": "001018",
+    "DSTRCT_NAME": "คลองสาน",
+    "DSTRCT_E_NAME": "Khlong San",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 19,
+    "DSTRCT_CODE": "001019",
+    "DSTRCT_NAME": "ตลิ่งชัน",
+    "DSTRCT_E_NAME": "Taling Chan",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 20,
+    "DSTRCT_CODE": "001020",
+    "DSTRCT_NAME": "บางกอกน้อย",
+    "DSTRCT_E_NAME": "Bangkok Noi",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 21,
+    "DSTRCT_CODE": "001021",
+    "DSTRCT_NAME": "บางขุนเทียน",
+    "DSTRCT_E_NAME": "Bang Khun Thian",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 22,
+    "DSTRCT_CODE": "001022",
+    "DSTRCT_NAME": "ภาษีเจริญ",
+    "DSTRCT_E_NAME": "Phasi Charoen",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 23,
+    "DSTRCT_CODE": "001023",
+    "DSTRCT_NAME": "หนองแขม",
+    "DSTRCT_E_NAME": "Nong Khaem",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 24,
+    "DSTRCT_CODE": "001024",
+    "DSTRCT_NAME": "ราษฎร์บูรณะ",
+    "DSTRCT_E_NAME": "Rat Burana",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 25,
+    "DSTRCT_CODE": "001025",
+    "DSTRCT_NAME": "บางพลัด",
+    "DSTRCT_E_NAME": "Bang Phlat",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 26,
+    "DSTRCT_CODE": "001026",
+    "DSTRCT_NAME": "ดินแดง",
+    "DSTRCT_E_NAME": "Din Daeng",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 27,
+    "DSTRCT_CODE": "001027",
+    "DSTRCT_NAME": "บึงกุ่ม",
+    "DSTRCT_E_NAME": "Bung Kum",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 28,
+    "DSTRCT_CODE": "001028",
+    "DSTRCT_NAME": "สาทร",
+    "DSTRCT_E_NAME": "Sa Thon",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 29,
+    "DSTRCT_CODE": "001029",
+    "DSTRCT_NAME": "บางซื่อ",
+    "DSTRCT_E_NAME": "Bang Su",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 30,
+    "DSTRCT_CODE": "001030",
+    "DSTRCT_NAME": "จตุจักร",
+    "DSTRCT_E_NAME": "Chatuchak",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 31,
+    "DSTRCT_CODE": "001031",
+    "DSTRCT_NAME": "บางคอแหลม",
+    "DSTRCT_E_NAME": "Bang Kho Laem",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 32,
+    "DSTRCT_CODE": "001032",
+    "DSTRCT_NAME": "ประเวศ",
+    "DSTRCT_E_NAME": "Prawet",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 33,
+    "DSTRCT_CODE": "001033",
+    "DSTRCT_NAME": "คลองเตย",
+    "DSTRCT_E_NAME": "Khlong Toei",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 34,
+    "DSTRCT_CODE": "001034",
+    "DSTRCT_NAME": "สวนหลวง",
+    "DSTRCT_E_NAME": "Suan Luang",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 35,
+    "DSTRCT_CODE": "001035",
+    "DSTRCT_NAME": "จอมทอง",
+    "DSTRCT_E_NAME": "Chom Thong",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 36,
+    "DSTRCT_CODE": "001036",
+    "DSTRCT_NAME": "ดอนเมือง",
+    "DSTRCT_E_NAME": "Don Mueang",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 37,
+    "DSTRCT_CODE": "001037",
+    "DSTRCT_NAME": "ราชเทวี",
+    "DSTRCT_E_NAME": "Rat Thewi",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 38,
+    "DSTRCT_CODE": "001038",
+    "DSTRCT_NAME": "ลาดพร้าว",
+    "DSTRCT_E_NAME": "Lat Phrao",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 39,
+    "DSTRCT_CODE": "001039",
+    "DSTRCT_NAME": "วัฒนา",
+    "DSTRCT_E_NAME": "Watthana",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 40,
+    "DSTRCT_CODE": "001040",
+    "DSTRCT_NAME": "บางแค",
+    "DSTRCT_E_NAME": "Bang Khae",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 41,
+    "DSTRCT_CODE": "001041",
+    "DSTRCT_NAME": "หลักสี่",
+    "DSTRCT_E_NAME": "Lak Si",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 42,
+    "DSTRCT_CODE": "001042",
+    "DSTRCT_NAME": "สายไหม",
+    "DSTRCT_E_NAME": "Sai Mai",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 43,
+    "DSTRCT_CODE": "001043",
+    "DSTRCT_NAME": "คันนายาว",
+    "DSTRCT_E_NAME": "Khanna Yao",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 44,
+    "DSTRCT_CODE": "001044",
+    "DSTRCT_NAME": "สะพานสูง",
+    "DSTRCT_E_NAME": "Saphan Sung",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 45,
+    "DSTRCT_CODE": "001045",
+    "DSTRCT_NAME": "วังทองหลาง",
+    "DSTRCT_E_NAME": "Wang Thong Lang",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 46,
+    "DSTRCT_CODE": "001046",
+    "DSTRCT_NAME": "คลองสามวา",
+    "DSTRCT_E_NAME": "Khlong Sam Wa",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 47,
+    "DSTRCT_CODE": "001047",
+    "DSTRCT_NAME": "บางนา",
+    "DSTRCT_E_NAME": "Bang Na",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 48,
+    "DSTRCT_CODE": "001048",
+    "DSTRCT_NAME": "ทวีวัฒนา",
+    "DSTRCT_E_NAME": "Thawi Watthana",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 49,
+    "DSTRCT_CODE": "001049",
+    "DSTRCT_NAME": "ทุ่งครุ",
+    "DSTRCT_E_NAME": "Thung Khu",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 50,
+    "DSTRCT_CODE": "001050",
+    "DSTRCT_NAME": "บางบอน",
+    "DSTRCT_E_NAME": "Bang Bon",
+    "DSTRCT_PROV": 1
+  },
+  {
+    "DSTRCT_KEY": 51,
+    "DSTRCT_CODE": "001101",
+    "DSTRCT_NAME": "เมืองสมุทรปราการ",
+    "DSTRCT_E_NAME": "Mueang Samut Prakan",
+    "DSTRCT_PROV": 2
+  },
+  {
+    "DSTRCT_KEY": 52,
+    "DSTRCT_CODE": "001102",
+    "DSTRCT_NAME": "บางบ่อ",
+    "DSTRCT_E_NAME": "Bang Bo",
+    "DSTRCT_PROV": 2
+  },
+  {
+    "DSTRCT_KEY": 53,
+    "DSTRCT_CODE": "001103",
+    "DSTRCT_NAME": "บางพลี",
+    "DSTRCT_E_NAME": "Bang Phli",
+    "DSTRCT_PROV": 2
+  },
+  {
+    "DSTRCT_KEY": 54,
+    "DSTRCT_CODE": "001104",
+    "DSTRCT_NAME": "พระประแดง",
+    "DSTRCT_E_NAME": "Phra Pradaeng",
+    "DSTRCT_PROV": 2
+  },
+  {
+    "DSTRCT_KEY": 55,
+    "DSTRCT_CODE": "001105",
+    "DSTRCT_NAME": "พระสมุทรเจดีย์",
+    "DSTRCT_E_NAME": "Phra Samut Chedi",
+    "DSTRCT_PROV": 2
+  },
+  {
+    "DSTRCT_KEY": 56,
+    "DSTRCT_CODE": "001106",
+    "DSTRCT_NAME": "บางเสาธง",
+    "DSTRCT_E_NAME": "Bang Sao Thong",
+    "DSTRCT_PROV": 2
+  },
+  {
+    "DSTRCT_KEY": 57,
+    "DSTRCT_CODE": "001201",
+    "DSTRCT_NAME": "เมืองนนทบุรี",
+    "DSTRCT_E_NAME": "Mueang Nonthaburi",
+    "DSTRCT_PROV": 3
+  },
+  {
+    "DSTRCT_KEY": 58,
+    "DSTRCT_CODE": "001202",
+    "DSTRCT_NAME": "บางกรวย",
+    "DSTRCT_E_NAME": "Bang Kruai",
+    "DSTRCT_PROV": 3
+  },
+  {
+    "DSTRCT_KEY": 59,
+    "DSTRCT_CODE": "001203",
+    "DSTRCT_NAME": "บางใหญ่",
+    "DSTRCT_E_NAME": "Bang Yai",
+    "DSTRCT_PROV": 3
+  },
+  {
+    "DSTRCT_KEY": 60,
+    "DSTRCT_CODE": "001204",
+    "DSTRCT_NAME": "บางบัวทอง",
+    "DSTRCT_E_NAME": "Bang Bua Thong",
+    "DSTRCT_PROV": 3
+  },
+  {
+    "DSTRCT_KEY": 61,
+    "DSTRCT_CODE": "001205",
+    "DSTRCT_NAME": "ไทรน้อย",
+    "DSTRCT_E_NAME": "Sai Noi",
+    "DSTRCT_PROV": 3
+  },
+  {
+    "DSTRCT_KEY": 62,
+    "DSTRCT_CODE": "001206",
+    "DSTRCT_NAME": "ปากเกร็ด",
+    "DSTRCT_E_NAME": "Pak Kret",
+    "DSTRCT_PROV": 3
+  },
+  {
+    "DSTRCT_KEY": 63,
+    "DSTRCT_CODE": "001301",
+    "DSTRCT_NAME": "เมืองปทุมธานี",
+    "DSTRCT_E_NAME": "Mueang Pathum Thani",
+    "DSTRCT_PROV": 4
+  },
+  {
+    "DSTRCT_KEY": 64,
+    "DSTRCT_CODE": "001302",
+    "DSTRCT_NAME": "คลองหลวง",
+    "DSTRCT_E_NAME": "khlong Luang",
+    "DSTRCT_PROV": 4
+  },
+  {
+    "DSTRCT_KEY": 65,
+    "DSTRCT_CODE": "001303",
+    "DSTRCT_NAME": "ธัญบุรี",
+    "DSTRCT_E_NAME": "Thanyaburi",
+    "DSTRCT_PROV": 4
+  },
+  {
+    "DSTRCT_KEY": 66,
+    "DSTRCT_CODE": "001304",
+    "DSTRCT_NAME": "หนองเสือ",
+    "DSTRCT_E_NAME": "Nong Suea",
+    "DSTRCT_PROV": 4
+  },
+  {
+    "DSTRCT_KEY": 67,
+    "DSTRCT_CODE": "001305",
+    "DSTRCT_NAME": "ลาดหลุมแก้ว",
+    "DSTRCT_E_NAME": "Lat Lum Kaeo",
+    "DSTRCT_PROV": 4
+  },
+  {
+    "DSTRCT_KEY": 68,
+    "DSTRCT_CODE": "001306",
+    "DSTRCT_NAME": "ลำลูกกา",
+    "DSTRCT_E_NAME": "Lam Luk Ka",
+    "DSTRCT_PROV": 4
+  },
+  {
+    "DSTRCT_KEY": 69,
+    "DSTRCT_CODE": "001307",
+    "DSTRCT_NAME": "สามโคก",
+    "DSTRCT_E_NAME": "Sam Khok",
+    "DSTRCT_PROV": 4
+  },
+  {
+    "DSTRCT_KEY": 70,
+    "DSTRCT_CODE": "001401",
+    "DSTRCT_NAME": "พระนครศรีอยุธยา",
+    "DSTRCT_E_NAME": "Phra Nakhon Si Ayutthaya",
+    "DSTRCT_PROV": 5
+  },
+  {
+    "DSTRCT_KEY": 71,
+    "DSTRCT_CODE": "001402",
+    "DSTRCT_NAME": "ท่าเรือ",
+    "DSTRCT_E_NAME": "Tha Ruea",
+    "DSTRCT_PROV": 5
+  },
+  {
+    "DSTRCT_KEY": 72,
+    "DSTRCT_CODE": "001403",
+    "DSTRCT_NAME": "นครหลวง",
+    "DSTRCT_E_NAME": "Nakhon Luang",
+    "DSTRCT_PROV": 5
+  },
+  {
+    "DSTRCT_KEY": 73,
+    "DSTRCT_CODE": "001404",
+    "DSTRCT_NAME": "บางไทร",
+    "DSTRCT_E_NAME": "Bang Sai",
+    "DSTRCT_PROV": 5
+  },
+  {
+    "DSTRCT_KEY": 74,
+    "DSTRCT_CODE": "001405",
+    "DSTRCT_NAME": "บางบาล",
+    "DSTRCT_E_NAME": "Bang Ban",
+    "DSTRCT_PROV": 5
+  },
+  {
+    "DSTRCT_KEY": 75,
+    "DSTRCT_CODE": "001406",
+    "DSTRCT_NAME": "บางปะอิน",
+    "DSTRCT_E_NAME": "Bang Pa-in",
+    "DSTRCT_PROV": 5
+  },
+  {
+    "DSTRCT_KEY": 76,
+    "DSTRCT_CODE": "001407",
+    "DSTRCT_NAME": "บางปะหัน",
+    "DSTRCT_E_NAME": "Bang Pahan",
+    "DSTRCT_PROV": 5
+  },
+  {
+    "DSTRCT_KEY": 77,
+    "DSTRCT_CODE": "001408",
+    "DSTRCT_NAME": "ผักไห่",
+    "DSTRCT_E_NAME": "Phak Hai",
+    "DSTRCT_PROV": 5
+  },
+  {
+    "DSTRCT_KEY": 78,
+    "DSTRCT_CODE": "001409",
+    "DSTRCT_NAME": "ภาชี",
+    "DSTRCT_E_NAME": "Phachi",
+    "DSTRCT_PROV": 5
+  },
+  {
+    "DSTRCT_KEY": 79,
+    "DSTRCT_CODE": "001410",
+    "DSTRCT_NAME": "ลาดบัวหลวง",
+    "DSTRCT_E_NAME": "Lat Bua Luang",
+    "DSTRCT_PROV": 5
+  },
+  {
+    "DSTRCT_KEY": 80,
+    "DSTRCT_CODE": "001411",
+    "DSTRCT_NAME": "วังน้อย",
+    "DSTRCT_E_NAME": "Wang Noi",
+    "DSTRCT_PROV": 5
+  },
+  {
+    "DSTRCT_KEY": 81,
+    "DSTRCT_CODE": "001412",
+    "DSTRCT_NAME": "เสนา",
+    "DSTRCT_E_NAME": "Sena",
+    "DSTRCT_PROV": 5
+  },
+  {
+    "DSTRCT_KEY": 82,
+    "DSTRCT_CODE": "001413",
+    "DSTRCT_NAME": "บางซ้าย",
+    "DSTRCT_E_NAME": "Bang Sai",
+    "DSTRCT_PROV": 5
+  },
+  {
+    "DSTRCT_KEY": 83,
+    "DSTRCT_CODE": "001414",
+    "DSTRCT_NAME": "อุทัย",
+    "DSTRCT_E_NAME": "Uthai",
+    "DSTRCT_PROV": 5
+  },
+  {
+    "DSTRCT_KEY": 84,
+    "DSTRCT_CODE": "001415",
+    "DSTRCT_NAME": "มหาราช",
+    "DSTRCT_E_NAME": "Maha Rat",
+    "DSTRCT_PROV": 5
+  },
+  {
+    "DSTRCT_KEY": 85,
+    "DSTRCT_CODE": "001416",
+    "DSTRCT_NAME": "บ้านแพรก",
+    "DSTRCT_E_NAME": "Ban Phraek",
+    "DSTRCT_PROV": 5
+  },
+  {
+    "DSTRCT_KEY": 86,
+    "DSTRCT_CODE": "001501",
+    "DSTRCT_NAME": "เมืองอ่างทอง",
+    "DSTRCT_E_NAME": "Mueang Ang Thong",
+    "DSTRCT_PROV": 6
+  },
+  {
+    "DSTRCT_KEY": 87,
+    "DSTRCT_CODE": "001502",
+    "DSTRCT_NAME": "ไชโย",
+    "DSTRCT_E_NAME": "Chaiyo",
+    "DSTRCT_PROV": 6
+  },
+  {
+    "DSTRCT_KEY": 88,
+    "DSTRCT_CODE": "001503",
+    "DSTRCT_NAME": "ป่าโมก",
+    "DSTRCT_E_NAME": "Pa Mok",
+    "DSTRCT_PROV": 6
+  },
+  {
+    "DSTRCT_KEY": 89,
+    "DSTRCT_CODE": "001504",
+    "DSTRCT_NAME": "โพธิ์ทอง",
+    "DSTRCT_E_NAME": "Pho Thong",
+    "DSTRCT_PROV": 6
+  },
+  {
+    "DSTRCT_KEY": 90,
+    "DSTRCT_CODE": "001505",
+    "DSTRCT_NAME": "แสวงหา",
+    "DSTRCT_E_NAME": "Sawaeng Ha",
+    "DSTRCT_PROV": 6
+  },
+  {
+    "DSTRCT_KEY": 91,
+    "DSTRCT_CODE": "001506",
+    "DSTRCT_NAME": "วิเศษชัยชาญ",
+    "DSTRCT_E_NAME": "Wiset Chai Chan",
+    "DSTRCT_PROV": 6
+  },
+  {
+    "DSTRCT_KEY": 92,
+    "DSTRCT_CODE": "001507",
+    "DSTRCT_NAME": "สามโก้",
+    "DSTRCT_E_NAME": "Samko",
+    "DSTRCT_PROV": 6
+  },
+  {
+    "DSTRCT_KEY": 93,
+    "DSTRCT_CODE": "001601",
+    "DSTRCT_NAME": "เมืองลพบุรี",
+    "DSTRCT_E_NAME": "Mueang Lop Buri",
+    "DSTRCT_PROV": 7
+  },
+  {
+    "DSTRCT_KEY": 94,
+    "DSTRCT_CODE": "001602",
+    "DSTRCT_NAME": "พัฒนานิคม",
+    "DSTRCT_E_NAME": "Phatthana Nikhom",
+    "DSTRCT_PROV": 7
+  },
+  {
+    "DSTRCT_KEY": 95,
+    "DSTRCT_CODE": "001603",
+    "DSTRCT_NAME": "โคกสำโรง",
+    "DSTRCT_E_NAME": "Khok Samrong",
+    "DSTRCT_PROV": 7
+  },
+  {
+    "DSTRCT_KEY": 96,
+    "DSTRCT_CODE": "001604",
+    "DSTRCT_NAME": "ชัยบาดาล",
+    "DSTRCT_E_NAME": "Chai Badan",
+    "DSTRCT_PROV": 7
+  },
+  {
+    "DSTRCT_KEY": 97,
+    "DSTRCT_CODE": "001605",
+    "DSTRCT_NAME": "ท่าวุ้ง",
+    "DSTRCT_E_NAME": "Tha Wung",
+    "DSTRCT_PROV": 7
+  },
+  {
+    "DSTRCT_KEY": 98,
+    "DSTRCT_CODE": "001606",
+    "DSTRCT_NAME": "บ้านหมี่",
+    "DSTRCT_E_NAME": "Ban Mi",
+    "DSTRCT_PROV": 7
+  },
+  {
+    "DSTRCT_KEY": 99,
+    "DSTRCT_CODE": "001607",
+    "DSTRCT_NAME": "ท่าหลวง",
+    "DSTRCT_E_NAME": "Tha Luang",
+    "DSTRCT_PROV": 7
+  },
+  {
+    "DSTRCT_KEY": 100,
+    "DSTRCT_CODE": "001608",
+    "DSTRCT_NAME": "สระโบสถ์",
+    "DSTRCT_E_NAME": "Sa Bot",
+    "DSTRCT_PROV": 7
+  },
+  {
+    "DSTRCT_KEY": 101,
+    "DSTRCT_CODE": "001609",
+    "DSTRCT_NAME": "โคกเจริญ",
+    "DSTRCT_E_NAME": "Khok Charoen",
+    "DSTRCT_PROV": 7
+  },
+  {
+    "DSTRCT_KEY": 102,
+    "DSTRCT_CODE": "001610",
+    "DSTRCT_NAME": "ลำสนธิ",
+    "DSTRCT_E_NAME": "Lam Sonthi",
+    "DSTRCT_PROV": 7
+  },
+  {
+    "DSTRCT_KEY": 103,
+    "DSTRCT_CODE": "001611",
+    "DSTRCT_NAME": "หนองม่วง",
+    "DSTRCT_E_NAME": "Nong Muang",
+    "DSTRCT_PROV": 7
+  },
+  {
+    "DSTRCT_KEY": 104,
+    "DSTRCT_CODE": "001701",
+    "DSTRCT_NAME": "เมืองสิงห์บุรี",
+    "DSTRCT_E_NAME": "Mueang Sing Buri",
+    "DSTRCT_PROV": 8
+  },
+  {
+    "DSTRCT_KEY": 105,
+    "DSTRCT_CODE": "001702",
+    "DSTRCT_NAME": "บางระจัน",
+    "DSTRCT_E_NAME": "Bang Rachan",
+    "DSTRCT_PROV": 8
+  },
+  {
+    "DSTRCT_KEY": 106,
+    "DSTRCT_CODE": "001703",
+    "DSTRCT_NAME": "ค่ายบางระจัน",
+    "DSTRCT_E_NAME": "Khai Bang Rachan",
+    "DSTRCT_PROV": 8
+  },
+  {
+    "DSTRCT_KEY": 107,
+    "DSTRCT_CODE": "001704",
+    "DSTRCT_NAME": "พรหมบุรี",
+    "DSTRCT_E_NAME": "Phrom Buri",
+    "DSTRCT_PROV": 8
+  },
+  {
+    "DSTRCT_KEY": 108,
+    "DSTRCT_CODE": "001705",
+    "DSTRCT_NAME": "ท่าช้าง",
+    "DSTRCT_E_NAME": "Tha Chang",
+    "DSTRCT_PROV": 8
+  },
+  {
+    "DSTRCT_KEY": 109,
+    "DSTRCT_CODE": "001706",
+    "DSTRCT_NAME": "อินทร์บุรี",
+    "DSTRCT_E_NAME": "In Buri",
+    "DSTRCT_PROV": 8
+  },
+  {
+    "DSTRCT_KEY": 110,
+    "DSTRCT_CODE": "001801",
+    "DSTRCT_NAME": "เมืองชัยนาท",
+    "DSTRCT_E_NAME": "Mueang Chai Nat",
+    "DSTRCT_PROV": 9
+  },
+  {
+    "DSTRCT_KEY": 111,
+    "DSTRCT_CODE": "001802",
+    "DSTRCT_NAME": "มโนรมย์",
+    "DSTRCT_E_NAME": "Manorom",
+    "DSTRCT_PROV": 9
+  },
+  {
+    "DSTRCT_KEY": 112,
+    "DSTRCT_CODE": "001803",
+    "DSTRCT_NAME": "วัดสิงห์",
+    "DSTRCT_E_NAME": "Wat Sing",
+    "DSTRCT_PROV": 9
+  },
+  {
+    "DSTRCT_KEY": 113,
+    "DSTRCT_CODE": "001804",
+    "DSTRCT_NAME": "สรรพยา",
+    "DSTRCT_E_NAME": "Sapphaya",
+    "DSTRCT_PROV": 9
+  },
+  {
+    "DSTRCT_KEY": 114,
+    "DSTRCT_CODE": "001805",
+    "DSTRCT_NAME": "สรรคบุรี",
+    "DSTRCT_E_NAME": "Sankhaburi",
+    "DSTRCT_PROV": 9
+  },
+  {
+    "DSTRCT_KEY": 115,
+    "DSTRCT_CODE": "001806",
+    "DSTRCT_NAME": "หันคา",
+    "DSTRCT_E_NAME": "Hankha",
+    "DSTRCT_PROV": 9
+  },
+  {
+    "DSTRCT_KEY": 116,
+    "DSTRCT_CODE": "001807",
+    "DSTRCT_NAME": "หนองมะโมง",
+    "DSTRCT_E_NAME": "Nong Mamong",
+    "DSTRCT_PROV": 9
+  },
+  {
+    "DSTRCT_KEY": 117,
+    "DSTRCT_CODE": "001808",
+    "DSTRCT_NAME": "เนินขาม",
+    "DSTRCT_E_NAME": "Noen Kham",
+    "DSTRCT_PROV": 9
+  },
+  {
+    "DSTRCT_KEY": 118,
+    "DSTRCT_CODE": "001901",
+    "DSTRCT_NAME": "เมืองสระบุรี",
+    "DSTRCT_E_NAME": "Mueang Saraburi",
+    "DSTRCT_PROV": 10
+  },
+  {
+    "DSTRCT_KEY": 119,
+    "DSTRCT_CODE": "001902",
+    "DSTRCT_NAME": "แก่งคอย",
+    "DSTRCT_E_NAME": "Kaeng Khoi",
+    "DSTRCT_PROV": 10
+  },
+  {
+    "DSTRCT_KEY": 120,
+    "DSTRCT_CODE": "001903",
+    "DSTRCT_NAME": "หนองแค",
+    "DSTRCT_E_NAME": "Nong Khae",
+    "DSTRCT_PROV": 10
+  },
+  {
+    "DSTRCT_KEY": 121,
+    "DSTRCT_CODE": "001904",
+    "DSTRCT_NAME": "วิหารแดง",
+    "DSTRCT_E_NAME": "Wihan Daeng",
+    "DSTRCT_PROV": 10
+  },
+  {
+    "DSTRCT_KEY": 122,
+    "DSTRCT_CODE": "001905",
+    "DSTRCT_NAME": "หนองแซง",
+    "DSTRCT_E_NAME": "Nong Saeng",
+    "DSTRCT_PROV": 10
+  },
+  {
+    "DSTRCT_KEY": 123,
+    "DSTRCT_CODE": "001906",
+    "DSTRCT_NAME": "บ้านหมอ",
+    "DSTRCT_E_NAME": "Ban Mo",
+    "DSTRCT_PROV": 10
+  },
+  {
+    "DSTRCT_KEY": 124,
+    "DSTRCT_CODE": "001907",
+    "DSTRCT_NAME": "ดอนพุด",
+    "DSTRCT_E_NAME": "Don Phut",
+    "DSTRCT_PROV": 10
+  },
+  {
+    "DSTRCT_KEY": 125,
+    "DSTRCT_CODE": "001908",
+    "DSTRCT_NAME": "หนองโดน",
+    "DSTRCT_E_NAME": "Nong Don",
+    "DSTRCT_PROV": 10
+  },
+  {
+    "DSTRCT_KEY": 126,
+    "DSTRCT_CODE": "001909",
+    "DSTRCT_NAME": "พระพุทธบาท",
+    "DSTRCT_E_NAME": "Phra Phutthabat",
+    "DSTRCT_PROV": 10
+  },
+  {
+    "DSTRCT_KEY": 127,
+    "DSTRCT_CODE": "001910",
+    "DSTRCT_NAME": "เสาไห้",
+    "DSTRCT_E_NAME": "Sao Hai",
+    "DSTRCT_PROV": 10
+  },
+  {
+    "DSTRCT_KEY": 128,
+    "DSTRCT_CODE": "001911",
+    "DSTRCT_NAME": "มวกเหล็ก",
+    "DSTRCT_E_NAME": "Muak Lek",
+    "DSTRCT_PROV": 10
+  },
+  {
+    "DSTRCT_KEY": 129,
+    "DSTRCT_CODE": "001912",
+    "DSTRCT_NAME": "วังม่วง",
+    "DSTRCT_E_NAME": "Wang Muang",
+    "DSTRCT_PROV": 10
+  },
+  {
+    "DSTRCT_KEY": 130,
+    "DSTRCT_CODE": "001913",
+    "DSTRCT_NAME": "เฉลิมพระเกียรติ",
+    "DSTRCT_E_NAME": "Chaloem Phra Kiet",
+    "DSTRCT_PROV": 10
+  },
+  {
+    "DSTRCT_KEY": 131,
+    "DSTRCT_CODE": "002001",
+    "DSTRCT_NAME": "เมืองชลบุรี",
+    "DSTRCT_E_NAME": "Mueang Chon Buri",
+    "DSTRCT_PROV": 11
+  },
+  {
+    "DSTRCT_KEY": 132,
+    "DSTRCT_CODE": "002002",
+    "DSTRCT_NAME": "บ้านบึง",
+    "DSTRCT_E_NAME": "Ban Bueng",
+    "DSTRCT_PROV": 11
+  },
+  {
+    "DSTRCT_KEY": 133,
+    "DSTRCT_CODE": "002003",
+    "DSTRCT_NAME": "หนองใหญ่",
+    "DSTRCT_E_NAME": "Nong Yai",
+    "DSTRCT_PROV": 11
+  },
+  {
+    "DSTRCT_KEY": 134,
+    "DSTRCT_CODE": "002004",
+    "DSTRCT_NAME": "บางละมุง",
+    "DSTRCT_E_NAME": "Bang Lamung",
+    "DSTRCT_PROV": 11
+  },
+  {
+    "DSTRCT_KEY": 135,
+    "DSTRCT_CODE": "002005",
+    "DSTRCT_NAME": "พานทอง",
+    "DSTRCT_E_NAME": "Phan Thong",
+    "DSTRCT_PROV": 11
+  },
+  {
+    "DSTRCT_KEY": 136,
+    "DSTRCT_CODE": "002006",
+    "DSTRCT_NAME": "พนัสนิคม",
+    "DSTRCT_E_NAME": "Phanat Nikhom",
+    "DSTRCT_PROV": 11
+  },
+  {
+    "DSTRCT_KEY": 137,
+    "DSTRCT_CODE": "002007",
+    "DSTRCT_NAME": "ศรีราชา",
+    "DSTRCT_E_NAME": "Si Racha",
+    "DSTRCT_PROV": 11
+  },
+  {
+    "DSTRCT_KEY": 138,
+    "DSTRCT_CODE": "002008",
+    "DSTRCT_NAME": "เกาะสีชัง",
+    "DSTRCT_E_NAME": "Ko Sichang",
+    "DSTRCT_PROV": 11
+  },
+  {
+    "DSTRCT_KEY": 139,
+    "DSTRCT_CODE": "002009",
+    "DSTRCT_NAME": "สัตหีบ",
+    "DSTRCT_E_NAME": "Sattahip",
+    "DSTRCT_PROV": 11
+  },
+  {
+    "DSTRCT_KEY": 140,
+    "DSTRCT_CODE": "002010",
+    "DSTRCT_NAME": "บ่อทอง",
+    "DSTRCT_E_NAME": "Bo Thong",
+    "DSTRCT_PROV": 11
+  },
+  {
+    "DSTRCT_KEY": 141,
+    "DSTRCT_CODE": "002011",
+    "DSTRCT_NAME": "เกาะจันทร์",
+    "DSTRCT_E_NAME": "Ko Chan",
+    "DSTRCT_PROV": 11
+  },
+  {
+    "DSTRCT_KEY": 142,
+    "DSTRCT_CODE": "002101",
+    "DSTRCT_NAME": "เมืองระยอง",
+    "DSTRCT_E_NAME": "Mueang Rayong",
+    "DSTRCT_PROV": 12
+  },
+  {
+    "DSTRCT_KEY": 143,
+    "DSTRCT_CODE": "002102",
+    "DSTRCT_NAME": "บ้านฉาง",
+    "DSTRCT_E_NAME": "Ban Chang",
+    "DSTRCT_PROV": 12
+  },
+  {
+    "DSTRCT_KEY": 144,
+    "DSTRCT_CODE": "002103",
+    "DSTRCT_NAME": "แกลง",
+    "DSTRCT_E_NAME": "Klaeng",
+    "DSTRCT_PROV": 12
+  },
+  {
+    "DSTRCT_KEY": 145,
+    "DSTRCT_CODE": "002104",
+    "DSTRCT_NAME": "วังจันทร์",
+    "DSTRCT_E_NAME": "Wang Chan",
+    "DSTRCT_PROV": 12
+  },
+  {
+    "DSTRCT_KEY": 146,
+    "DSTRCT_CODE": "002105",
+    "DSTRCT_NAME": "บ้านค่าย",
+    "DSTRCT_E_NAME": "Ban Khai",
+    "DSTRCT_PROV": 12
+  },
+  {
+    "DSTRCT_KEY": 147,
+    "DSTRCT_CODE": "002106",
+    "DSTRCT_NAME": "ปลวกแดง",
+    "DSTRCT_E_NAME": "Pluak Daeng",
+    "DSTRCT_PROV": 12
+  },
+  {
+    "DSTRCT_KEY": 148,
+    "DSTRCT_CODE": "002107",
+    "DSTRCT_NAME": "เขาชะเมา",
+    "DSTRCT_E_NAME": "Khao Chamao",
+    "DSTRCT_PROV": 12
+  },
+  {
+    "DSTRCT_KEY": 149,
+    "DSTRCT_CODE": "002108",
+    "DSTRCT_NAME": "นิคมพัฒนา",
+    "DSTRCT_E_NAME": "Nikhom Phatthana",
+    "DSTRCT_PROV": 12
+  },
+  {
+    "DSTRCT_KEY": 150,
+    "DSTRCT_CODE": "002201",
+    "DSTRCT_NAME": "เมืองจันทบุรี",
+    "DSTRCT_E_NAME": "Mueang Chanthaburi",
+    "DSTRCT_PROV": 13
+  },
+  {
+    "DSTRCT_KEY": 151,
+    "DSTRCT_CODE": "002202",
+    "DSTRCT_NAME": "ขลุง",
+    "DSTRCT_E_NAME": "Khlung",
+    "DSTRCT_PROV": 13
+  },
+  {
+    "DSTRCT_KEY": 152,
+    "DSTRCT_CODE": "002203",
+    "DSTRCT_NAME": "ท่าใหม่",
+    "DSTRCT_E_NAME": "Tha Mai",
+    "DSTRCT_PROV": 13
+  },
+  {
+    "DSTRCT_KEY": 153,
+    "DSTRCT_CODE": "002204",
+    "DSTRCT_NAME": "โป่งน้ำร้อน",
+    "DSTRCT_E_NAME": "Pong Nam Ron",
+    "DSTRCT_PROV": 13
+  },
+  {
+    "DSTRCT_KEY": 154,
+    "DSTRCT_CODE": "002205",
+    "DSTRCT_NAME": "มะขาม",
+    "DSTRCT_E_NAME": "Makham",
+    "DSTRCT_PROV": 13
+  },
+  {
+    "DSTRCT_KEY": 155,
+    "DSTRCT_CODE": "002206",
+    "DSTRCT_NAME": "แหลมสิงห์",
+    "DSTRCT_E_NAME": "Laem Sing",
+    "DSTRCT_PROV": 13
+  },
+  {
+    "DSTRCT_KEY": 156,
+    "DSTRCT_CODE": "002207",
+    "DSTRCT_NAME": "สอยดาว",
+    "DSTRCT_E_NAME": "Soi Dao",
+    "DSTRCT_PROV": 13
+  },
+  {
+    "DSTRCT_KEY": 157,
+    "DSTRCT_CODE": "002208",
+    "DSTRCT_NAME": "แก่งหางแมว",
+    "DSTRCT_E_NAME": "Kaeng Hang Maeo",
+    "DSTRCT_PROV": 13
+  },
+  {
+    "DSTRCT_KEY": 158,
+    "DSTRCT_CODE": "002209",
+    "DSTRCT_NAME": "นายายอาม",
+    "DSTRCT_E_NAME": "Na Yai Am",
+    "DSTRCT_PROV": 13
+  },
+  {
+    "DSTRCT_KEY": 159,
+    "DSTRCT_CODE": "002210",
+    "DSTRCT_NAME": "เขาคิชฌกูฏ",
+    "DSTRCT_E_NAME": "Khao Khitchakut",
+    "DSTRCT_PROV": 13
+  },
+  {
+    "DSTRCT_KEY": 160,
+    "DSTRCT_CODE": "002301",
+    "DSTRCT_NAME": "เมืองตราด",
+    "DSTRCT_E_NAME": "Mueang Trat",
+    "DSTRCT_PROV": 14
+  },
+  {
+    "DSTRCT_KEY": 161,
+    "DSTRCT_CODE": "002302",
+    "DSTRCT_NAME": "คลองใหญ่",
+    "DSTRCT_E_NAME": "Khlong Yai",
+    "DSTRCT_PROV": 14
+  },
+  {
+    "DSTRCT_KEY": 162,
+    "DSTRCT_CODE": "002303",
+    "DSTRCT_NAME": "เขาสมิง",
+    "DSTRCT_E_NAME": "Khao Saming",
+    "DSTRCT_PROV": 14
+  },
+  {
+    "DSTRCT_KEY": 163,
+    "DSTRCT_CODE": "002304",
+    "DSTRCT_NAME": "บ่อไร่",
+    "DSTRCT_E_NAME": "Bo Rai",
+    "DSTRCT_PROV": 14
+  },
+  {
+    "DSTRCT_KEY": 164,
+    "DSTRCT_CODE": "002305",
+    "DSTRCT_NAME": "แหลมงอบ",
+    "DSTRCT_E_NAME": "Laem Ngop",
+    "DSTRCT_PROV": 14
+  },
+  {
+    "DSTRCT_KEY": 165,
+    "DSTRCT_CODE": "002306",
+    "DSTRCT_NAME": "เกาะกูด",
+    "DSTRCT_E_NAME": "Ko Kut",
+    "DSTRCT_PROV": 14
+  },
+  {
+    "DSTRCT_KEY": 166,
+    "DSTRCT_CODE": "002307",
+    "DSTRCT_NAME": "เกาะช้าง",
+    "DSTRCT_E_NAME": "Ko Chang",
+    "DSTRCT_PROV": 14
+  },
+  {
+    "DSTRCT_KEY": 167,
+    "DSTRCT_CODE": "002401",
+    "DSTRCT_NAME": "เมืองฉะเชิงเทรา",
+    "DSTRCT_E_NAME": "Mueang Chachoengsao",
+    "DSTRCT_PROV": 15
+  },
+  {
+    "DSTRCT_KEY": 168,
+    "DSTRCT_CODE": "002402",
+    "DSTRCT_NAME": "บางคล้า",
+    "DSTRCT_E_NAME": "Bang Khla",
+    "DSTRCT_PROV": 15
+  },
+  {
+    "DSTRCT_KEY": 169,
+    "DSTRCT_CODE": "002403",
+    "DSTRCT_NAME": "บางน้ำเปรี้ยว",
+    "DSTRCT_E_NAME": "Bang Nam Priao",
+    "DSTRCT_PROV": 15
+  },
+  {
+    "DSTRCT_KEY": 170,
+    "DSTRCT_CODE": "002404",
+    "DSTRCT_NAME": "บางปะกง",
+    "DSTRCT_E_NAME": "Bang Pakong",
+    "DSTRCT_PROV": 15
+  },
+  {
+    "DSTRCT_KEY": 171,
+    "DSTRCT_CODE": "002405",
+    "DSTRCT_NAME": "บ้านโพธิ์",
+    "DSTRCT_E_NAME": "Ban Pho",
+    "DSTRCT_PROV": 15
+  },
+  {
+    "DSTRCT_KEY": 172,
+    "DSTRCT_CODE": "002406",
+    "DSTRCT_NAME": "พนมสารคาม",
+    "DSTRCT_E_NAME": "Phanom Sarakham",
+    "DSTRCT_PROV": 15
+  },
+  {
+    "DSTRCT_KEY": 173,
+    "DSTRCT_CODE": "002407",
+    "DSTRCT_NAME": "ราชสาส์น",
+    "DSTRCT_E_NAME": "Ratchasan",
+    "DSTRCT_PROV": 15
+  },
+  {
+    "DSTRCT_KEY": 174,
+    "DSTRCT_CODE": "002408",
+    "DSTRCT_NAME": "สนามชัยเขต",
+    "DSTRCT_E_NAME": "Sanam Chai Khet",
+    "DSTRCT_PROV": 15
+  },
+  {
+    "DSTRCT_KEY": 175,
+    "DSTRCT_CODE": "002409",
+    "DSTRCT_NAME": "แปลงยาว",
+    "DSTRCT_E_NAME": "Pleang Yao",
+    "DSTRCT_PROV": 15
+  },
+  {
+    "DSTRCT_KEY": 176,
+    "DSTRCT_CODE": "002410",
+    "DSTRCT_NAME": "ท่าตะเกียบ",
+    "DSTRCT_E_NAME": "Tha Takiap",
+    "DSTRCT_PROV": 15
+  },
+  {
+    "DSTRCT_KEY": 177,
+    "DSTRCT_CODE": "002411",
+    "DSTRCT_NAME": "คลองเขื่อน",
+    "DSTRCT_E_NAME": "Khlong Khuean",
+    "DSTRCT_PROV": 15
+  },
+  {
+    "DSTRCT_KEY": 178,
+    "DSTRCT_CODE": "002501",
+    "DSTRCT_NAME": "เมืองปราจีนบุรี",
+    "DSTRCT_E_NAME": "Mueang Prachin Buri",
+    "DSTRCT_PROV": 16
+  },
+  {
+    "DSTRCT_KEY": 179,
+    "DSTRCT_CODE": "002502",
+    "DSTRCT_NAME": "กบินทร์บุรี",
+    "DSTRCT_E_NAME": "Kabin Buri",
+    "DSTRCT_PROV": 16
+  },
+  {
+    "DSTRCT_KEY": 180,
+    "DSTRCT_CODE": "002503",
+    "DSTRCT_NAME": "นาดี",
+    "DSTRCT_E_NAME": "Na Di",
+    "DSTRCT_PROV": 16
+  },
+  {
+    "DSTRCT_KEY": 181,
+    "DSTRCT_CODE": "002506",
+    "DSTRCT_NAME": "บ้านสร้าง",
+    "DSTRCT_E_NAME": "Ban Sang",
+    "DSTRCT_PROV": 16
+  },
+  {
+    "DSTRCT_KEY": 182,
+    "DSTRCT_CODE": "002507",
+    "DSTRCT_NAME": "ประจันตคาม",
+    "DSTRCT_E_NAME": "Prachantakham",
+    "DSTRCT_PROV": 16
+  },
+  {
+    "DSTRCT_KEY": 183,
+    "DSTRCT_CODE": "002508",
+    "DSTRCT_NAME": "ศรีมหาโพธิ",
+    "DSTRCT_E_NAME": "Si Maha Phot",
+    "DSTRCT_PROV": 16
+  },
+  {
+    "DSTRCT_KEY": 184,
+    "DSTRCT_CODE": "002509",
+    "DSTRCT_NAME": "ศรีมโหสถ",
+    "DSTRCT_E_NAME": "Si Mahosot",
+    "DSTRCT_PROV": 16
+  },
+  {
+    "DSTRCT_KEY": 185,
+    "DSTRCT_CODE": "002601",
+    "DSTRCT_NAME": "เมืองนครนายก",
+    "DSTRCT_E_NAME": "Mueang Nakhon Nayok",
+    "DSTRCT_PROV": 17
+  },
+  {
+    "DSTRCT_KEY": 186,
+    "DSTRCT_CODE": "002602",
+    "DSTRCT_NAME": "ปากพลี",
+    "DSTRCT_E_NAME": "Pak Phli",
+    "DSTRCT_PROV": 17
+  },
+  {
+    "DSTRCT_KEY": 187,
+    "DSTRCT_CODE": "002603",
+    "DSTRCT_NAME": "บ้านนา",
+    "DSTRCT_E_NAME": "Ban Na",
+    "DSTRCT_PROV": 17
+  },
+  {
+    "DSTRCT_KEY": 188,
+    "DSTRCT_CODE": "002604",
+    "DSTRCT_NAME": "องครักษ์",
+    "DSTRCT_E_NAME": "Ongkharak",
+    "DSTRCT_PROV": 17
+  },
+  {
+    "DSTRCT_KEY": 189,
+    "DSTRCT_CODE": "002701",
+    "DSTRCT_NAME": "เมืองสระแก้ว",
+    "DSTRCT_E_NAME": "Mueang Sa Kaeo",
+    "DSTRCT_PROV": 18
+  },
+  {
+    "DSTRCT_KEY": 190,
+    "DSTRCT_CODE": "002702",
+    "DSTRCT_NAME": "คลองหาด",
+    "DSTRCT_E_NAME": "Khlong Hat",
+    "DSTRCT_PROV": 18
+  },
+  {
+    "DSTRCT_KEY": 191,
+    "DSTRCT_CODE": "002703",
+    "DSTRCT_NAME": "ตาพระยา",
+    "DSTRCT_E_NAME": "Ta Phraya",
+    "DSTRCT_PROV": 18
+  },
+  {
+    "DSTRCT_KEY": 192,
+    "DSTRCT_CODE": "002704",
+    "DSTRCT_NAME": "วังน้ำเย็น",
+    "DSTRCT_E_NAME": "Wang Nam Yen",
+    "DSTRCT_PROV": 18
+  },
+  {
+    "DSTRCT_KEY": 193,
+    "DSTRCT_CODE": "002705",
+    "DSTRCT_NAME": "วัฒนานคร",
+    "DSTRCT_E_NAME": "Watthana Nakhon",
+    "DSTRCT_PROV": 18
+  },
+  {
+    "DSTRCT_KEY": 194,
+    "DSTRCT_CODE": "002706",
+    "DSTRCT_NAME": "อรัญประเทศ",
+    "DSTRCT_E_NAME": "Aranyaprathet",
+    "DSTRCT_PROV": 18
+  },
+  {
+    "DSTRCT_KEY": 195,
+    "DSTRCT_CODE": "002707",
+    "DSTRCT_NAME": "เขาฉกรรจ์",
+    "DSTRCT_E_NAME": "Khao Chakan",
+    "DSTRCT_PROV": 18
+  },
+  {
+    "DSTRCT_KEY": 196,
+    "DSTRCT_CODE": "002708",
+    "DSTRCT_NAME": "โคกสูง",
+    "DSTRCT_E_NAME": "Khok Sung",
+    "DSTRCT_PROV": 18
+  },
+  {
+    "DSTRCT_KEY": 197,
+    "DSTRCT_CODE": "002709",
+    "DSTRCT_NAME": "วังสมบูรณ์",
+    "DSTRCT_E_NAME": "Wang Sombun",
+    "DSTRCT_PROV": 18
+  },
+  {
+    "DSTRCT_KEY": 198,
+    "DSTRCT_CODE": "003001",
+    "DSTRCT_NAME": "เมืองนครราชสีมา",
+    "DSTRCT_E_NAME": "Mueang Nakhon Ratchasima",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 199,
+    "DSTRCT_CODE": "003002",
+    "DSTRCT_NAME": "ครบุรี",
+    "DSTRCT_E_NAME": "Khon Buri",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 200,
+    "DSTRCT_CODE": "003003",
+    "DSTRCT_NAME": "เสิงสาง",
+    "DSTRCT_E_NAME": "Soeng Sang",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 201,
+    "DSTRCT_CODE": "003004",
+    "DSTRCT_NAME": "คง",
+    "DSTRCT_E_NAME": "Khong",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 202,
+    "DSTRCT_CODE": "003005",
+    "DSTRCT_NAME": "บ้านเหลื่อม",
+    "DSTRCT_E_NAME": "Ban Lueam",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 203,
+    "DSTRCT_CODE": "003006",
+    "DSTRCT_NAME": "จักราช",
+    "DSTRCT_E_NAME": "Chakkarat",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 204,
+    "DSTRCT_CODE": "003007",
+    "DSTRCT_NAME": "โชคชัย",
+    "DSTRCT_E_NAME": "Chok Chai",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 205,
+    "DSTRCT_CODE": "003008",
+    "DSTRCT_NAME": "ด่านขุนทด",
+    "DSTRCT_E_NAME": "Dan Khun Thot",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 206,
+    "DSTRCT_CODE": "003009",
+    "DSTRCT_NAME": "โนนไทย",
+    "DSTRCT_E_NAME": "Non Thai",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 207,
+    "DSTRCT_CODE": "003010",
+    "DSTRCT_NAME": "โนนสูง",
+    "DSTRCT_E_NAME": "Non Sung",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 208,
+    "DSTRCT_CODE": "003011",
+    "DSTRCT_NAME": "ขามสะแกแสง",
+    "DSTRCT_E_NAME": "Kham Sakaesaeng",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 209,
+    "DSTRCT_CODE": "003012",
+    "DSTRCT_NAME": "บัวใหญ่",
+    "DSTRCT_E_NAME": "Bua Yai",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 210,
+    "DSTRCT_CODE": "003013",
+    "DSTRCT_NAME": "ประทาย",
+    "DSTRCT_E_NAME": "Prathai",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 211,
+    "DSTRCT_CODE": "003014",
+    "DSTRCT_NAME": "ปักธงชัย",
+    "DSTRCT_E_NAME": "Pak Thong Chai",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 212,
+    "DSTRCT_CODE": "003015",
+    "DSTRCT_NAME": "พิมาย",
+    "DSTRCT_E_NAME": "Phimai",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 213,
+    "DSTRCT_CODE": "003016",
+    "DSTRCT_NAME": "ห้วยแถลง",
+    "DSTRCT_E_NAME": "Huai Thalaeng",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 214,
+    "DSTRCT_CODE": "003017",
+    "DSTRCT_NAME": "ชุมพวง",
+    "DSTRCT_E_NAME": "Chum Phuang",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 215,
+    "DSTRCT_CODE": "003018",
+    "DSTRCT_NAME": "สูงเนิน",
+    "DSTRCT_E_NAME": "Sung Noen",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 216,
+    "DSTRCT_CODE": "003019",
+    "DSTRCT_NAME": "ขามทะเลสอ",
+    "DSTRCT_E_NAME": "Kham Thale So",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 217,
+    "DSTRCT_CODE": "003020",
+    "DSTRCT_NAME": "สีคิ้ว",
+    "DSTRCT_E_NAME": "Si Khio",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 218,
+    "DSTRCT_CODE": "003021",
+    "DSTRCT_NAME": "ปากช่อง",
+    "DSTRCT_E_NAME": "Pak Chong",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 219,
+    "DSTRCT_CODE": "003022",
+    "DSTRCT_NAME": "หนองบุญมาก",
+    "DSTRCT_E_NAME": "Nong Bunmak",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 220,
+    "DSTRCT_CODE": "003023",
+    "DSTRCT_NAME": "แก้งสนามนาง",
+    "DSTRCT_E_NAME": "Kaeng Sanam Nang",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 221,
+    "DSTRCT_CODE": "003024",
+    "DSTRCT_NAME": "โนนแดง",
+    "DSTRCT_E_NAME": "Non Daeng",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 222,
+    "DSTRCT_CODE": "003025",
+    "DSTRCT_NAME": "วังน้ำเขียว",
+    "DSTRCT_E_NAME": "Wang Nam Khiao",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 223,
+    "DSTRCT_CODE": "003026",
+    "DSTRCT_NAME": "เทพารักษ์",
+    "DSTRCT_E_NAME": "Thepharak",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 224,
+    "DSTRCT_CODE": "003027",
+    "DSTRCT_NAME": "เมืองยาง",
+    "DSTRCT_E_NAME": "Mueang Yang",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 225,
+    "DSTRCT_CODE": "003028",
+    "DSTRCT_NAME": "พระทองคำ",
+    "DSTRCT_E_NAME": "Phra Thong Kham",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 226,
+    "DSTRCT_CODE": "003029",
+    "DSTRCT_NAME": "ลำทะเมนชัย",
+    "DSTRCT_E_NAME": "Lamtaman Chai",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 227,
+    "DSTRCT_CODE": "003030",
+    "DSTRCT_NAME": "บัวลาย",
+    "DSTRCT_E_NAME": "Bua Lai",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 228,
+    "DSTRCT_CODE": "003031",
+    "DSTRCT_NAME": "สีดา",
+    "DSTRCT_E_NAME": "Sida",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 229,
+    "DSTRCT_CODE": "003032",
+    "DSTRCT_NAME": "เฉลิมพระเกียรติ",
+    "DSTRCT_E_NAME": "Chaloem Phra Kiet",
+    "DSTRCT_PROV": 19
+  },
+  {
+    "DSTRCT_KEY": 230,
+    "DSTRCT_CODE": "003101",
+    "DSTRCT_NAME": "เมืองบุรีรัมย์",
+    "DSTRCT_E_NAME": "Mueang Buri Ram",
+    "DSTRCT_PROV": 20
+  },
+  {
+    "DSTRCT_KEY": 231,
+    "DSTRCT_CODE": "003102",
+    "DSTRCT_NAME": "คูเมือง",
+    "DSTRCT_E_NAME": "Khu Mueang",
+    "DSTRCT_PROV": 20
+  },
+  {
+    "DSTRCT_KEY": 232,
+    "DSTRCT_CODE": "003103",
+    "DSTRCT_NAME": "กระสัง",
+    "DSTRCT_E_NAME": "Krasang",
+    "DSTRCT_PROV": 20
+  },
+  {
+    "DSTRCT_KEY": 233,
+    "DSTRCT_CODE": "003104",
+    "DSTRCT_NAME": "นางรอง",
+    "DSTRCT_E_NAME": "Nang Rong",
+    "DSTRCT_PROV": 20
+  },
+  {
+    "DSTRCT_KEY": 234,
+    "DSTRCT_CODE": "003105",
+    "DSTRCT_NAME": "หนองกี่",
+    "DSTRCT_E_NAME": "Nong Ki",
+    "DSTRCT_PROV": 20
+  },
+  {
+    "DSTRCT_KEY": 235,
+    "DSTRCT_CODE": "003106",
+    "DSTRCT_NAME": "ละหานทราย",
+    "DSTRCT_E_NAME": "Lahan Sai",
+    "DSTRCT_PROV": 20
+  },
+  {
+    "DSTRCT_KEY": 236,
+    "DSTRCT_CODE": "003107",
+    "DSTRCT_NAME": "ประโคนชัย",
+    "DSTRCT_E_NAME": "Prakhon Chai",
+    "DSTRCT_PROV": 20
+  },
+  {
+    "DSTRCT_KEY": 237,
+    "DSTRCT_CODE": "003108",
+    "DSTRCT_NAME": "บ้านกรวด",
+    "DSTRCT_E_NAME": "Ban Kruat",
+    "DSTRCT_PROV": 20
+  },
+  {
+    "DSTRCT_KEY": 238,
+    "DSTRCT_CODE": "003109",
+    "DSTRCT_NAME": "พุทไธสง",
+    "DSTRCT_E_NAME": "Phutthaisong",
+    "DSTRCT_PROV": 20
+  },
+  {
+    "DSTRCT_KEY": 239,
+    "DSTRCT_CODE": "003110",
+    "DSTRCT_NAME": "ลำปลายมาศ",
+    "DSTRCT_E_NAME": "Lam Plai Mat",
+    "DSTRCT_PROV": 20
+  },
+  {
+    "DSTRCT_KEY": 240,
+    "DSTRCT_CODE": "003111",
+    "DSTRCT_NAME": "สตึก",
+    "DSTRCT_E_NAME": "Satuek",
+    "DSTRCT_PROV": 20
+  },
+  {
+    "DSTRCT_KEY": 241,
+    "DSTRCT_CODE": "003112",
+    "DSTRCT_NAME": "ปะคำ",
+    "DSTRCT_E_NAME": "Pakham",
+    "DSTRCT_PROV": 20
+  },
+  {
+    "DSTRCT_KEY": 242,
+    "DSTRCT_CODE": "003113",
+    "DSTRCT_NAME": "นาโพธิ์",
+    "DSTRCT_E_NAME": "Na Pho",
+    "DSTRCT_PROV": 20
+  },
+  {
+    "DSTRCT_KEY": 243,
+    "DSTRCT_CODE": "003114",
+    "DSTRCT_NAME": "หนองหงส์",
+    "DSTRCT_E_NAME": "Nong Hong",
+    "DSTRCT_PROV": 20
+  },
+  {
+    "DSTRCT_KEY": 244,
+    "DSTRCT_CODE": "003115",
+    "DSTRCT_NAME": "พลับพลาชัย",
+    "DSTRCT_E_NAME": "Phlapphla Chai",
+    "DSTRCT_PROV": 20
+  },
+  {
+    "DSTRCT_KEY": 245,
+    "DSTRCT_CODE": "003116",
+    "DSTRCT_NAME": "ห้วยราช",
+    "DSTRCT_E_NAME": "Huai Rat",
+    "DSTRCT_PROV": 20
+  },
+  {
+    "DSTRCT_KEY": 246,
+    "DSTRCT_CODE": "003117",
+    "DSTRCT_NAME": "โนนสุวรรณ",
+    "DSTRCT_E_NAME": "Non Din Daeng",
+    "DSTRCT_PROV": 20
+  },
+  {
+    "DSTRCT_KEY": 247,
+    "DSTRCT_CODE": "003118",
+    "DSTRCT_NAME": "ชำนิ",
+    "DSTRCT_E_NAME": "Chamni",
+    "DSTRCT_PROV": 20
+  },
+  {
+    "DSTRCT_KEY": 248,
+    "DSTRCT_CODE": "003119",
+    "DSTRCT_NAME": "บ้านใหม่ไชยพจน์",
+    "DSTRCT_E_NAME": "Ban Mai Chaiyaphot",
+    "DSTRCT_PROV": 20
+  },
+  {
+    "DSTRCT_KEY": 249,
+    "DSTRCT_CODE": "003120",
+    "DSTRCT_NAME": "โนนดินแดง",
+    "DSTRCT_E_NAME": "Non Din Daeng",
+    "DSTRCT_PROV": 20
+  },
+  {
+    "DSTRCT_KEY": 250,
+    "DSTRCT_CODE": "003121",
+    "DSTRCT_NAME": "บ้านด่าน",
+    "DSTRCT_E_NAME": "Ban Dan",
+    "DSTRCT_PROV": 20
+  },
+  {
+    "DSTRCT_KEY": 251,
+    "DSTRCT_CODE": "003122",
+    "DSTRCT_NAME": "แคนดง",
+    "DSTRCT_E_NAME": "Khaen Dong",
+    "DSTRCT_PROV": 20
+  },
+  {
+    "DSTRCT_KEY": 252,
+    "DSTRCT_CODE": "003123",
+    "DSTRCT_NAME": "เฉลิมพระเกียรติ",
+    "DSTRCT_E_NAME": "Chaloem Phra Kiet",
+    "DSTRCT_PROV": 20
+  },
+  {
+    "DSTRCT_KEY": 253,
+    "DSTRCT_CODE": "003201",
+    "DSTRCT_NAME": "เมืองสุรินทร์",
+    "DSTRCT_E_NAME": "Mueang Surin",
+    "DSTRCT_PROV": 21
+  },
+  {
+    "DSTRCT_KEY": 254,
+    "DSTRCT_CODE": "003202",
+    "DSTRCT_NAME": "ชุมพลบุรี",
+    "DSTRCT_E_NAME": "Chumphon Buri",
+    "DSTRCT_PROV": 21
+  },
+  {
+    "DSTRCT_KEY": 255,
+    "DSTRCT_CODE": "003203",
+    "DSTRCT_NAME": "ท่าตูม",
+    "DSTRCT_E_NAME": "Tha Tum",
+    "DSTRCT_PROV": 21
+  },
+  {
+    "DSTRCT_KEY": 256,
+    "DSTRCT_CODE": "003204",
+    "DSTRCT_NAME": "จอมพระ",
+    "DSTRCT_E_NAME": "Chom Phra",
+    "DSTRCT_PROV": 21
+  },
+  {
+    "DSTRCT_KEY": 257,
+    "DSTRCT_CODE": "003205",
+    "DSTRCT_NAME": "ปราสาท",
+    "DSTRCT_E_NAME": "Prasat",
+    "DSTRCT_PROV": 21
+  },
+  {
+    "DSTRCT_KEY": 258,
+    "DSTRCT_CODE": "003206",
+    "DSTRCT_NAME": "กาบเชิง",
+    "DSTRCT_E_NAME": "Kap Choeng",
+    "DSTRCT_PROV": 21
+  },
+  {
+    "DSTRCT_KEY": 259,
+    "DSTRCT_CODE": "003207",
+    "DSTRCT_NAME": "รัตนบุรี",
+    "DSTRCT_E_NAME": "Rattanaburi",
+    "DSTRCT_PROV": 21
+  },
+  {
+    "DSTRCT_KEY": 260,
+    "DSTRCT_CODE": "003208",
+    "DSTRCT_NAME": "สนม",
+    "DSTRCT_E_NAME": "Sanom",
+    "DSTRCT_PROV": 21
+  },
+  {
+    "DSTRCT_KEY": 261,
+    "DSTRCT_CODE": "003209",
+    "DSTRCT_NAME": "ศีขรภูมิ",
+    "DSTRCT_E_NAME": "Sikhoraphum",
+    "DSTRCT_PROV": 21
+  },
+  {
+    "DSTRCT_KEY": 262,
+    "DSTRCT_CODE": "003210",
+    "DSTRCT_NAME": "สังขะ",
+    "DSTRCT_E_NAME": "Sangkha",
+    "DSTRCT_PROV": 21
+  },
+  {
+    "DSTRCT_KEY": 263,
+    "DSTRCT_CODE": "003211",
+    "DSTRCT_NAME": "ลำดวน",
+    "DSTRCT_E_NAME": "Lamduan",
+    "DSTRCT_PROV": 21
+  },
+  {
+    "DSTRCT_KEY": 264,
+    "DSTRCT_CODE": "003212",
+    "DSTRCT_NAME": "สำโรงทาบ",
+    "DSTRCT_E_NAME": "Samrong Thap",
+    "DSTRCT_PROV": 21
+  },
+  {
+    "DSTRCT_KEY": 265,
+    "DSTRCT_CODE": "003213",
+    "DSTRCT_NAME": "บัวเชด",
+    "DSTRCT_E_NAME": "Buachet",
+    "DSTRCT_PROV": 21
+  },
+  {
+    "DSTRCT_KEY": 266,
+    "DSTRCT_CODE": "003214",
+    "DSTRCT_NAME": "พนมดงรัก",
+    "DSTRCT_E_NAME": "Phanom Dong Rak",
+    "DSTRCT_PROV": 21
+  },
+  {
+    "DSTRCT_KEY": 267,
+    "DSTRCT_CODE": "003215",
+    "DSTRCT_NAME": "ศรีณรงค์",
+    "DSTRCT_E_NAME": "Si Narong",
+    "DSTRCT_PROV": 21
+  },
+  {
+    "DSTRCT_KEY": 268,
+    "DSTRCT_CODE": "003216",
+    "DSTRCT_NAME": "เขวาสินรินทร์",
+    "DSTRCT_E_NAME": "Khwao Sinarin",
+    "DSTRCT_PROV": 21
+  },
+  {
+    "DSTRCT_KEY": 269,
+    "DSTRCT_CODE": "003217",
+    "DSTRCT_NAME": "โนนนารายณ์",
+    "DSTRCT_E_NAME": "Non Narai",
+    "DSTRCT_PROV": 21
+  },
+  {
+    "DSTRCT_KEY": 270,
+    "DSTRCT_CODE": "003301",
+    "DSTRCT_NAME": "เมืองศรีสะเกษ",
+    "DSTRCT_E_NAME": "Mueang Si Sa Ket",
+    "DSTRCT_PROV": 22
+  },
+  {
+    "DSTRCT_KEY": 271,
+    "DSTRCT_CODE": "003302",
+    "DSTRCT_NAME": "ยางชุมน้อย",
+    "DSTRCT_E_NAME": "Yang Chum Noi",
+    "DSTRCT_PROV": 22
+  },
+  {
+    "DSTRCT_KEY": 272,
+    "DSTRCT_CODE": "003303",
+    "DSTRCT_NAME": "กันทรารมย์",
+    "DSTRCT_E_NAME": "Kanthararom",
+    "DSTRCT_PROV": 22
+  },
+  {
+    "DSTRCT_KEY": 273,
+    "DSTRCT_CODE": "003304",
+    "DSTRCT_NAME": "กันทรลักษ์",
+    "DSTRCT_E_NAME": "Kantharalak",
+    "DSTRCT_PROV": 22
+  },
+  {
+    "DSTRCT_KEY": 274,
+    "DSTRCT_CODE": "003305",
+    "DSTRCT_NAME": "ขุขันธ์",
+    "DSTRCT_E_NAME": "Khukhan",
+    "DSTRCT_PROV": 22
+  },
+  {
+    "DSTRCT_KEY": 275,
+    "DSTRCT_CODE": "003306",
+    "DSTRCT_NAME": "ไพรบึง",
+    "DSTRCT_E_NAME": "Phrai Bueng",
+    "DSTRCT_PROV": 22
+  },
+  {
+    "DSTRCT_KEY": 276,
+    "DSTRCT_CODE": "003307",
+    "DSTRCT_NAME": "ปรางค์กู่",
+    "DSTRCT_E_NAME": "Prang Ku",
+    "DSTRCT_PROV": 22
+  },
+  {
+    "DSTRCT_KEY": 277,
+    "DSTRCT_CODE": "003308",
+    "DSTRCT_NAME": "ขุนหาญ",
+    "DSTRCT_E_NAME": "Khun Han",
+    "DSTRCT_PROV": 22
+  },
+  {
+    "DSTRCT_KEY": 278,
+    "DSTRCT_CODE": "003309",
+    "DSTRCT_NAME": "ราษีไศล",
+    "DSTRCT_E_NAME": "Rasi Salai",
+    "DSTRCT_PROV": 22
+  },
+  {
+    "DSTRCT_KEY": 279,
+    "DSTRCT_CODE": "003310",
+    "DSTRCT_NAME": "อุทุมพรพิสัย",
+    "DSTRCT_E_NAME": "Uthumphon Phisai",
+    "DSTRCT_PROV": 22
+  },
+  {
+    "DSTRCT_KEY": 280,
+    "DSTRCT_CODE": "003311",
+    "DSTRCT_NAME": "บึงบูรพ์",
+    "DSTRCT_E_NAME": "Bueng Bun",
+    "DSTRCT_PROV": 22
+  },
+  {
+    "DSTRCT_KEY": 281,
+    "DSTRCT_CODE": "003312",
+    "DSTRCT_NAME": "ห้วยทับทัน",
+    "DSTRCT_E_NAME": "Huai Thap Than",
+    "DSTRCT_PROV": 22
+  },
+  {
+    "DSTRCT_KEY": 282,
+    "DSTRCT_CODE": "003313",
+    "DSTRCT_NAME": "โนนคูณ",
+    "DSTRCT_E_NAME": "Non Khun",
+    "DSTRCT_PROV": 22
+  },
+  {
+    "DSTRCT_KEY": 283,
+    "DSTRCT_CODE": "003314",
+    "DSTRCT_NAME": "ศรีรัตนะ",
+    "DSTRCT_E_NAME": "Si Rattana",
+    "DSTRCT_PROV": 22
+  },
+  {
+    "DSTRCT_KEY": 284,
+    "DSTRCT_CODE": "003315",
+    "DSTRCT_NAME": "น้ำเกลี้ยง",
+    "DSTRCT_E_NAME": "Nam Kliang",
+    "DSTRCT_PROV": 22
+  },
+  {
+    "DSTRCT_KEY": 285,
+    "DSTRCT_CODE": "003316",
+    "DSTRCT_NAME": "วังหิน",
+    "DSTRCT_E_NAME": "Wang Hin",
+    "DSTRCT_PROV": 22
+  },
+  {
+    "DSTRCT_KEY": 286,
+    "DSTRCT_CODE": "003317",
+    "DSTRCT_NAME": "ภูสิงห์",
+    "DSTRCT_E_NAME": "Phu Sing",
+    "DSTRCT_PROV": 22
+  },
+  {
+    "DSTRCT_KEY": 287,
+    "DSTRCT_CODE": "003318",
+    "DSTRCT_NAME": "เมืองจันทร์",
+    "DSTRCT_E_NAME": "Mueang Chan",
+    "DSTRCT_PROV": 22
+  },
+  {
+    "DSTRCT_KEY": 288,
+    "DSTRCT_CODE": "003319",
+    "DSTRCT_NAME": "เบญจลักษ์",
+    "DSTRCT_E_NAME": "Benchalak",
+    "DSTRCT_PROV": 22
+  },
+  {
+    "DSTRCT_KEY": 289,
+    "DSTRCT_CODE": "003320",
+    "DSTRCT_NAME": "พยุห์",
+    "DSTRCT_E_NAME": "Phayu",
+    "DSTRCT_PROV": 22
+  },
+  {
+    "DSTRCT_KEY": 290,
+    "DSTRCT_CODE": "003321",
+    "DSTRCT_NAME": "โพธิ์ศรีสุวรรณ",
+    "DSTRCT_E_NAME": "Pho Si Suwan",
+    "DSTRCT_PROV": 22
+  },
+  {
+    "DSTRCT_KEY": 291,
+    "DSTRCT_CODE": "003322",
+    "DSTRCT_NAME": "ศิลาลาด",
+    "DSTRCT_E_NAME": "Sila Lat",
+    "DSTRCT_PROV": 22
+  },
+  {
+    "DSTRCT_KEY": 292,
+    "DSTRCT_CODE": "003401",
+    "DSTRCT_NAME": "เมืองอุบลราชธานี",
+    "DSTRCT_E_NAME": "Mueang Ubon Ratchathani",
+    "DSTRCT_PROV": 23
+  },
+  {
+    "DSTRCT_KEY": 293,
+    "DSTRCT_CODE": "003402",
+    "DSTRCT_NAME": "ศรีเมืองใหม่",
+    "DSTRCT_E_NAME": "Si Mueang Mai",
+    "DSTRCT_PROV": 23
+  },
+  {
+    "DSTRCT_KEY": 294,
+    "DSTRCT_CODE": "003403",
+    "DSTRCT_NAME": "โขงเจียม",
+    "DSTRCT_E_NAME": "Khong Chiam",
+    "DSTRCT_PROV": 23
+  },
+  {
+    "DSTRCT_KEY": 295,
+    "DSTRCT_CODE": "003404",
+    "DSTRCT_NAME": "เขื่องใน",
+    "DSTRCT_E_NAME": "Khueang Nai",
+    "DSTRCT_PROV": 23
+  },
+  {
+    "DSTRCT_KEY": 296,
+    "DSTRCT_CODE": "003405",
+    "DSTRCT_NAME": "เขมราฐ",
+    "DSTRCT_E_NAME": "Khemarat",
+    "DSTRCT_PROV": 23
+  },
+  {
+    "DSTRCT_KEY": 297,
+    "DSTRCT_CODE": "003407",
+    "DSTRCT_NAME": "เดชอุดม",
+    "DSTRCT_E_NAME": "Det Udom",
+    "DSTRCT_PROV": 23
+  },
+  {
+    "DSTRCT_KEY": 298,
+    "DSTRCT_CODE": "003408",
+    "DSTRCT_NAME": "นาจะหลวย",
+    "DSTRCT_E_NAME": "Na Chaluai",
+    "DSTRCT_PROV": 23
+  },
+  {
+    "DSTRCT_KEY": 299,
+    "DSTRCT_CODE": "003409",
+    "DSTRCT_NAME": "น้ำยืน",
+    "DSTRCT_E_NAME": "Nam Yuen",
+    "DSTRCT_PROV": 23
+  },
+  {
+    "DSTRCT_KEY": 300,
+    "DSTRCT_CODE": "003410",
+    "DSTRCT_NAME": "บุณฑริก",
+    "DSTRCT_E_NAME": "Boontharik",
+    "DSTRCT_PROV": 23
+  },
+  {
+    "DSTRCT_KEY": 301,
+    "DSTRCT_CODE": "003411",
+    "DSTRCT_NAME": "ตระการพืชผล",
+    "DSTRCT_E_NAME": "Trakan Phuet Phon",
+    "DSTRCT_PROV": 23
+  },
+  {
+    "DSTRCT_KEY": 302,
+    "DSTRCT_CODE": "003412",
+    "DSTRCT_NAME": "กุดข้าวปุ้น",
+    "DSTRCT_E_NAME": "Kut Khaopun",
+    "DSTRCT_PROV": 23
+  },
+  {
+    "DSTRCT_KEY": 303,
+    "DSTRCT_CODE": "003414",
+    "DSTRCT_NAME": "ม่วงสามสิบ",
+    "DSTRCT_E_NAME": "Muang Sam Sip",
+    "DSTRCT_PROV": 23
+  },
+  {
+    "DSTRCT_KEY": 304,
+    "DSTRCT_CODE": "003415",
+    "DSTRCT_NAME": "วารินชำราบ",
+    "DSTRCT_E_NAME": "Warin Chamrap",
+    "DSTRCT_PROV": 23
+  },
+  {
+    "DSTRCT_KEY": 305,
+    "DSTRCT_CODE": "003419",
+    "DSTRCT_NAME": "พิบูลมังสาหาร",
+    "DSTRCT_E_NAME": "Phibun Mangsahan",
+    "DSTRCT_PROV": 23
+  },
+  {
+    "DSTRCT_KEY": 306,
+    "DSTRCT_CODE": "003420",
+    "DSTRCT_NAME": "ตาลสุม",
+    "DSTRCT_E_NAME": "Tan Sum",
+    "DSTRCT_PROV": 23
+  },
+  {
+    "DSTRCT_KEY": 307,
+    "DSTRCT_CODE": "003421",
+    "DSTRCT_NAME": "โพธิ์ไทร",
+    "DSTRCT_E_NAME": "Pho Sai",
+    "DSTRCT_PROV": 23
+  },
+  {
+    "DSTRCT_KEY": 308,
+    "DSTRCT_CODE": "003422",
+    "DSTRCT_NAME": "สำโรง",
+    "DSTRCT_E_NAME": "Samrong",
+    "DSTRCT_PROV": 23
+  },
+  {
+    "DSTRCT_KEY": 309,
+    "DSTRCT_CODE": "003424",
+    "DSTRCT_NAME": "ดอนมดแดง",
+    "DSTRCT_E_NAME": "Don Mot Daeng",
+    "DSTRCT_PROV": 23
+  },
+  {
+    "DSTRCT_KEY": 310,
+    "DSTRCT_CODE": "003425",
+    "DSTRCT_NAME": "สิรินธร",
+    "DSTRCT_E_NAME": "Sirindhorn",
+    "DSTRCT_PROV": 23
+  },
+  {
+    "DSTRCT_KEY": 311,
+    "DSTRCT_CODE": "003426",
+    "DSTRCT_NAME": "ทุ่งศรีอุดม",
+    "DSTRCT_E_NAME": "Thung Si Udom",
+    "DSTRCT_PROV": 23
+  },
+  {
+    "DSTRCT_KEY": 312,
+    "DSTRCT_CODE": "003429",
+    "DSTRCT_NAME": "นาเยีย",
+    "DSTRCT_E_NAME": "Na Yia",
+    "DSTRCT_PROV": 23
+  },
+  {
+    "DSTRCT_KEY": 313,
+    "DSTRCT_CODE": "003430",
+    "DSTRCT_NAME": "นาตาล",
+    "DSTRCT_E_NAME": "Na Tan",
+    "DSTRCT_PROV": 23
+  },
+  {
+    "DSTRCT_KEY": 314,
+    "DSTRCT_CODE": "003431",
+    "DSTRCT_NAME": "เหล่าเสือโก้ก",
+    "DSTRCT_E_NAME": "Lao Suea Kok",
+    "DSTRCT_PROV": 23
+  },
+  {
+    "DSTRCT_KEY": 315,
+    "DSTRCT_CODE": "003432",
+    "DSTRCT_NAME": "สว่างวีระวงศ์",
+    "DSTRCT_E_NAME": "Sawang Wirawong",
+    "DSTRCT_PROV": 23
+  },
+  {
+    "DSTRCT_KEY": 316,
+    "DSTRCT_CODE": "003433",
+    "DSTRCT_NAME": "น้ำขุ่น",
+    "DSTRCT_E_NAME": "Nam Khun",
+    "DSTRCT_PROV": 23
+  },
+  {
+    "DSTRCT_KEY": 317,
+    "DSTRCT_CODE": "003501",
+    "DSTRCT_NAME": "เมืองยโสธร",
+    "DSTRCT_E_NAME": "Mueang Yasothon",
+    "DSTRCT_PROV": 24
+  },
+  {
+    "DSTRCT_KEY": 318,
+    "DSTRCT_CODE": "003502",
+    "DSTRCT_NAME": "ทรายมูล",
+    "DSTRCT_E_NAME": "Sai Mun",
+    "DSTRCT_PROV": 24
+  },
+  {
+    "DSTRCT_KEY": 319,
+    "DSTRCT_CODE": "003503",
+    "DSTRCT_NAME": "กุดชุม",
+    "DSTRCT_E_NAME": "Kut Chum",
+    "DSTRCT_PROV": 24
+  },
+  {
+    "DSTRCT_KEY": 320,
+    "DSTRCT_CODE": "003504",
+    "DSTRCT_NAME": "คำเขื่อนแก้ว",
+    "DSTRCT_E_NAME": "Kham Khuean Kaeo",
+    "DSTRCT_PROV": 24
+  },
+  {
+    "DSTRCT_KEY": 321,
+    "DSTRCT_CODE": "003505",
+    "DSTRCT_NAME": "ป่าติ้ว",
+    "DSTRCT_E_NAME": "Pa Tio",
+    "DSTRCT_PROV": 24
+  },
+  {
+    "DSTRCT_KEY": 322,
+    "DSTRCT_CODE": "003506",
+    "DSTRCT_NAME": "มหาชนะชัย",
+    "DSTRCT_E_NAME": "Maha Chana Chai",
+    "DSTRCT_PROV": 24
+  },
+  {
+    "DSTRCT_KEY": 323,
+    "DSTRCT_CODE": "003507",
+    "DSTRCT_NAME": "ค้อวัง",
+    "DSTRCT_E_NAME": "Kho Wang",
+    "DSTRCT_PROV": 24
+  },
+  {
+    "DSTRCT_KEY": 324,
+    "DSTRCT_CODE": "003508",
+    "DSTRCT_NAME": "เลิงนกทา",
+    "DSTRCT_E_NAME": "Loeng Nok Tha",
+    "DSTRCT_PROV": 24
+  },
+  {
+    "DSTRCT_KEY": 325,
+    "DSTRCT_CODE": "003509",
+    "DSTRCT_NAME": "ไทยเจริญ",
+    "DSTRCT_E_NAME": "Thai Charoen",
+    "DSTRCT_PROV": 24
+  },
+  {
+    "DSTRCT_KEY": 326,
+    "DSTRCT_CODE": "003601",
+    "DSTRCT_NAME": "เมืองชัยภูมิ",
+    "DSTRCT_E_NAME": "Mueang Chaiyaphum",
+    "DSTRCT_PROV": 25
+  },
+  {
+    "DSTRCT_KEY": 327,
+    "DSTRCT_CODE": "003602",
+    "DSTRCT_NAME": "บ้านเขว้า",
+    "DSTRCT_E_NAME": "Ban Khwao",
+    "DSTRCT_PROV": 25
+  },
+  {
+    "DSTRCT_KEY": 328,
+    "DSTRCT_CODE": "003603",
+    "DSTRCT_NAME": "คอนสวรรค์",
+    "DSTRCT_E_NAME": "Khon Sawan",
+    "DSTRCT_PROV": 25
+  },
+  {
+    "DSTRCT_KEY": 329,
+    "DSTRCT_CODE": "003604",
+    "DSTRCT_NAME": "เกษตรสมบูรณ์",
+    "DSTRCT_E_NAME": "Kaset Sombun",
+    "DSTRCT_PROV": 25
+  },
+  {
+    "DSTRCT_KEY": 330,
+    "DSTRCT_CODE": "003605",
+    "DSTRCT_NAME": "หนองบัวแดง",
+    "DSTRCT_E_NAME": "Nong Bua Daeng",
+    "DSTRCT_PROV": 25
+  },
+  {
+    "DSTRCT_KEY": 331,
+    "DSTRCT_CODE": "003606",
+    "DSTRCT_NAME": "จัตุรัส",
+    "DSTRCT_E_NAME": "Chatturat",
+    "DSTRCT_PROV": 25
+  },
+  {
+    "DSTRCT_KEY": 332,
+    "DSTRCT_CODE": "003607",
+    "DSTRCT_NAME": "บำเหน็จณรงค์",
+    "DSTRCT_E_NAME": "Bamnet Narong",
+    "DSTRCT_PROV": 25
+  },
+  {
+    "DSTRCT_KEY": 333,
+    "DSTRCT_CODE": "003608",
+    "DSTRCT_NAME": "หนองบัวระเหว",
+    "DSTRCT_E_NAME": "Nong Bua Rawe",
+    "DSTRCT_PROV": 25
+  },
+  {
+    "DSTRCT_KEY": 334,
+    "DSTRCT_CODE": "003609",
+    "DSTRCT_NAME": "เทพสถิต",
+    "DSTRCT_E_NAME": "Thep Sathit",
+    "DSTRCT_PROV": 25
+  },
+  {
+    "DSTRCT_KEY": 335,
+    "DSTRCT_CODE": "003610",
+    "DSTRCT_NAME": "ภูเขียว",
+    "DSTRCT_E_NAME": "Phu Khiao",
+    "DSTRCT_PROV": 25
+  },
+  {
+    "DSTRCT_KEY": 336,
+    "DSTRCT_CODE": "003611",
+    "DSTRCT_NAME": "บ้านแท่น",
+    "DSTRCT_E_NAME": "Ban Thaen",
+    "DSTRCT_PROV": 25
+  },
+  {
+    "DSTRCT_KEY": 337,
+    "DSTRCT_CODE": "003612",
+    "DSTRCT_NAME": "แก้งคร้อ",
+    "DSTRCT_E_NAME": "Kaeng Khro",
+    "DSTRCT_PROV": 25
+  },
+  {
+    "DSTRCT_KEY": 338,
+    "DSTRCT_CODE": "003613",
+    "DSTRCT_NAME": "คอนสาร",
+    "DSTRCT_E_NAME": "Khon San",
+    "DSTRCT_PROV": 25
+  },
+  {
+    "DSTRCT_KEY": 339,
+    "DSTRCT_CODE": "003614",
+    "DSTRCT_NAME": "ภักดีชุมพล",
+    "DSTRCT_E_NAME": "Phakdi Chumphon",
+    "DSTRCT_PROV": 25
+  },
+  {
+    "DSTRCT_KEY": 340,
+    "DSTRCT_CODE": "003615",
+    "DSTRCT_NAME": "เนินสง่า",
+    "DSTRCT_E_NAME": "Noen Sa-nga",
+    "DSTRCT_PROV": 25
+  },
+  {
+    "DSTRCT_KEY": 341,
+    "DSTRCT_CODE": "003616",
+    "DSTRCT_NAME": "ซับใหญ่",
+    "DSTRCT_E_NAME": "Sap Yai",
+    "DSTRCT_PROV": 25
+  },
+  {
+    "DSTRCT_KEY": 342,
+    "DSTRCT_CODE": "003701",
+    "DSTRCT_NAME": "เมืองอำนาจเจริญ",
+    "DSTRCT_E_NAME": "Mueang Amnat Charoen",
+    "DSTRCT_PROV": 26
+  },
+  {
+    "DSTRCT_KEY": 343,
+    "DSTRCT_CODE": "003702",
+    "DSTRCT_NAME": "ชานุมาน",
+    "DSTRCT_E_NAME": "Chanuman",
+    "DSTRCT_PROV": 26
+  },
+  {
+    "DSTRCT_KEY": 344,
+    "DSTRCT_CODE": "003703",
+    "DSTRCT_NAME": "ปทุมราชวงศา",
+    "DSTRCT_E_NAME": "Pathum Ratchawongsa",
+    "DSTRCT_PROV": 26
+  },
+  {
+    "DSTRCT_KEY": 345,
+    "DSTRCT_CODE": "003704",
+    "DSTRCT_NAME": "พนา",
+    "DSTRCT_E_NAME": "Phana",
+    "DSTRCT_PROV": 26
+  },
+  {
+    "DSTRCT_KEY": 346,
+    "DSTRCT_CODE": "003705",
+    "DSTRCT_NAME": "เสนางคนิคม",
+    "DSTRCT_E_NAME": "Senangkhanikhom",
+    "DSTRCT_PROV": 26
+  },
+  {
+    "DSTRCT_KEY": 347,
+    "DSTRCT_CODE": "003706",
+    "DSTRCT_NAME": "หัวตะพาน",
+    "DSTRCT_E_NAME": "Hua Taphan",
+    "DSTRCT_PROV": 26
+  },
+  {
+    "DSTRCT_KEY": 348,
+    "DSTRCT_CODE": "003707",
+    "DSTRCT_NAME": "ลืออำนาจ",
+    "DSTRCT_E_NAME": "Lue Amnat",
+    "DSTRCT_PROV": 26
+  },
+  {
+    "DSTRCT_KEY": 349,
+    "DSTRCT_CODE": "003801",
+    "DSTRCT_NAME": "เมืองบึงกาฬ",
+    "DSTRCT_E_NAME": "Bueng Kan",
+    "DSTRCT_PROV": 27
+  },
+  {
+    "DSTRCT_KEY": 350,
+    "DSTRCT_CODE": "003802",
+    "DSTRCT_NAME": "พรเจริญ",
+    "DSTRCT_E_NAME": "Phon Charoen",
+    "DSTRCT_PROV": 27
+  },
+  {
+    "DSTRCT_KEY": 351,
+    "DSTRCT_CODE": "003803",
+    "DSTRCT_NAME": "โซ่พิสัย",
+    "DSTRCT_E_NAME": "So Phisai",
+    "DSTRCT_PROV": 27
+  },
+  {
+    "DSTRCT_KEY": 352,
+    "DSTRCT_CODE": "003804",
+    "DSTRCT_NAME": "เซกา",
+    "DSTRCT_E_NAME": "Seka",
+    "DSTRCT_PROV": 27
+  },
+  {
+    "DSTRCT_KEY": 353,
+    "DSTRCT_CODE": "003805",
+    "DSTRCT_NAME": "ปากคาด",
+    "DSTRCT_E_NAME": "Pak Khat",
+    "DSTRCT_PROV": 27
+  },
+  {
+    "DSTRCT_KEY": 354,
+    "DSTRCT_CODE": "003806",
+    "DSTRCT_NAME": "บึงโขงหลง",
+    "DSTRCT_E_NAME": "Bueng Khong Long",
+    "DSTRCT_PROV": 27
+  },
+  {
+    "DSTRCT_KEY": 355,
+    "DSTRCT_CODE": "003807",
+    "DSTRCT_NAME": "ศรีวิไล",
+    "DSTRCT_E_NAME": "Si Wilai",
+    "DSTRCT_PROV": 27
+  },
+  {
+    "DSTRCT_KEY": 356,
+    "DSTRCT_CODE": "003808",
+    "DSTRCT_NAME": "บุ่งคล้า",
+    "DSTRCT_E_NAME": "Bung Khla",
+    "DSTRCT_PROV": 27
+  },
+  {
+    "DSTRCT_KEY": 357,
+    "DSTRCT_CODE": "003901",
+    "DSTRCT_NAME": "เมืองหนองบัวลำภู",
+    "DSTRCT_E_NAME": "Mueang Nong Bua Lam Phu",
+    "DSTRCT_PROV": 28
+  },
+  {
+    "DSTRCT_KEY": 358,
+    "DSTRCT_CODE": "003902",
+    "DSTRCT_NAME": "นากลาง",
+    "DSTRCT_E_NAME": "Na Klang",
+    "DSTRCT_PROV": 28
+  },
+  {
+    "DSTRCT_KEY": 359,
+    "DSTRCT_CODE": "003903",
+    "DSTRCT_NAME": "โนนสัง",
+    "DSTRCT_E_NAME": "Non Sang",
+    "DSTRCT_PROV": 28
+  },
+  {
+    "DSTRCT_KEY": 360,
+    "DSTRCT_CODE": "003904",
+    "DSTRCT_NAME": "ศรีบุญเรือง",
+    "DSTRCT_E_NAME": "Si Bun Rueang",
+    "DSTRCT_PROV": 28
+  },
+  {
+    "DSTRCT_KEY": 361,
+    "DSTRCT_CODE": "003905",
+    "DSTRCT_NAME": "สุวรรณคูหา",
+    "DSTRCT_E_NAME": "Suwannakhuha",
+    "DSTRCT_PROV": 28
+  },
+  {
+    "DSTRCT_KEY": 362,
+    "DSTRCT_CODE": "003906",
+    "DSTRCT_NAME": "นาวัง",
+    "DSTRCT_E_NAME": "Na Wang",
+    "DSTRCT_PROV": 28
+  },
+  {
+    "DSTRCT_KEY": 363,
+    "DSTRCT_CODE": "004001",
+    "DSTRCT_NAME": "เมืองขอนแก่น",
+    "DSTRCT_E_NAME": "Mueang Khon Kaen",
+    "DSTRCT_PROV": 29
+  },
+  {
+    "DSTRCT_KEY": 364,
+    "DSTRCT_CODE": "004002",
+    "DSTRCT_NAME": "บ้านฝาง",
+    "DSTRCT_E_NAME": "Ban Fang",
+    "DSTRCT_PROV": 29
+  },
+  {
+    "DSTRCT_KEY": 365,
+    "DSTRCT_CODE": "004003",
+    "DSTRCT_NAME": "พระยืน",
+    "DSTRCT_E_NAME": "Phra Yuen",
+    "DSTRCT_PROV": 29
+  },
+  {
+    "DSTRCT_KEY": 366,
+    "DSTRCT_CODE": "004004",
+    "DSTRCT_NAME": "หนองเรือ",
+    "DSTRCT_E_NAME": "Nong Ruea",
+    "DSTRCT_PROV": 29
+  },
+  {
+    "DSTRCT_KEY": 367,
+    "DSTRCT_CODE": "004005",
+    "DSTRCT_NAME": "ชุมแพ",
+    "DSTRCT_E_NAME": "Chum Phae",
+    "DSTRCT_PROV": 29
+  },
+  {
+    "DSTRCT_KEY": 368,
+    "DSTRCT_CODE": "004006",
+    "DSTRCT_NAME": "สีชมพู",
+    "DSTRCT_E_NAME": "Si Chomphu",
+    "DSTRCT_PROV": 29
+  },
+  {
+    "DSTRCT_KEY": 369,
+    "DSTRCT_CODE": "004007",
+    "DSTRCT_NAME": "น้ำพอง",
+    "DSTRCT_E_NAME": "Nam Phong",
+    "DSTRCT_PROV": 29
+  },
+  {
+    "DSTRCT_KEY": 370,
+    "DSTRCT_CODE": "004008",
+    "DSTRCT_NAME": "อุบลรัตน์",
+    "DSTRCT_E_NAME": "Ubolratana",
+    "DSTRCT_PROV": 29
+  },
+  {
+    "DSTRCT_KEY": 371,
+    "DSTRCT_CODE": "004009",
+    "DSTRCT_NAME": "กระนวน",
+    "DSTRCT_E_NAME": "Kranuan",
+    "DSTRCT_PROV": 29
+  },
+  {
+    "DSTRCT_KEY": 372,
+    "DSTRCT_CODE": "004010",
+    "DSTRCT_NAME": "บ้านไผ่",
+    "DSTRCT_E_NAME": "Ban Phai",
+    "DSTRCT_PROV": 29
+  },
+  {
+    "DSTRCT_KEY": 373,
+    "DSTRCT_CODE": "004011",
+    "DSTRCT_NAME": "เปือยน้อย",
+    "DSTRCT_E_NAME": "Pueai Noi",
+    "DSTRCT_PROV": 29
+  },
+  {
+    "DSTRCT_KEY": 374,
+    "DSTRCT_CODE": "004012",
+    "DSTRCT_NAME": "พล",
+    "DSTRCT_E_NAME": "Phon",
+    "DSTRCT_PROV": 29
+  },
+  {
+    "DSTRCT_KEY": 375,
+    "DSTRCT_CODE": "004013",
+    "DSTRCT_NAME": "แวงใหญ่",
+    "DSTRCT_E_NAME": "Waeng Yai",
+    "DSTRCT_PROV": 29
+  },
+  {
+    "DSTRCT_KEY": 376,
+    "DSTRCT_CODE": "004014",
+    "DSTRCT_NAME": "แวงน้อย",
+    "DSTRCT_E_NAME": "Waeng Noi",
+    "DSTRCT_PROV": 29
+  },
+  {
+    "DSTRCT_KEY": 377,
+    "DSTRCT_CODE": "004015",
+    "DSTRCT_NAME": "หนองสองห้อง",
+    "DSTRCT_E_NAME": "Nong Song Hong",
+    "DSTRCT_PROV": 29
+  },
+  {
+    "DSTRCT_KEY": 378,
+    "DSTRCT_CODE": "004016",
+    "DSTRCT_NAME": "ภูเวียง",
+    "DSTRCT_E_NAME": "Phu Wiang",
+    "DSTRCT_PROV": 29
+  },
+  {
+    "DSTRCT_KEY": 379,
+    "DSTRCT_CODE": "004017",
+    "DSTRCT_NAME": "มัญจาคีรี",
+    "DSTRCT_E_NAME": "Mancha Khiri",
+    "DSTRCT_PROV": 29
+  },
+  {
+    "DSTRCT_KEY": 380,
+    "DSTRCT_CODE": "004018",
+    "DSTRCT_NAME": "ชนบท",
+    "DSTRCT_E_NAME": "Chonnabot",
+    "DSTRCT_PROV": 29
+  },
+  {
+    "DSTRCT_KEY": 381,
+    "DSTRCT_CODE": "004019",
+    "DSTRCT_NAME": "เขาสวนกวาง",
+    "DSTRCT_E_NAME": "Khao Suan Kwang",
+    "DSTRCT_PROV": 29
+  },
+  {
+    "DSTRCT_KEY": 382,
+    "DSTRCT_CODE": "004020",
+    "DSTRCT_NAME": "ภูผาม่าน",
+    "DSTRCT_E_NAME": "Phu Phaman",
+    "DSTRCT_PROV": 29
+  },
+  {
+    "DSTRCT_KEY": 383,
+    "DSTRCT_CODE": "004021",
+    "DSTRCT_NAME": "ซำสูง",
+    "DSTRCT_E_NAME": "Sam Sung",
+    "DSTRCT_PROV": 29
+  },
+  {
+    "DSTRCT_KEY": 384,
+    "DSTRCT_CODE": "004022",
+    "DSTRCT_NAME": "โคกโพธิ์ไชย",
+    "DSTRCT_E_NAME": "Khok Pho Chai",
+    "DSTRCT_PROV": 29
+  },
+  {
+    "DSTRCT_KEY": 385,
+    "DSTRCT_CODE": "004023",
+    "DSTRCT_NAME": "หนองนาคำ",
+    "DSTRCT_E_NAME": "Nong Na Kham",
+    "DSTRCT_PROV": 29
+  },
+  {
+    "DSTRCT_KEY": 386,
+    "DSTRCT_CODE": "004024",
+    "DSTRCT_NAME": "บ้านแฮด",
+    "DSTRCT_E_NAME": "Ban Haet",
+    "DSTRCT_PROV": 29
+  },
+  {
+    "DSTRCT_KEY": 387,
+    "DSTRCT_CODE": "004025",
+    "DSTRCT_NAME": "โนนศิลา",
+    "DSTRCT_E_NAME": "Non Sila",
+    "DSTRCT_PROV": 29
+  },
+  {
+    "DSTRCT_KEY": 388,
+    "DSTRCT_CODE": "004029",
+    "DSTRCT_NAME": "เวียงเก่า",
+    "DSTRCT_E_NAME": "Wiang Kao",
+    "DSTRCT_PROV": 29
+  },
+  {
+    "DSTRCT_KEY": 389,
+    "DSTRCT_CODE": "004101",
+    "DSTRCT_NAME": "เมืองอุดรธานี",
+    "DSTRCT_E_NAME": "Mueang Udon Thani",
+    "DSTRCT_PROV": 30
+  },
+  {
+    "DSTRCT_KEY": 390,
+    "DSTRCT_CODE": "004102",
+    "DSTRCT_NAME": "กุดจับ",
+    "DSTRCT_E_NAME": "Kut Chap",
+    "DSTRCT_PROV": 30
+  },
+  {
+    "DSTRCT_KEY": 391,
+    "DSTRCT_CODE": "004103",
+    "DSTRCT_NAME": "หนองวัวซอ",
+    "DSTRCT_E_NAME": "Nong Wua So",
+    "DSTRCT_PROV": 30
+  },
+  {
+    "DSTRCT_KEY": 392,
+    "DSTRCT_CODE": "004104",
+    "DSTRCT_NAME": "กุมภวาปี",
+    "DSTRCT_E_NAME": "Kumphawapi",
+    "DSTRCT_PROV": 30
+  },
+  {
+    "DSTRCT_KEY": 393,
+    "DSTRCT_CODE": "004105",
+    "DSTRCT_NAME": "โนนสะอาด",
+    "DSTRCT_E_NAME": "Non Sa-at",
+    "DSTRCT_PROV": 30
+  },
+  {
+    "DSTRCT_KEY": 394,
+    "DSTRCT_CODE": "004106",
+    "DSTRCT_NAME": "หนองหาน",
+    "DSTRCT_E_NAME": "Nong Saeng",
+    "DSTRCT_PROV": 30
+  },
+  {
+    "DSTRCT_KEY": 395,
+    "DSTRCT_CODE": "004107",
+    "DSTRCT_NAME": "ทุ่งฝน",
+    "DSTRCT_E_NAME": "Thung Fon",
+    "DSTRCT_PROV": 30
+  },
+  {
+    "DSTRCT_KEY": 396,
+    "DSTRCT_CODE": "004108",
+    "DSTRCT_NAME": "ไชยวาน",
+    "DSTRCT_E_NAME": "Chai Wan",
+    "DSTRCT_PROV": 30
+  },
+  {
+    "DSTRCT_KEY": 397,
+    "DSTRCT_CODE": "004109",
+    "DSTRCT_NAME": "ศรีธาตุ",
+    "DSTRCT_E_NAME": "Si That",
+    "DSTRCT_PROV": 30
+  },
+  {
+    "DSTRCT_KEY": 398,
+    "DSTRCT_CODE": "004110",
+    "DSTRCT_NAME": "วังสามหมอ",
+    "DSTRCT_E_NAME": "Wang Sam Mo",
+    "DSTRCT_PROV": 30
+  },
+  {
+    "DSTRCT_KEY": 399,
+    "DSTRCT_CODE": "004111",
+    "DSTRCT_NAME": "บ้านดุง",
+    "DSTRCT_E_NAME": "Ban Dung",
+    "DSTRCT_PROV": 30
+  },
+  {
+    "DSTRCT_KEY": 400,
+    "DSTRCT_CODE": "004117",
+    "DSTRCT_NAME": "บ้านผือ",
+    "DSTRCT_E_NAME": "Ban Phue",
+    "DSTRCT_PROV": 30
+  },
+  {
+    "DSTRCT_KEY": 401,
+    "DSTRCT_CODE": "004118",
+    "DSTRCT_NAME": "น้ำโสม",
+    "DSTRCT_E_NAME": "Nam Som",
+    "DSTRCT_PROV": 30
+  },
+  {
+    "DSTRCT_KEY": 402,
+    "DSTRCT_CODE": "004119",
+    "DSTRCT_NAME": "เพ็ญ",
+    "DSTRCT_E_NAME": "Phen",
+    "DSTRCT_PROV": 30
+  },
+  {
+    "DSTRCT_KEY": 403,
+    "DSTRCT_CODE": "004120",
+    "DSTRCT_NAME": "สร้างคอม",
+    "DSTRCT_E_NAME": "Sang Khom",
+    "DSTRCT_PROV": 30
+  },
+  {
+    "DSTRCT_KEY": 404,
+    "DSTRCT_CODE": "004121",
+    "DSTRCT_NAME": "หนองแสง",
+    "DSTRCT_E_NAME": "Nong Saeng",
+    "DSTRCT_PROV": 30
+  },
+  {
+    "DSTRCT_KEY": 405,
+    "DSTRCT_CODE": "004122",
+    "DSTRCT_NAME": "นายูง",
+    "DSTRCT_E_NAME": "Na Yung",
+    "DSTRCT_PROV": 30
+  },
+  {
+    "DSTRCT_KEY": 406,
+    "DSTRCT_CODE": "004123",
+    "DSTRCT_NAME": "พิบูลย์รักษ์",
+    "DSTRCT_E_NAME": "Phibun Rak",
+    "DSTRCT_PROV": 30
+  },
+  {
+    "DSTRCT_KEY": 407,
+    "DSTRCT_CODE": "004124",
+    "DSTRCT_NAME": "กู่แก้ว",
+    "DSTRCT_E_NAME": "Ku Kaeo",
+    "DSTRCT_PROV": 30
+  },
+  {
+    "DSTRCT_KEY": 408,
+    "DSTRCT_CODE": "004125",
+    "DSTRCT_NAME": "ประจักษ์ศิลปาคม",
+    "DSTRCT_E_NAME": "Prachaksinlapakhom",
+    "DSTRCT_PROV": 30
+  },
+  {
+    "DSTRCT_KEY": 409,
+    "DSTRCT_CODE": "004201",
+    "DSTRCT_NAME": "เมืองเลย",
+    "DSTRCT_E_NAME": "Mueang Loei",
+    "DSTRCT_PROV": 31
+  },
+  {
+    "DSTRCT_KEY": 410,
+    "DSTRCT_CODE": "004202",
+    "DSTRCT_NAME": "นาด้วง",
+    "DSTRCT_E_NAME": "Na Duang",
+    "DSTRCT_PROV": 31
+  },
+  {
+    "DSTRCT_KEY": 411,
+    "DSTRCT_CODE": "004203",
+    "DSTRCT_NAME": "เชียงคาน",
+    "DSTRCT_E_NAME": "Chiang Khan",
+    "DSTRCT_PROV": 31
+  },
+  {
+    "DSTRCT_KEY": 412,
+    "DSTRCT_CODE": "004204",
+    "DSTRCT_NAME": "ปากชม",
+    "DSTRCT_E_NAME": "Pak Chom",
+    "DSTRCT_PROV": 31
+  },
+  {
+    "DSTRCT_KEY": 413,
+    "DSTRCT_CODE": "004205",
+    "DSTRCT_NAME": "ด่านซ้าย",
+    "DSTRCT_E_NAME": "Dan Sai",
+    "DSTRCT_PROV": 31
+  },
+  {
+    "DSTRCT_KEY": 414,
+    "DSTRCT_CODE": "004206",
+    "DSTRCT_NAME": "นาแห้ว",
+    "DSTRCT_E_NAME": "Na Haeo",
+    "DSTRCT_PROV": 31
+  },
+  {
+    "DSTRCT_KEY": 415,
+    "DSTRCT_CODE": "004207",
+    "DSTRCT_NAME": "ภูเรือ",
+    "DSTRCT_E_NAME": "Phu Ruea",
+    "DSTRCT_PROV": 31
+  },
+  {
+    "DSTRCT_KEY": 416,
+    "DSTRCT_CODE": "004208",
+    "DSTRCT_NAME": "ท่าลี่",
+    "DSTRCT_E_NAME": "Tha Li",
+    "DSTRCT_PROV": 31
+  },
+  {
+    "DSTRCT_KEY": 417,
+    "DSTRCT_CODE": "004209",
+    "DSTRCT_NAME": "วังสะพุง",
+    "DSTRCT_E_NAME": "Wang Saphung",
+    "DSTRCT_PROV": 31
+  },
+  {
+    "DSTRCT_KEY": 418,
+    "DSTRCT_CODE": "004210",
+    "DSTRCT_NAME": "ภูกระดึง",
+    "DSTRCT_E_NAME": "Phu Kradueng",
+    "DSTRCT_PROV": 31
+  },
+  {
+    "DSTRCT_KEY": 419,
+    "DSTRCT_CODE": "004211",
+    "DSTRCT_NAME": "ภูหลวง",
+    "DSTRCT_E_NAME": "Phu Luang",
+    "DSTRCT_PROV": 31
+  },
+  {
+    "DSTRCT_KEY": 420,
+    "DSTRCT_CODE": "004212",
+    "DSTRCT_NAME": "ผาขาว",
+    "DSTRCT_E_NAME": "Pha  Khao",
+    "DSTRCT_PROV": 31
+  },
+  {
+    "DSTRCT_KEY": 421,
+    "DSTRCT_CODE": "004213",
+    "DSTRCT_NAME": "เอราวัณ",
+    "DSTRCT_E_NAME": "Erawan",
+    "DSTRCT_PROV": 31
+  },
+  {
+    "DSTRCT_KEY": 422,
+    "DSTRCT_CODE": "004214",
+    "DSTRCT_NAME": "หนองหิน",
+    "DSTRCT_E_NAME": "Nong Hin",
+    "DSTRCT_PROV": 31
+  },
+  {
+    "DSTRCT_KEY": 423,
+    "DSTRCT_CODE": "004301",
+    "DSTRCT_NAME": "เมืองหนองคาย",
+    "DSTRCT_E_NAME": "Mueang Nong Khai",
+    "DSTRCT_PROV": 32
+  },
+  {
+    "DSTRCT_KEY": 424,
+    "DSTRCT_CODE": "004302",
+    "DSTRCT_NAME": "ท่าบ่อ",
+    "DSTRCT_E_NAME": "Tha Bo",
+    "DSTRCT_PROV": 32
+  },
+  {
+    "DSTRCT_KEY": 425,
+    "DSTRCT_CODE": "004305",
+    "DSTRCT_NAME": "โพนพิสัย",
+    "DSTRCT_E_NAME": "Phon Phisai",
+    "DSTRCT_PROV": 32
+  },
+  {
+    "DSTRCT_KEY": 426,
+    "DSTRCT_CODE": "004307",
+    "DSTRCT_NAME": "ศรีเชียงใหม่",
+    "DSTRCT_E_NAME": "Si Chiang Mai",
+    "DSTRCT_PROV": 32
+  },
+  {
+    "DSTRCT_KEY": 427,
+    "DSTRCT_CODE": "004308",
+    "DSTRCT_NAME": "สังคม",
+    "DSTRCT_E_NAME": "Sangkhom",
+    "DSTRCT_PROV": 32
+  },
+  {
+    "DSTRCT_KEY": 428,
+    "DSTRCT_CODE": "004314",
+    "DSTRCT_NAME": "สระใคร",
+    "DSTRCT_E_NAME": "Sakhrai",
+    "DSTRCT_PROV": 32
+  },
+  {
+    "DSTRCT_KEY": 429,
+    "DSTRCT_CODE": "004315",
+    "DSTRCT_NAME": "เฝ้าไร่",
+    "DSTRCT_E_NAME": "Fao Rai",
+    "DSTRCT_PROV": 32
+  },
+  {
+    "DSTRCT_KEY": 430,
+    "DSTRCT_CODE": "004316",
+    "DSTRCT_NAME": "รัตนวาปี",
+    "DSTRCT_E_NAME": "Rattanawapi",
+    "DSTRCT_PROV": 32
+  },
+  {
+    "DSTRCT_KEY": 431,
+    "DSTRCT_CODE": "004317",
+    "DSTRCT_NAME": "โพธิ์ตาก",
+    "DSTRCT_E_NAME": "Pho Tak",
+    "DSTRCT_PROV": 32
+  },
+  {
+    "DSTRCT_KEY": 432,
+    "DSTRCT_CODE": "004401",
+    "DSTRCT_NAME": "เมืองมหาสารคาม",
+    "DSTRCT_E_NAME": "Mueang Maha Sarakham",
+    "DSTRCT_PROV": 33
+  },
+  {
+    "DSTRCT_KEY": 433,
+    "DSTRCT_CODE": "004402",
+    "DSTRCT_NAME": "แกดำ",
+    "DSTRCT_E_NAME": "Kae Dam",
+    "DSTRCT_PROV": 33
+  },
+  {
+    "DSTRCT_KEY": 434,
+    "DSTRCT_CODE": "004403",
+    "DSTRCT_NAME": "โกสุมพิสัย",
+    "DSTRCT_E_NAME": "Kosum Phisai",
+    "DSTRCT_PROV": 33
+  },
+  {
+    "DSTRCT_KEY": 435,
+    "DSTRCT_CODE": "004404",
+    "DSTRCT_NAME": "กันทรวิชัย",
+    "DSTRCT_E_NAME": "Kantharawichai",
+    "DSTRCT_PROV": 33
+  },
+  {
+    "DSTRCT_KEY": 436,
+    "DSTRCT_CODE": "004405",
+    "DSTRCT_NAME": "เชียงยืน",
+    "DSTRCT_E_NAME": "Chiang Yuen",
+    "DSTRCT_PROV": 33
+  },
+  {
+    "DSTRCT_KEY": 437,
+    "DSTRCT_CODE": "004406",
+    "DSTRCT_NAME": "บรบือ",
+    "DSTRCT_E_NAME": "Borabue",
+    "DSTRCT_PROV": 33
+  },
+  {
+    "DSTRCT_KEY": 438,
+    "DSTRCT_CODE": "004407",
+    "DSTRCT_NAME": "นาเชือก",
+    "DSTRCT_E_NAME": "Na Chueak",
+    "DSTRCT_PROV": 33
+  },
+  {
+    "DSTRCT_KEY": 439,
+    "DSTRCT_CODE": "004408",
+    "DSTRCT_NAME": "พยัคฆภูมิพิสัย",
+    "DSTRCT_E_NAME": "Phayakkhaphum Phisai",
+    "DSTRCT_PROV": 33
+  },
+  {
+    "DSTRCT_KEY": 440,
+    "DSTRCT_CODE": "004409",
+    "DSTRCT_NAME": "วาปีปทุม",
+    "DSTRCT_E_NAME": "Wapi Pathum",
+    "DSTRCT_PROV": 33
+  },
+  {
+    "DSTRCT_KEY": 441,
+    "DSTRCT_CODE": "004410",
+    "DSTRCT_NAME": "นาดูน",
+    "DSTRCT_E_NAME": "Na Dun",
+    "DSTRCT_PROV": 33
+  },
+  {
+    "DSTRCT_KEY": 442,
+    "DSTRCT_CODE": "004411",
+    "DSTRCT_NAME": "ยางสีสุราช",
+    "DSTRCT_E_NAME": "Yang Sisurat",
+    "DSTRCT_PROV": 33
+  },
+  {
+    "DSTRCT_KEY": 443,
+    "DSTRCT_CODE": "004412",
+    "DSTRCT_NAME": "กุดรัง",
+    "DSTRCT_E_NAME": "Kut Rang",
+    "DSTRCT_PROV": 33
+  },
+  {
+    "DSTRCT_KEY": 444,
+    "DSTRCT_CODE": "004413",
+    "DSTRCT_NAME": "ชื่นชม",
+    "DSTRCT_E_NAME": "Chuen Chom",
+    "DSTRCT_PROV": 33
+  },
+  {
+    "DSTRCT_KEY": 445,
+    "DSTRCT_CODE": "004501",
+    "DSTRCT_NAME": "เมืองร้อยเอ็ด",
+    "DSTRCT_E_NAME": "Mueang Roi Et",
+    "DSTRCT_PROV": 34
+  },
+  {
+    "DSTRCT_KEY": 446,
+    "DSTRCT_CODE": "004502",
+    "DSTRCT_NAME": "เกษตรวิสัย",
+    "DSTRCT_E_NAME": "Kaset Wisai",
+    "DSTRCT_PROV": 34
+  },
+  {
+    "DSTRCT_KEY": 447,
+    "DSTRCT_CODE": "004503",
+    "DSTRCT_NAME": "ปทุมรัตต์",
+    "DSTRCT_E_NAME": "Pathum Rat",
+    "DSTRCT_PROV": 34
+  },
+  {
+    "DSTRCT_KEY": 448,
+    "DSTRCT_CODE": "004504",
+    "DSTRCT_NAME": "จตุรพักตรพิมาน",
+    "DSTRCT_E_NAME": "Chaturaphak Phiman",
+    "DSTRCT_PROV": 34
+  },
+  {
+    "DSTRCT_KEY": 449,
+    "DSTRCT_CODE": "004505",
+    "DSTRCT_NAME": "ธวัชบุรี",
+    "DSTRCT_E_NAME": "Thawat Buri",
+    "DSTRCT_PROV": 34
+  },
+  {
+    "DSTRCT_KEY": 450,
+    "DSTRCT_CODE": "004506",
+    "DSTRCT_NAME": "พนมไพร",
+    "DSTRCT_E_NAME": "Phanom Phrai",
+    "DSTRCT_PROV": 34
+  },
+  {
+    "DSTRCT_KEY": 451,
+    "DSTRCT_CODE": "004507",
+    "DSTRCT_NAME": "โพนทอง",
+    "DSTRCT_E_NAME": "Phon Thong",
+    "DSTRCT_PROV": 34
+  },
+  {
+    "DSTRCT_KEY": 452,
+    "DSTRCT_CODE": "004508",
+    "DSTRCT_NAME": "โพธิ์ชัย",
+    "DSTRCT_E_NAME": "Pho Chai",
+    "DSTRCT_PROV": 34
+  },
+  {
+    "DSTRCT_KEY": 453,
+    "DSTRCT_CODE": "004509",
+    "DSTRCT_NAME": "หนองพอก",
+    "DSTRCT_E_NAME": "Nong Phok",
+    "DSTRCT_PROV": 34
+  },
+  {
+    "DSTRCT_KEY": 454,
+    "DSTRCT_CODE": "004510",
+    "DSTRCT_NAME": "เสลภูมิ",
+    "DSTRCT_E_NAME": "Selaphum",
+    "DSTRCT_PROV": 34
+  },
+  {
+    "DSTRCT_KEY": 455,
+    "DSTRCT_CODE": "004511",
+    "DSTRCT_NAME": "สุวรรณภูมิ",
+    "DSTRCT_E_NAME": "Suwannaphum",
+    "DSTRCT_PROV": 34
+  },
+  {
+    "DSTRCT_KEY": 456,
+    "DSTRCT_CODE": "004512",
+    "DSTRCT_NAME": "เมืองสรวง",
+    "DSTRCT_E_NAME": "Mueang Suang",
+    "DSTRCT_PROV": 34
+  },
+  {
+    "DSTRCT_KEY": 457,
+    "DSTRCT_CODE": "004513",
+    "DSTRCT_NAME": "โพนทราย",
+    "DSTRCT_E_NAME": "Phon Sai",
+    "DSTRCT_PROV": 34
+  },
+  {
+    "DSTRCT_KEY": 458,
+    "DSTRCT_CODE": "004514",
+    "DSTRCT_NAME": "อาจสามารถ",
+    "DSTRCT_E_NAME": "At Samat",
+    "DSTRCT_PROV": 34
+  },
+  {
+    "DSTRCT_KEY": 459,
+    "DSTRCT_CODE": "004515",
+    "DSTRCT_NAME": "เมยวดี",
+    "DSTRCT_E_NAME": "Moei Wadi",
+    "DSTRCT_PROV": 34
+  },
+  {
+    "DSTRCT_KEY": 460,
+    "DSTRCT_CODE": "004516",
+    "DSTRCT_NAME": "ศรีสมเด็จ",
+    "DSTRCT_E_NAME": "Si Somdet",
+    "DSTRCT_PROV": 34
+  },
+  {
+    "DSTRCT_KEY": 461,
+    "DSTRCT_CODE": "004517",
+    "DSTRCT_NAME": "จังหาร",
+    "DSTRCT_E_NAME": "Changhan",
+    "DSTRCT_PROV": 34
+  },
+  {
+    "DSTRCT_KEY": 462,
+    "DSTRCT_CODE": "004518",
+    "DSTRCT_NAME": "เชียงขวัญ",
+    "DSTRCT_E_NAME": "Chiang Khwan",
+    "DSTRCT_PROV": 34
+  },
+  {
+    "DSTRCT_KEY": 463,
+    "DSTRCT_CODE": "004519",
+    "DSTRCT_NAME": "หนองฮี",
+    "DSTRCT_E_NAME": "Nong Hi",
+    "DSTRCT_PROV": 34
+  },
+  {
+    "DSTRCT_KEY": 464,
+    "DSTRCT_CODE": "004520",
+    "DSTRCT_NAME": "ทุ่งเขาหลวง",
+    "DSTRCT_E_NAME": "Thung Khao Luang",
+    "DSTRCT_PROV": 34
+  },
+  {
+    "DSTRCT_KEY": 465,
+    "DSTRCT_CODE": "004601",
+    "DSTRCT_NAME": "เมืองกาฬสินธุ์",
+    "DSTRCT_E_NAME": "Mueang Kalasin",
+    "DSTRCT_PROV": 35
+  },
+  {
+    "DSTRCT_KEY": 466,
+    "DSTRCT_CODE": "004602",
+    "DSTRCT_NAME": "นามน",
+    "DSTRCT_E_NAME": "Na Mon",
+    "DSTRCT_PROV": 35
+  },
+  {
+    "DSTRCT_KEY": 467,
+    "DSTRCT_CODE": "004603",
+    "DSTRCT_NAME": "กมลาไสย",
+    "DSTRCT_E_NAME": "Kamalasai",
+    "DSTRCT_PROV": 35
+  },
+  {
+    "DSTRCT_KEY": 468,
+    "DSTRCT_CODE": "004604",
+    "DSTRCT_NAME": "ร่องคำ",
+    "DSTRCT_E_NAME": "Rong Kham",
+    "DSTRCT_PROV": 35
+  },
+  {
+    "DSTRCT_KEY": 469,
+    "DSTRCT_CODE": "004605",
+    "DSTRCT_NAME": "กุฉินารายณ์",
+    "DSTRCT_E_NAME": "Kuchinarai",
+    "DSTRCT_PROV": 35
+  },
+  {
+    "DSTRCT_KEY": 470,
+    "DSTRCT_CODE": "004606",
+    "DSTRCT_NAME": "เขาวง",
+    "DSTRCT_E_NAME": "Khao Wong",
+    "DSTRCT_PROV": 35
+  },
+  {
+    "DSTRCT_KEY": 471,
+    "DSTRCT_CODE": "004607",
+    "DSTRCT_NAME": "ยางตลาด",
+    "DSTRCT_E_NAME": "Yang Talat",
+    "DSTRCT_PROV": 35
+  },
+  {
+    "DSTRCT_KEY": 472,
+    "DSTRCT_CODE": "004608",
+    "DSTRCT_NAME": "ห้วยเม็ก",
+    "DSTRCT_E_NAME": "Huai Mek",
+    "DSTRCT_PROV": 35
+  },
+  {
+    "DSTRCT_KEY": 473,
+    "DSTRCT_CODE": "004609",
+    "DSTRCT_NAME": "สหัสขันธ์",
+    "DSTRCT_E_NAME": "Sahatsakhan",
+    "DSTRCT_PROV": 35
+  },
+  {
+    "DSTRCT_KEY": 474,
+    "DSTRCT_CODE": "004610",
+    "DSTRCT_NAME": "คำม่วง",
+    "DSTRCT_E_NAME": "Kham Muang",
+    "DSTRCT_PROV": 35
+  },
+  {
+    "DSTRCT_KEY": 475,
+    "DSTRCT_CODE": "004611",
+    "DSTRCT_NAME": "ท่าคันโท",
+    "DSTRCT_E_NAME": "Tha Khantho",
+    "DSTRCT_PROV": 35
+  },
+  {
+    "DSTRCT_KEY": 476,
+    "DSTRCT_CODE": "004612",
+    "DSTRCT_NAME": "หนองกุงศรี",
+    "DSTRCT_E_NAME": "Nong Kung Si",
+    "DSTRCT_PROV": 35
+  },
+  {
+    "DSTRCT_KEY": 477,
+    "DSTRCT_CODE": "004613",
+    "DSTRCT_NAME": "สมเด็จ",
+    "DSTRCT_E_NAME": "Somdet",
+    "DSTRCT_PROV": 35
+  },
+  {
+    "DSTRCT_KEY": 478,
+    "DSTRCT_CODE": "004614",
+    "DSTRCT_NAME": "ห้วยผึ้ง",
+    "DSTRCT_E_NAME": "Huai Phueng",
+    "DSTRCT_PROV": 35
+  },
+  {
+    "DSTRCT_KEY": 479,
+    "DSTRCT_CODE": "004615",
+    "DSTRCT_NAME": "สามชัย",
+    "DSTRCT_E_NAME": "Sam Chai",
+    "DSTRCT_PROV": 35
+  },
+  {
+    "DSTRCT_KEY": 480,
+    "DSTRCT_CODE": "004616",
+    "DSTRCT_NAME": "นาคู",
+    "DSTRCT_E_NAME": "Na Khu",
+    "DSTRCT_PROV": 35
+  },
+  {
+    "DSTRCT_KEY": 481,
+    "DSTRCT_CODE": "004617",
+    "DSTRCT_NAME": "ดอนจาน",
+    "DSTRCT_E_NAME": "Don Chan",
+    "DSTRCT_PROV": 35
+  },
+  {
+    "DSTRCT_KEY": 482,
+    "DSTRCT_CODE": "004618",
+    "DSTRCT_NAME": "ฆ้องชัย",
+    "DSTRCT_E_NAME": "Khong Chai",
+    "DSTRCT_PROV": 35
+  },
+  {
+    "DSTRCT_KEY": 483,
+    "DSTRCT_CODE": "004701",
+    "DSTRCT_NAME": "เมืองสกลนคร",
+    "DSTRCT_E_NAME": "Mueang Sakon Nakhon",
+    "DSTRCT_PROV": 36
+  },
+  {
+    "DSTRCT_KEY": 484,
+    "DSTRCT_CODE": "004702",
+    "DSTRCT_NAME": "กุสุมาลย์",
+    "DSTRCT_E_NAME": "Kusuman",
+    "DSTRCT_PROV": 36
+  },
+  {
+    "DSTRCT_KEY": 485,
+    "DSTRCT_CODE": "004703",
+    "DSTRCT_NAME": "กุดบาก",
+    "DSTRCT_E_NAME": "Kut Bak",
+    "DSTRCT_PROV": 36
+  },
+  {
+    "DSTRCT_KEY": 486,
+    "DSTRCT_CODE": "004704",
+    "DSTRCT_NAME": "พรรณานิคม",
+    "DSTRCT_E_NAME": "Phanna Nikhom",
+    "DSTRCT_PROV": 36
+  },
+  {
+    "DSTRCT_KEY": 487,
+    "DSTRCT_CODE": "004705",
+    "DSTRCT_NAME": "พังโคน",
+    "DSTRCT_E_NAME": "Phanh khon",
+    "DSTRCT_PROV": 36
+  },
+  {
+    "DSTRCT_KEY": 488,
+    "DSTRCT_CODE": "004706",
+    "DSTRCT_NAME": "วาริชภูมิ",
+    "DSTRCT_E_NAME": "Waritchaphum",
+    "DSTRCT_PROV": 36
+  },
+  {
+    "DSTRCT_KEY": 489,
+    "DSTRCT_CODE": "004707",
+    "DSTRCT_NAME": "นิคมน้ำอูน",
+    "DSTRCT_E_NAME": "Nikhom Nam un",
+    "DSTRCT_PROV": 36
+  },
+  {
+    "DSTRCT_KEY": 490,
+    "DSTRCT_CODE": "004708",
+    "DSTRCT_NAME": "วานรนิวาส",
+    "DSTRCT_E_NAME": "Wanon Niwat",
+    "DSTRCT_PROV": 36
+  },
+  {
+    "DSTRCT_KEY": 491,
+    "DSTRCT_CODE": "004709",
+    "DSTRCT_NAME": "คำตากล้า",
+    "DSTRCT_E_NAME": "Kham Ta Kla",
+    "DSTRCT_PROV": 36
+  },
+  {
+    "DSTRCT_KEY": 492,
+    "DSTRCT_CODE": "004710",
+    "DSTRCT_NAME": "บ้านม่วง",
+    "DSTRCT_E_NAME": "Ban Muang",
+    "DSTRCT_PROV": 36
+  },
+  {
+    "DSTRCT_KEY": 493,
+    "DSTRCT_CODE": "004711",
+    "DSTRCT_NAME": "อากาศอำนวย",
+    "DSTRCT_E_NAME": "Akat Amnuai",
+    "DSTRCT_PROV": 36
+  },
+  {
+    "DSTRCT_KEY": 494,
+    "DSTRCT_CODE": "004712",
+    "DSTRCT_NAME": "สว่างแดนดิน",
+    "DSTRCT_E_NAME": "Sawang Daen Din",
+    "DSTRCT_PROV": 36
+  },
+  {
+    "DSTRCT_KEY": 495,
+    "DSTRCT_CODE": "004713",
+    "DSTRCT_NAME": "ส่องดาว",
+    "DSTRCT_E_NAME": "Song Dao",
+    "DSTRCT_PROV": 36
+  },
+  {
+    "DSTRCT_KEY": 496,
+    "DSTRCT_CODE": "004714",
+    "DSTRCT_NAME": "เต่างอย",
+    "DSTRCT_E_NAME": "Tao Ngoi",
+    "DSTRCT_PROV": 36
+  },
+  {
+    "DSTRCT_KEY": 497,
+    "DSTRCT_CODE": "004715",
+    "DSTRCT_NAME": "โคกศรีสุพรรณ",
+    "DSTRCT_E_NAME": "Khok Si Suphan",
+    "DSTRCT_PROV": 36
+  },
+  {
+    "DSTRCT_KEY": 498,
+    "DSTRCT_CODE": "004716",
+    "DSTRCT_NAME": "เจริญศิลป์",
+    "DSTRCT_E_NAME": "Charoen Sin",
+    "DSTRCT_PROV": 36
+  },
+  {
+    "DSTRCT_KEY": 499,
+    "DSTRCT_CODE": "004717",
+    "DSTRCT_NAME": "โพนนาแก้ว",
+    "DSTRCT_E_NAME": "Phon Na Kaeo",
+    "DSTRCT_PROV": 36
+  },
+  {
+    "DSTRCT_KEY": 500,
+    "DSTRCT_CODE": "004718",
+    "DSTRCT_NAME": "ภูพาน",
+    "DSTRCT_E_NAME": "Phu Phan",
+    "DSTRCT_PROV": 36
+  },
+  {
+    "DSTRCT_KEY": 501,
+    "DSTRCT_CODE": "004801",
+    "DSTRCT_NAME": "เมืองนครพนม",
+    "DSTRCT_E_NAME": "Mueang Nakhon Phanom",
+    "DSTRCT_PROV": 37
+  },
+  {
+    "DSTRCT_KEY": 502,
+    "DSTRCT_CODE": "004802",
+    "DSTRCT_NAME": "ปลาปาก",
+    "DSTRCT_E_NAME": "Pla Pak",
+    "DSTRCT_PROV": 37
+  },
+  {
+    "DSTRCT_KEY": 503,
+    "DSTRCT_CODE": "004803",
+    "DSTRCT_NAME": "ท่าอุเทน",
+    "DSTRCT_E_NAME": "Tha Uthen",
+    "DSTRCT_PROV": 37
+  },
+  {
+    "DSTRCT_KEY": 504,
+    "DSTRCT_CODE": "004804",
+    "DSTRCT_NAME": "บ้านแพง",
+    "DSTRCT_E_NAME": "Ban Phaeng",
+    "DSTRCT_PROV": 37
+  },
+  {
+    "DSTRCT_KEY": 505,
+    "DSTRCT_CODE": "004805",
+    "DSTRCT_NAME": "ธาตุพนม",
+    "DSTRCT_E_NAME": "That Phanom",
+    "DSTRCT_PROV": 37
+  },
+  {
+    "DSTRCT_KEY": 506,
+    "DSTRCT_CODE": "004806",
+    "DSTRCT_NAME": "เรณูนคร",
+    "DSTRCT_E_NAME": "Renu Nakhon",
+    "DSTRCT_PROV": 37
+  },
+  {
+    "DSTRCT_KEY": 507,
+    "DSTRCT_CODE": "004807",
+    "DSTRCT_NAME": "นาแก",
+    "DSTRCT_E_NAME": "Na Kae",
+    "DSTRCT_PROV": 37
+  },
+  {
+    "DSTRCT_KEY": 508,
+    "DSTRCT_CODE": "004808",
+    "DSTRCT_NAME": "ศรีสงคราม",
+    "DSTRCT_E_NAME": "Si Songkhram",
+    "DSTRCT_PROV": 37
+  },
+  {
+    "DSTRCT_KEY": 509,
+    "DSTRCT_CODE": "004809",
+    "DSTRCT_NAME": "นาหว้า",
+    "DSTRCT_E_NAME": "Na Wa",
+    "DSTRCT_PROV": 37
+  },
+  {
+    "DSTRCT_KEY": 510,
+    "DSTRCT_CODE": "004810",
+    "DSTRCT_NAME": "โพนสวรรค์",
+    "DSTRCT_E_NAME": "Phon Sawan",
+    "DSTRCT_PROV": 37
+  },
+  {
+    "DSTRCT_KEY": 511,
+    "DSTRCT_CODE": "004811",
+    "DSTRCT_NAME": "นาทม",
+    "DSTRCT_E_NAME": "Na Thom",
+    "DSTRCT_PROV": 37
+  },
+  {
+    "DSTRCT_KEY": 512,
+    "DSTRCT_CODE": "004812",
+    "DSTRCT_NAME": "วังยาง",
+    "DSTRCT_E_NAME": "Wang Yang",
+    "DSTRCT_PROV": 37
+  },
+  {
+    "DSTRCT_KEY": 513,
+    "DSTRCT_CODE": "004901",
+    "DSTRCT_NAME": "เมืองมุกดาหาร",
+    "DSTRCT_E_NAME": "Mueang Mukdahan",
+    "DSTRCT_PROV": 38
+  },
+  {
+    "DSTRCT_KEY": 514,
+    "DSTRCT_CODE": "004902",
+    "DSTRCT_NAME": "นิคมคำสร้อย",
+    "DSTRCT_E_NAME": "Nikhom Kham Soi",
+    "DSTRCT_PROV": 38
+  },
+  {
+    "DSTRCT_KEY": 515,
+    "DSTRCT_CODE": "004903",
+    "DSTRCT_NAME": "ดอนตาล",
+    "DSTRCT_E_NAME": "Don Tan",
+    "DSTRCT_PROV": 38
+  },
+  {
+    "DSTRCT_KEY": 516,
+    "DSTRCT_CODE": "004904",
+    "DSTRCT_NAME": "ดงหลวง",
+    "DSTRCT_E_NAME": "Don Tan",
+    "DSTRCT_PROV": 38
+  },
+  {
+    "DSTRCT_KEY": 517,
+    "DSTRCT_CODE": "004905",
+    "DSTRCT_NAME": "คำชะอี",
+    "DSTRCT_E_NAME": "Khamcha-i",
+    "DSTRCT_PROV": 38
+  },
+  {
+    "DSTRCT_KEY": 518,
+    "DSTRCT_CODE": "004906",
+    "DSTRCT_NAME": "หว้านใหญ่",
+    "DSTRCT_E_NAME": "Wan Yai",
+    "DSTRCT_PROV": 38
+  },
+  {
+    "DSTRCT_KEY": 519,
+    "DSTRCT_CODE": "004907",
+    "DSTRCT_NAME": "หนองสูง",
+    "DSTRCT_E_NAME": "Nong Sung",
+    "DSTRCT_PROV": 38
+  },
+  {
+    "DSTRCT_KEY": 520,
+    "DSTRCT_CODE": "005001",
+    "DSTRCT_NAME": "เมืองเชียงใหม่",
+    "DSTRCT_E_NAME": "Mueang Chiang Mai",
+    "DSTRCT_PROV": 39
+  },
+  {
+    "DSTRCT_KEY": 521,
+    "DSTRCT_CODE": "005002",
+    "DSTRCT_NAME": "จอมทอง",
+    "DSTRCT_E_NAME": "Chom Thong",
+    "DSTRCT_PROV": 39
+  },
+  {
+    "DSTRCT_KEY": 522,
+    "DSTRCT_CODE": "005003",
+    "DSTRCT_NAME": "แม่แจ่ม",
+    "DSTRCT_E_NAME": "Mae Chaem",
+    "DSTRCT_PROV": 39
+  },
+  {
+    "DSTRCT_KEY": 523,
+    "DSTRCT_CODE": "005004",
+    "DSTRCT_NAME": "เชียงดาว",
+    "DSTRCT_E_NAME": "Chiang Dao",
+    "DSTRCT_PROV": 39
+  },
+  {
+    "DSTRCT_KEY": 524,
+    "DSTRCT_CODE": "005005",
+    "DSTRCT_NAME": "ดอยสะเก็ด",
+    "DSTRCT_E_NAME": "Doi Saket",
+    "DSTRCT_PROV": 39
+  },
+  {
+    "DSTRCT_KEY": 525,
+    "DSTRCT_CODE": "005006",
+    "DSTRCT_NAME": "แม่แตง",
+    "DSTRCT_E_NAME": "Mae Taeng",
+    "DSTRCT_PROV": 39
+  },
+  {
+    "DSTRCT_KEY": 526,
+    "DSTRCT_CODE": "005007",
+    "DSTRCT_NAME": "แม่ริม",
+    "DSTRCT_E_NAME": "Mae Rim",
+    "DSTRCT_PROV": 39
+  },
+  {
+    "DSTRCT_KEY": 527,
+    "DSTRCT_CODE": "005008",
+    "DSTRCT_NAME": "สะเมิง",
+    "DSTRCT_E_NAME": "Samoeng",
+    "DSTRCT_PROV": 39
+  },
+  {
+    "DSTRCT_KEY": 528,
+    "DSTRCT_CODE": "005009",
+    "DSTRCT_NAME": "ฝาง",
+    "DSTRCT_E_NAME": "Fang",
+    "DSTRCT_PROV": 39
+  },
+  {
+    "DSTRCT_KEY": 529,
+    "DSTRCT_CODE": "005010",
+    "DSTRCT_NAME": "แม่อาย",
+    "DSTRCT_E_NAME": "Mae Ai",
+    "DSTRCT_PROV": 39
+  },
+  {
+    "DSTRCT_KEY": 530,
+    "DSTRCT_CODE": "005011",
+    "DSTRCT_NAME": "พร้าว",
+    "DSTRCT_E_NAME": "Phrao",
+    "DSTRCT_PROV": 39
+  },
+  {
+    "DSTRCT_KEY": 531,
+    "DSTRCT_CODE": "005012",
+    "DSTRCT_NAME": "สันป่าตอง",
+    "DSTRCT_E_NAME": "San Pa Tong",
+    "DSTRCT_PROV": 39
+  },
+  {
+    "DSTRCT_KEY": 532,
+    "DSTRCT_CODE": "005013",
+    "DSTRCT_NAME": "สันกำแพง",
+    "DSTRCT_E_NAME": "San Kamphaeng",
+    "DSTRCT_PROV": 39
+  },
+  {
+    "DSTRCT_KEY": 533,
+    "DSTRCT_CODE": "005014",
+    "DSTRCT_NAME": "สันทราย",
+    "DSTRCT_E_NAME": "San Sai",
+    "DSTRCT_PROV": 39
+  },
+  {
+    "DSTRCT_KEY": 534,
+    "DSTRCT_CODE": "005015",
+    "DSTRCT_NAME": "หางดง",
+    "DSTRCT_E_NAME": "Hang Dong",
+    "DSTRCT_PROV": 39
+  },
+  {
+    "DSTRCT_KEY": 535,
+    "DSTRCT_CODE": "005016",
+    "DSTRCT_NAME": "ฮอด",
+    "DSTRCT_E_NAME": "Hot",
+    "DSTRCT_PROV": 39
+  },
+  {
+    "DSTRCT_KEY": 536,
+    "DSTRCT_CODE": "005017",
+    "DSTRCT_NAME": "ดอยเต่า",
+    "DSTRCT_E_NAME": "Doi Tao",
+    "DSTRCT_PROV": 39
+  },
+  {
+    "DSTRCT_KEY": 537,
+    "DSTRCT_CODE": "005018",
+    "DSTRCT_NAME": "อมก๋อย",
+    "DSTRCT_E_NAME": "Omkoi",
+    "DSTRCT_PROV": 39
+  },
+  {
+    "DSTRCT_KEY": 538,
+    "DSTRCT_CODE": "005019",
+    "DSTRCT_NAME": "สารภี",
+    "DSTRCT_E_NAME": "Saraphi",
+    "DSTRCT_PROV": 39
+  },
+  {
+    "DSTRCT_KEY": 539,
+    "DSTRCT_CODE": "005020",
+    "DSTRCT_NAME": "เวียงแหง",
+    "DSTRCT_E_NAME": "Wiang Haeng",
+    "DSTRCT_PROV": 39
+  },
+  {
+    "DSTRCT_KEY": 540,
+    "DSTRCT_CODE": "005021",
+    "DSTRCT_NAME": "ไชยปราการ",
+    "DSTRCT_E_NAME": "Chai Prakan",
+    "DSTRCT_PROV": 39
+  },
+  {
+    "DSTRCT_KEY": 541,
+    "DSTRCT_CODE": "005022",
+    "DSTRCT_NAME": "แม่วาง",
+    "DSTRCT_E_NAME": "Mae Wang",
+    "DSTRCT_PROV": 39
+  },
+  {
+    "DSTRCT_KEY": 542,
+    "DSTRCT_CODE": "005023",
+    "DSTRCT_NAME": "แม่ออน",
+    "DSTRCT_E_NAME": "Mae On",
+    "DSTRCT_PROV": 39
+  },
+  {
+    "DSTRCT_KEY": 543,
+    "DSTRCT_CODE": "005024",
+    "DSTRCT_NAME": "ดอยหล่อ",
+    "DSTRCT_E_NAME": "Doi Lo",
+    "DSTRCT_PROV": 39
+  },
+  {
+    "DSTRCT_KEY": 544,
+    "DSTRCT_CODE": "005025",
+    "DSTRCT_NAME": "กัลยาณิวัฒนา",
+    "DSTRCT_E_NAME": "Kanlayaniwatthana",
+    "DSTRCT_PROV": 39
+  },
+  {
+    "DSTRCT_KEY": 545,
+    "DSTRCT_CODE": "005101",
+    "DSTRCT_NAME": "เมืองลำพูน",
+    "DSTRCT_E_NAME": "Mueang Lamphun",
+    "DSTRCT_PROV": 40
+  },
+  {
+    "DSTRCT_KEY": 546,
+    "DSTRCT_CODE": "005102",
+    "DSTRCT_NAME": "แม่ทา",
+    "DSTRCT_E_NAME": "Mae Tha",
+    "DSTRCT_PROV": 40
+  },
+  {
+    "DSTRCT_KEY": 547,
+    "DSTRCT_CODE": "005103",
+    "DSTRCT_NAME": "บ้านโฮ่ง",
+    "DSTRCT_E_NAME": "Ban Hong",
+    "DSTRCT_PROV": 40
+  },
+  {
+    "DSTRCT_KEY": 548,
+    "DSTRCT_CODE": "005104",
+    "DSTRCT_NAME": "ลี้",
+    "DSTRCT_E_NAME": "Li",
+    "DSTRCT_PROV": 40
+  },
+  {
+    "DSTRCT_KEY": 549,
+    "DSTRCT_CODE": "005105",
+    "DSTRCT_NAME": "ทุ่งหัวช้าง",
+    "DSTRCT_E_NAME": "Thung Hua Chang",
+    "DSTRCT_PROV": 40
+  },
+  {
+    "DSTRCT_KEY": 550,
+    "DSTRCT_CODE": "005106",
+    "DSTRCT_NAME": "ป่าซาง",
+    "DSTRCT_E_NAME": "Pa Sang",
+    "DSTRCT_PROV": 40
+  },
+  {
+    "DSTRCT_KEY": 551,
+    "DSTRCT_CODE": "005107",
+    "DSTRCT_NAME": "บ้านธิ",
+    "DSTRCT_E_NAME": "Ban Thi",
+    "DSTRCT_PROV": 40
+  },
+  {
+    "DSTRCT_KEY": 552,
+    "DSTRCT_CODE": "005108",
+    "DSTRCT_NAME": "เวียงหนองล่อง",
+    "DSTRCT_E_NAME": "Wiang Nong Long",
+    "DSTRCT_PROV": 40
+  },
+  {
+    "DSTRCT_KEY": 553,
+    "DSTRCT_CODE": "005201",
+    "DSTRCT_NAME": "เมืองลำปาง",
+    "DSTRCT_E_NAME": "Mueang Lampang",
+    "DSTRCT_PROV": 41
+  },
+  {
+    "DSTRCT_KEY": 554,
+    "DSTRCT_CODE": "005202",
+    "DSTRCT_NAME": "แม่เมาะ",
+    "DSTRCT_E_NAME": "Mae Mo",
+    "DSTRCT_PROV": 41
+  },
+  {
+    "DSTRCT_KEY": 555,
+    "DSTRCT_CODE": "005203",
+    "DSTRCT_NAME": "เกาะคา",
+    "DSTRCT_E_NAME": "Ko kha",
+    "DSTRCT_PROV": 41
+  },
+  {
+    "DSTRCT_KEY": 556,
+    "DSTRCT_CODE": "005204",
+    "DSTRCT_NAME": "เสริมงาม",
+    "DSTRCT_E_NAME": "Soem Ngam",
+    "DSTRCT_PROV": 41
+  },
+  {
+    "DSTRCT_KEY": 557,
+    "DSTRCT_CODE": "005205",
+    "DSTRCT_NAME": "งาว",
+    "DSTRCT_E_NAME": "Ngao",
+    "DSTRCT_PROV": 41
+  },
+  {
+    "DSTRCT_KEY": 558,
+    "DSTRCT_CODE": "005206",
+    "DSTRCT_NAME": "แจ้ห่ม",
+    "DSTRCT_E_NAME": "Chae Hom",
+    "DSTRCT_PROV": 41
+  },
+  {
+    "DSTRCT_KEY": 559,
+    "DSTRCT_CODE": "005207",
+    "DSTRCT_NAME": "วังเหนือ",
+    "DSTRCT_E_NAME": "Wang Nuea",
+    "DSTRCT_PROV": 41
+  },
+  {
+    "DSTRCT_KEY": 560,
+    "DSTRCT_CODE": "005208",
+    "DSTRCT_NAME": "เถิน",
+    "DSTRCT_E_NAME": "Thoen",
+    "DSTRCT_PROV": 41
+  },
+  {
+    "DSTRCT_KEY": 561,
+    "DSTRCT_CODE": "005209",
+    "DSTRCT_NAME": "แม่พริก",
+    "DSTRCT_E_NAME": "Mae Phrik",
+    "DSTRCT_PROV": 41
+  },
+  {
+    "DSTRCT_KEY": 562,
+    "DSTRCT_CODE": "005210",
+    "DSTRCT_NAME": "แม่ทะ",
+    "DSTRCT_E_NAME": "Mae Tha",
+    "DSTRCT_PROV": 41
+  },
+  {
+    "DSTRCT_KEY": 563,
+    "DSTRCT_CODE": "005211",
+    "DSTRCT_NAME": "สบปราบ",
+    "DSTRCT_E_NAME": "Sop Prap",
+    "DSTRCT_PROV": 41
+  },
+  {
+    "DSTRCT_KEY": 564,
+    "DSTRCT_CODE": "005212",
+    "DSTRCT_NAME": "ห้างฉัตร",
+    "DSTRCT_E_NAME": "Hang Chat",
+    "DSTRCT_PROV": 41
+  },
+  {
+    "DSTRCT_KEY": 565,
+    "DSTRCT_CODE": "005213",
+    "DSTRCT_NAME": "เมืองปาน",
+    "DSTRCT_E_NAME": "Mueang Pan",
+    "DSTRCT_PROV": 41
+  },
+  {
+    "DSTRCT_KEY": 566,
+    "DSTRCT_CODE": "005301",
+    "DSTRCT_NAME": "เมืองอุตรดิตถ์",
+    "DSTRCT_E_NAME": "Mueang Uttaradit",
+    "DSTRCT_PROV": 42
+  },
+  {
+    "DSTRCT_KEY": 567,
+    "DSTRCT_CODE": "005302",
+    "DSTRCT_NAME": "ตรอน",
+    "DSTRCT_E_NAME": "Tron",
+    "DSTRCT_PROV": 42
+  },
+  {
+    "DSTRCT_KEY": 568,
+    "DSTRCT_CODE": "005303",
+    "DSTRCT_NAME": "ท่าปลา",
+    "DSTRCT_E_NAME": "Tha Pla",
+    "DSTRCT_PROV": 42
+  },
+  {
+    "DSTRCT_KEY": 569,
+    "DSTRCT_CODE": "005304",
+    "DSTRCT_NAME": "น้ำปาด",
+    "DSTRCT_E_NAME": "Nam Pat",
+    "DSTRCT_PROV": 42
+  },
+  {
+    "DSTRCT_KEY": 570,
+    "DSTRCT_CODE": "005305",
+    "DSTRCT_NAME": "ฟากท่า",
+    "DSTRCT_E_NAME": "Fak Tha",
+    "DSTRCT_PROV": 42
+  },
+  {
+    "DSTRCT_KEY": 571,
+    "DSTRCT_CODE": "005306",
+    "DSTRCT_NAME": "บ้านโคก",
+    "DSTRCT_E_NAME": "Ban Khok",
+    "DSTRCT_PROV": 42
+  },
+  {
+    "DSTRCT_KEY": 572,
+    "DSTRCT_CODE": "005307",
+    "DSTRCT_NAME": "พิชัย",
+    "DSTRCT_E_NAME": "Phichai",
+    "DSTRCT_PROV": 42
+  },
+  {
+    "DSTRCT_KEY": 573,
+    "DSTRCT_CODE": "005308",
+    "DSTRCT_NAME": "ลับแล",
+    "DSTRCT_E_NAME": "Laplae",
+    "DSTRCT_PROV": 42
+  },
+  {
+    "DSTRCT_KEY": 574,
+    "DSTRCT_CODE": "005309",
+    "DSTRCT_NAME": "ทองแสนขัน",
+    "DSTRCT_E_NAME": "Thong Saen Khan",
+    "DSTRCT_PROV": 42
+  },
+  {
+    "DSTRCT_KEY": 575,
+    "DSTRCT_CODE": "005401",
+    "DSTRCT_NAME": "เมืองแพร่",
+    "DSTRCT_E_NAME": "Mueang Phrae",
+    "DSTRCT_PROV": 43
+  },
+  {
+    "DSTRCT_KEY": 576,
+    "DSTRCT_CODE": "005402",
+    "DSTRCT_NAME": "ร้องกวาง",
+    "DSTRCT_E_NAME": "Mueang Phrae",
+    "DSTRCT_PROV": 43
+  },
+  {
+    "DSTRCT_KEY": 577,
+    "DSTRCT_CODE": "005403",
+    "DSTRCT_NAME": "ลอง",
+    "DSTRCT_E_NAME": "Long",
+    "DSTRCT_PROV": 43
+  },
+  {
+    "DSTRCT_KEY": 578,
+    "DSTRCT_CODE": "005404",
+    "DSTRCT_NAME": "สูงเม่น",
+    "DSTRCT_E_NAME": "Sung Men",
+    "DSTRCT_PROV": 43
+  },
+  {
+    "DSTRCT_KEY": 579,
+    "DSTRCT_CODE": "005405",
+    "DSTRCT_NAME": "เด่นชัย",
+    "DSTRCT_E_NAME": "Den Chai",
+    "DSTRCT_PROV": 43
+  },
+  {
+    "DSTRCT_KEY": 580,
+    "DSTRCT_CODE": "005406",
+    "DSTRCT_NAME": "สอง",
+    "DSTRCT_E_NAME": "Song",
+    "DSTRCT_PROV": 43
+  },
+  {
+    "DSTRCT_KEY": 581,
+    "DSTRCT_CODE": "005407",
+    "DSTRCT_NAME": "วังชิ้น",
+    "DSTRCT_E_NAME": "Wang Chin",
+    "DSTRCT_PROV": 43
+  },
+  {
+    "DSTRCT_KEY": 582,
+    "DSTRCT_CODE": "005408",
+    "DSTRCT_NAME": "หนองม่วงไข่",
+    "DSTRCT_E_NAME": "Nong Muang Khai",
+    "DSTRCT_PROV": 43
+  },
+  {
+    "DSTRCT_KEY": 583,
+    "DSTRCT_CODE": "005501",
+    "DSTRCT_NAME": "เมืองน่าน",
+    "DSTRCT_E_NAME": "Mueang Nan",
+    "DSTRCT_PROV": 44
+  },
+  {
+    "DSTRCT_KEY": 584,
+    "DSTRCT_CODE": "005502",
+    "DSTRCT_NAME": "แม่จริม",
+    "DSTRCT_E_NAME": "Mae Charim",
+    "DSTRCT_PROV": 44
+  },
+  {
+    "DSTRCT_KEY": 585,
+    "DSTRCT_CODE": "005503",
+    "DSTRCT_NAME": "บ้านหลวง",
+    "DSTRCT_E_NAME": "Ban Luang",
+    "DSTRCT_PROV": 44
+  },
+  {
+    "DSTRCT_KEY": 586,
+    "DSTRCT_CODE": "005504",
+    "DSTRCT_NAME": "นาน้อย",
+    "DSTRCT_E_NAME": "Na Noi",
+    "DSTRCT_PROV": 44
+  },
+  {
+    "DSTRCT_KEY": 587,
+    "DSTRCT_CODE": "005505",
+    "DSTRCT_NAME": "ปัว",
+    "DSTRCT_E_NAME": "Pua",
+    "DSTRCT_PROV": 44
+  },
+  {
+    "DSTRCT_KEY": 588,
+    "DSTRCT_CODE": "005506",
+    "DSTRCT_NAME": "ท่าวังผา",
+    "DSTRCT_E_NAME": "Tha Wang Pha",
+    "DSTRCT_PROV": 44
+  },
+  {
+    "DSTRCT_KEY": 589,
+    "DSTRCT_CODE": "005507",
+    "DSTRCT_NAME": "เวียงสา",
+    "DSTRCT_E_NAME": "Wiang Sa",
+    "DSTRCT_PROV": 44
+  },
+  {
+    "DSTRCT_KEY": 590,
+    "DSTRCT_CODE": "005508",
+    "DSTRCT_NAME": "ทุ่งช้าง",
+    "DSTRCT_E_NAME": "Thung Chang",
+    "DSTRCT_PROV": 44
+  },
+  {
+    "DSTRCT_KEY": 591,
+    "DSTRCT_CODE": "005509",
+    "DSTRCT_NAME": "เชียงกลาง",
+    "DSTRCT_E_NAME": "Chiang Klang",
+    "DSTRCT_PROV": 44
+  },
+  {
+    "DSTRCT_KEY": 592,
+    "DSTRCT_CODE": "005510",
+    "DSTRCT_NAME": "นาหมื่น",
+    "DSTRCT_E_NAME": "Na Muen",
+    "DSTRCT_PROV": 44
+  },
+  {
+    "DSTRCT_KEY": 593,
+    "DSTRCT_CODE": "005511",
+    "DSTRCT_NAME": "สันติสุข",
+    "DSTRCT_E_NAME": "Santi Suk",
+    "DSTRCT_PROV": 44
+  },
+  {
+    "DSTRCT_KEY": 594,
+    "DSTRCT_CODE": "005512",
+    "DSTRCT_NAME": "บ่อเกลือ",
+    "DSTRCT_E_NAME": "Bo Kluea",
+    "DSTRCT_PROV": 44
+  },
+  {
+    "DSTRCT_KEY": 595,
+    "DSTRCT_CODE": "005513",
+    "DSTRCT_NAME": "สองแคว",
+    "DSTRCT_E_NAME": "Song Khwae",
+    "DSTRCT_PROV": 44
+  },
+  {
+    "DSTRCT_KEY": 596,
+    "DSTRCT_CODE": "005514",
+    "DSTRCT_NAME": "ภูเพียง",
+    "DSTRCT_E_NAME": "Phu Phiang",
+    "DSTRCT_PROV": 44
+  },
+  {
+    "DSTRCT_KEY": 597,
+    "DSTRCT_CODE": "005515",
+    "DSTRCT_NAME": "เฉลิมพระเกียรติ",
+    "DSTRCT_E_NAME": "Chaloem Phra Kiet",
+    "DSTRCT_PROV": 44
+  },
+  {
+    "DSTRCT_KEY": 598,
+    "DSTRCT_CODE": "005601",
+    "DSTRCT_NAME": "เมืองพะเยา",
+    "DSTRCT_E_NAME": "Mueang Phayao",
+    "DSTRCT_PROV": 45
+  },
+  {
+    "DSTRCT_KEY": 599,
+    "DSTRCT_CODE": "005602",
+    "DSTRCT_NAME": "จุน",
+    "DSTRCT_E_NAME": "Mueang Phayao",
+    "DSTRCT_PROV": 45
+  },
+  {
+    "DSTRCT_KEY": 600,
+    "DSTRCT_CODE": "005603",
+    "DSTRCT_NAME": "เชียงคำ",
+    "DSTRCT_E_NAME": "Mueang Phayao",
+    "DSTRCT_PROV": 45
+  },
+  {
+    "DSTRCT_KEY": 601,
+    "DSTRCT_CODE": "005604",
+    "DSTRCT_NAME": "เชียงม่วน",
+    "DSTRCT_E_NAME": "Mueang Phayao",
+    "DSTRCT_PROV": 45
+  },
+  {
+    "DSTRCT_KEY": 602,
+    "DSTRCT_CODE": "005605",
+    "DSTRCT_NAME": "ดอกคำใต้",
+    "DSTRCT_E_NAME": "Mueang Phayao",
+    "DSTRCT_PROV": 45
+  },
+  {
+    "DSTRCT_KEY": 603,
+    "DSTRCT_CODE": "005606",
+    "DSTRCT_NAME": "ปง",
+    "DSTRCT_E_NAME": "Mueang Phayao",
+    "DSTRCT_PROV": 45
+  },
+  {
+    "DSTRCT_KEY": 604,
+    "DSTRCT_CODE": "005607",
+    "DSTRCT_NAME": "แม่ใจ",
+    "DSTRCT_E_NAME": "Mueang Phayao",
+    "DSTRCT_PROV": 45
+  },
+  {
+    "DSTRCT_KEY": 605,
+    "DSTRCT_CODE": "005608",
+    "DSTRCT_NAME": "ภูซาง",
+    "DSTRCT_E_NAME": "Mueang Phayao",
+    "DSTRCT_PROV": 45
+  },
+  {
+    "DSTRCT_KEY": 606,
+    "DSTRCT_CODE": "005609",
+    "DSTRCT_NAME": "ภูกามยาว",
+    "DSTRCT_E_NAME": "Mueang Phayao",
+    "DSTRCT_PROV": 45
+  },
+  {
+    "DSTRCT_KEY": 607,
+    "DSTRCT_CODE": "005701",
+    "DSTRCT_NAME": "เมืองเชียงราย",
+    "DSTRCT_E_NAME": "Mueang Chiang Rai",
+    "DSTRCT_PROV": 46
+  },
+  {
+    "DSTRCT_KEY": 608,
+    "DSTRCT_CODE": "005702",
+    "DSTRCT_NAME": "เวียงชัย",
+    "DSTRCT_E_NAME": "Wiang Chai",
+    "DSTRCT_PROV": 46
+  },
+  {
+    "DSTRCT_KEY": 609,
+    "DSTRCT_CODE": "005703",
+    "DSTRCT_NAME": "เชียงของ",
+    "DSTRCT_E_NAME": "Chiang Khong",
+    "DSTRCT_PROV": 46
+  },
+  {
+    "DSTRCT_KEY": 610,
+    "DSTRCT_CODE": "005704",
+    "DSTRCT_NAME": "เทิง",
+    "DSTRCT_E_NAME": "Thoeng",
+    "DSTRCT_PROV": 46
+  },
+  {
+    "DSTRCT_KEY": 611,
+    "DSTRCT_CODE": "005705",
+    "DSTRCT_NAME": "พาน",
+    "DSTRCT_E_NAME": "Phan",
+    "DSTRCT_PROV": 46
+  },
+  {
+    "DSTRCT_KEY": 612,
+    "DSTRCT_CODE": "005706",
+    "DSTRCT_NAME": "ป่าแดด",
+    "DSTRCT_E_NAME": "Pa Daet",
+    "DSTRCT_PROV": 46
+  },
+  {
+    "DSTRCT_KEY": 613,
+    "DSTRCT_CODE": "005707",
+    "DSTRCT_NAME": "แม่จัน",
+    "DSTRCT_E_NAME": "Mae Chan",
+    "DSTRCT_PROV": 46
+  },
+  {
+    "DSTRCT_KEY": 614,
+    "DSTRCT_CODE": "005708",
+    "DSTRCT_NAME": "เชียงแสน",
+    "DSTRCT_E_NAME": "Chiang Saen",
+    "DSTRCT_PROV": 46
+  },
+  {
+    "DSTRCT_KEY": 615,
+    "DSTRCT_CODE": "005709",
+    "DSTRCT_NAME": "แม่สาย",
+    "DSTRCT_E_NAME": "Mae Sai",
+    "DSTRCT_PROV": 46
+  },
+  {
+    "DSTRCT_KEY": 616,
+    "DSTRCT_CODE": "005710",
+    "DSTRCT_NAME": "แม่สรวย",
+    "DSTRCT_E_NAME": "Mae Suai",
+    "DSTRCT_PROV": 46
+  },
+  {
+    "DSTRCT_KEY": 617,
+    "DSTRCT_CODE": "005711",
+    "DSTRCT_NAME": "เวียงป่าเป้า",
+    "DSTRCT_E_NAME": "Wiang Pa Pao",
+    "DSTRCT_PROV": 46
+  },
+  {
+    "DSTRCT_KEY": 618,
+    "DSTRCT_CODE": "005712",
+    "DSTRCT_NAME": "พญาเม็งราย",
+    "DSTRCT_E_NAME": "Phaya Mengrai",
+    "DSTRCT_PROV": 46
+  },
+  {
+    "DSTRCT_KEY": 619,
+    "DSTRCT_CODE": "005713",
+    "DSTRCT_NAME": "เวียงแก่น",
+    "DSTRCT_E_NAME": "Wiang Kaen",
+    "DSTRCT_PROV": 46
+  },
+  {
+    "DSTRCT_KEY": 620,
+    "DSTRCT_CODE": "005714",
+    "DSTRCT_NAME": "ขุนตาล",
+    "DSTRCT_E_NAME": "Khun Tan",
+    "DSTRCT_PROV": 46
+  },
+  {
+    "DSTRCT_KEY": 621,
+    "DSTRCT_CODE": "005715",
+    "DSTRCT_NAME": "แม่ฟ้าหลวง",
+    "DSTRCT_E_NAME": "Mae Fa Luang",
+    "DSTRCT_PROV": 46
+  },
+  {
+    "DSTRCT_KEY": 622,
+    "DSTRCT_CODE": "005716",
+    "DSTRCT_NAME": "แม่ลาว",
+    "DSTRCT_E_NAME": "Mae Lao",
+    "DSTRCT_PROV": 46
+  },
+  {
+    "DSTRCT_KEY": 623,
+    "DSTRCT_CODE": "005717",
+    "DSTRCT_NAME": "เวียงเชียงรุ้ง",
+    "DSTRCT_E_NAME": "Wiang Chiang Rung",
+    "DSTRCT_PROV": 46
+  },
+  {
+    "DSTRCT_KEY": 624,
+    "DSTRCT_CODE": "005718",
+    "DSTRCT_NAME": "ดอยหลวง",
+    "DSTRCT_E_NAME": "Doi Luang",
+    "DSTRCT_PROV": 46
+  },
+  {
+    "DSTRCT_KEY": 625,
+    "DSTRCT_CODE": "005801",
+    "DSTRCT_NAME": "เมืองแม่ฮ่องสอน",
+    "DSTRCT_E_NAME": "Mueang Mae Hong Son",
+    "DSTRCT_PROV": 47
+  },
+  {
+    "DSTRCT_KEY": 626,
+    "DSTRCT_CODE": "005802",
+    "DSTRCT_NAME": "ขุนยวม",
+    "DSTRCT_E_NAME": "Khun Yuam",
+    "DSTRCT_PROV": 47
+  },
+  {
+    "DSTRCT_KEY": 627,
+    "DSTRCT_CODE": "005803",
+    "DSTRCT_NAME": "ปาย",
+    "DSTRCT_E_NAME": "Pai",
+    "DSTRCT_PROV": 47
+  },
+  {
+    "DSTRCT_KEY": 628,
+    "DSTRCT_CODE": "005804",
+    "DSTRCT_NAME": "แม่สะเรียง",
+    "DSTRCT_E_NAME": "Mae Sariang",
+    "DSTRCT_PROV": 47
+  },
+  {
+    "DSTRCT_KEY": 629,
+    "DSTRCT_CODE": "005805",
+    "DSTRCT_NAME": "แม่ลาน้อย",
+    "DSTRCT_E_NAME": "Mae La Noi",
+    "DSTRCT_PROV": 47
+  },
+  {
+    "DSTRCT_KEY": 630,
+    "DSTRCT_CODE": "005806",
+    "DSTRCT_NAME": "สบเมย",
+    "DSTRCT_E_NAME": "Sop Moei",
+    "DSTRCT_PROV": 47
+  },
+  {
+    "DSTRCT_KEY": 631,
+    "DSTRCT_CODE": "005807",
+    "DSTRCT_NAME": "ปางมะผ้า",
+    "DSTRCT_E_NAME": "Pang Mapha",
+    "DSTRCT_PROV": 47
+  },
+  {
+    "DSTRCT_KEY": 632,
+    "DSTRCT_CODE": "006001",
+    "DSTRCT_NAME": "เมืองนครสวรรค์",
+    "DSTRCT_E_NAME": "Mueang Nakhon Sawan",
+    "DSTRCT_PROV": 48
+  },
+  {
+    "DSTRCT_KEY": 633,
+    "DSTRCT_CODE": "006002",
+    "DSTRCT_NAME": "โกรกพระ",
+    "DSTRCT_E_NAME": "Krok Phra",
+    "DSTRCT_PROV": 48
+  },
+  {
+    "DSTRCT_KEY": 634,
+    "DSTRCT_CODE": "006003",
+    "DSTRCT_NAME": "ชุมแสง",
+    "DSTRCT_E_NAME": "Chum Saeng",
+    "DSTRCT_PROV": 48
+  },
+  {
+    "DSTRCT_KEY": 635,
+    "DSTRCT_CODE": "006004",
+    "DSTRCT_NAME": "หนองบัว",
+    "DSTRCT_E_NAME": "Nong Bua",
+    "DSTRCT_PROV": 48
+  },
+  {
+    "DSTRCT_KEY": 636,
+    "DSTRCT_CODE": "006005",
+    "DSTRCT_NAME": "บรรพตพิสัย",
+    "DSTRCT_E_NAME": "Banphot Phisai",
+    "DSTRCT_PROV": 48
+  },
+  {
+    "DSTRCT_KEY": 637,
+    "DSTRCT_CODE": "006006",
+    "DSTRCT_NAME": "เก้าเลี้ยว",
+    "DSTRCT_E_NAME": "Kao Liao",
+    "DSTRCT_PROV": 48
+  },
+  {
+    "DSTRCT_KEY": 638,
+    "DSTRCT_CODE": "006007",
+    "DSTRCT_NAME": "ตาคลี",
+    "DSTRCT_E_NAME": "Takhli",
+    "DSTRCT_PROV": 48
+  },
+  {
+    "DSTRCT_KEY": 639,
+    "DSTRCT_CODE": "006008",
+    "DSTRCT_NAME": "ท่าตะโก",
+    "DSTRCT_E_NAME": "Tha Tako",
+    "DSTRCT_PROV": 48
+  },
+  {
+    "DSTRCT_KEY": 640,
+    "DSTRCT_CODE": "006009",
+    "DSTRCT_NAME": "ไพศาลี",
+    "DSTRCT_E_NAME": "Phaisali",
+    "DSTRCT_PROV": 48
+  },
+  {
+    "DSTRCT_KEY": 641,
+    "DSTRCT_CODE": "006010",
+    "DSTRCT_NAME": "พยุหะคีรี",
+    "DSTRCT_E_NAME": "Phayuha Hkiri",
+    "DSTRCT_PROV": 48
+  },
+  {
+    "DSTRCT_KEY": 642,
+    "DSTRCT_CODE": "006011",
+    "DSTRCT_NAME": "ลาดยาว",
+    "DSTRCT_E_NAME": "Lat Yao",
+    "DSTRCT_PROV": 48
+  },
+  {
+    "DSTRCT_KEY": 643,
+    "DSTRCT_CODE": "006012",
+    "DSTRCT_NAME": "ตากฟ้า",
+    "DSTRCT_E_NAME": "Tak Fa",
+    "DSTRCT_PROV": 48
+  },
+  {
+    "DSTRCT_KEY": 644,
+    "DSTRCT_CODE": "006013",
+    "DSTRCT_NAME": "แม่วงก์",
+    "DSTRCT_E_NAME": "Mae Wong",
+    "DSTRCT_PROV": 48
+  },
+  {
+    "DSTRCT_KEY": 645,
+    "DSTRCT_CODE": "006014",
+    "DSTRCT_NAME": "แม่เปิน",
+    "DSTRCT_E_NAME": "Mae Pern",
+    "DSTRCT_PROV": 48
+  },
+  {
+    "DSTRCT_KEY": 646,
+    "DSTRCT_CODE": "006015",
+    "DSTRCT_NAME": "ชุมตาบง",
+    "DSTRCT_E_NAME": "Chum Ta Bong",
+    "DSTRCT_PROV": 48
+  },
+  {
+    "DSTRCT_KEY": 647,
+    "DSTRCT_CODE": "006101",
+    "DSTRCT_NAME": "เมืองอุทัยธานี",
+    "DSTRCT_E_NAME": "Mueang Uthai Thani",
+    "DSTRCT_PROV": 49
+  },
+  {
+    "DSTRCT_KEY": 648,
+    "DSTRCT_CODE": "006102",
+    "DSTRCT_NAME": "ทัพทัน",
+    "DSTRCT_E_NAME": "Thap Than",
+    "DSTRCT_PROV": 49
+  },
+  {
+    "DSTRCT_KEY": 649,
+    "DSTRCT_CODE": "006103",
+    "DSTRCT_NAME": "สว่างอารมณ์",
+    "DSTRCT_E_NAME": "Sawang Arom",
+    "DSTRCT_PROV": 49
+  },
+  {
+    "DSTRCT_KEY": 650,
+    "DSTRCT_CODE": "006104",
+    "DSTRCT_NAME": "หนองฉาง",
+    "DSTRCT_E_NAME": "Nong Chang",
+    "DSTRCT_PROV": 49
+  },
+  {
+    "DSTRCT_KEY": 651,
+    "DSTRCT_CODE": "006105",
+    "DSTRCT_NAME": "หนองขาหย่าง",
+    "DSTRCT_E_NAME": "Nong Khayang",
+    "DSTRCT_PROV": 49
+  },
+  {
+    "DSTRCT_KEY": 652,
+    "DSTRCT_CODE": "006106",
+    "DSTRCT_NAME": "บ้านไร่",
+    "DSTRCT_E_NAME": "Ban Rai",
+    "DSTRCT_PROV": 49
+  },
+  {
+    "DSTRCT_KEY": 653,
+    "DSTRCT_CODE": "006107",
+    "DSTRCT_NAME": "ลานสัก",
+    "DSTRCT_E_NAME": "Lan Sak",
+    "DSTRCT_PROV": 49
+  },
+  {
+    "DSTRCT_KEY": 654,
+    "DSTRCT_CODE": "006108",
+    "DSTRCT_NAME": "ห้วยคต",
+    "DSTRCT_E_NAME": "Huai Khot",
+    "DSTRCT_PROV": 49
+  },
+  {
+    "DSTRCT_KEY": 655,
+    "DSTRCT_CODE": "006201",
+    "DSTRCT_NAME": "เมืองกำแพงเพชร",
+    "DSTRCT_E_NAME": "Mueang Kamphaeng Phet",
+    "DSTRCT_PROV": 50
+  },
+  {
+    "DSTRCT_KEY": 656,
+    "DSTRCT_CODE": "006202",
+    "DSTRCT_NAME": "ไทรงาม",
+    "DSTRCT_E_NAME": "Sai Ngam",
+    "DSTRCT_PROV": 50
+  },
+  {
+    "DSTRCT_KEY": 657,
+    "DSTRCT_CODE": "006203",
+    "DSTRCT_NAME": "คลองลาน",
+    "DSTRCT_E_NAME": "Khlong Lan",
+    "DSTRCT_PROV": 50
+  },
+  {
+    "DSTRCT_KEY": 658,
+    "DSTRCT_CODE": "006204",
+    "DSTRCT_NAME": "ขาณุวรลักษบุรี",
+    "DSTRCT_E_NAME": "Khanu Woralaksaburi",
+    "DSTRCT_PROV": 50
+  },
+  {
+    "DSTRCT_KEY": 659,
+    "DSTRCT_CODE": "006205",
+    "DSTRCT_NAME": "คลองขลุง",
+    "DSTRCT_E_NAME": "Khlong Khlung",
+    "DSTRCT_PROV": 50
+  },
+  {
+    "DSTRCT_KEY": 660,
+    "DSTRCT_CODE": "006206",
+    "DSTRCT_NAME": "พรานกระต่าย",
+    "DSTRCT_E_NAME": "Phran Kratai",
+    "DSTRCT_PROV": 50
+  },
+  {
+    "DSTRCT_KEY": 661,
+    "DSTRCT_CODE": "006207",
+    "DSTRCT_NAME": "ลานกระบือ",
+    "DSTRCT_E_NAME": "Lan Krabue",
+    "DSTRCT_PROV": 50
+  },
+  {
+    "DSTRCT_KEY": 662,
+    "DSTRCT_CODE": "006208",
+    "DSTRCT_NAME": "ทรายทองวัฒนา",
+    "DSTRCT_E_NAME": "Sai Thong Watthana",
+    "DSTRCT_PROV": 50
+  },
+  {
+    "DSTRCT_KEY": 663,
+    "DSTRCT_CODE": "006209",
+    "DSTRCT_NAME": "ปางศิลาทอง",
+    "DSTRCT_E_NAME": "Pang Sila Thong",
+    "DSTRCT_PROV": 50
+  },
+  {
+    "DSTRCT_KEY": 664,
+    "DSTRCT_CODE": "006210",
+    "DSTRCT_NAME": "บึงสามัคคี",
+    "DSTRCT_E_NAME": "Bueng Samakkhi",
+    "DSTRCT_PROV": 50
+  },
+  {
+    "DSTRCT_KEY": 665,
+    "DSTRCT_CODE": "006211",
+    "DSTRCT_NAME": "โกสัมพีนคร",
+    "DSTRCT_E_NAME": "Kosamphi Nakhon",
+    "DSTRCT_PROV": 50
+  },
+  {
+    "DSTRCT_KEY": 666,
+    "DSTRCT_CODE": "006301",
+    "DSTRCT_NAME": "เมืองตาก",
+    "DSTRCT_E_NAME": "Mueang Tak",
+    "DSTRCT_PROV": 51
+  },
+  {
+    "DSTRCT_KEY": 667,
+    "DSTRCT_CODE": "006302",
+    "DSTRCT_NAME": "บ้านตาก",
+    "DSTRCT_E_NAME": "Ban Tak",
+    "DSTRCT_PROV": 51
+  },
+  {
+    "DSTRCT_KEY": 668,
+    "DSTRCT_CODE": "006303",
+    "DSTRCT_NAME": "สามเงา",
+    "DSTRCT_E_NAME": "Sam Ngao",
+    "DSTRCT_PROV": 51
+  },
+  {
+    "DSTRCT_KEY": 669,
+    "DSTRCT_CODE": "006304",
+    "DSTRCT_NAME": "แม่ระมาด",
+    "DSTRCT_E_NAME": "Mae Ramat",
+    "DSTRCT_PROV": 51
+  },
+  {
+    "DSTRCT_KEY": 670,
+    "DSTRCT_CODE": "006305",
+    "DSTRCT_NAME": "ท่าสองยาง",
+    "DSTRCT_E_NAME": "Tha Song Yang",
+    "DSTRCT_PROV": 51
+  },
+  {
+    "DSTRCT_KEY": 671,
+    "DSTRCT_CODE": "006306",
+    "DSTRCT_NAME": "แม่สอด",
+    "DSTRCT_E_NAME": "Mae Sot",
+    "DSTRCT_PROV": 51
+  },
+  {
+    "DSTRCT_KEY": 672,
+    "DSTRCT_CODE": "006307",
+    "DSTRCT_NAME": "พบพระ",
+    "DSTRCT_E_NAME": "Phop Phra",
+    "DSTRCT_PROV": 51
+  },
+  {
+    "DSTRCT_KEY": 673,
+    "DSTRCT_CODE": "006308",
+    "DSTRCT_NAME": "อุ้มผาง",
+    "DSTRCT_E_NAME": "Um Phang",
+    "DSTRCT_PROV": 51
+  },
+  {
+    "DSTRCT_KEY": 674,
+    "DSTRCT_CODE": "006309",
+    "DSTRCT_NAME": "วังเจ้า",
+    "DSTRCT_E_NAME": "Wang Chao",
+    "DSTRCT_PROV": 51
+  },
+  {
+    "DSTRCT_KEY": 675,
+    "DSTRCT_CODE": "006401",
+    "DSTRCT_NAME": "เมืองสุโขทัย",
+    "DSTRCT_E_NAME": "Mueang Sukhothai",
+    "DSTRCT_PROV": 52
+  },
+  {
+    "DSTRCT_KEY": 676,
+    "DSTRCT_CODE": "006402",
+    "DSTRCT_NAME": "บ้านด่านลานหอย",
+    "DSTRCT_E_NAME": "Ban Dan Lan Hoi",
+    "DSTRCT_PROV": 52
+  },
+  {
+    "DSTRCT_KEY": 677,
+    "DSTRCT_CODE": "006403",
+    "DSTRCT_NAME": "คีรีมาศ",
+    "DSTRCT_E_NAME": "Khiri Mat",
+    "DSTRCT_PROV": 52
+  },
+  {
+    "DSTRCT_KEY": 678,
+    "DSTRCT_CODE": "006404",
+    "DSTRCT_NAME": "กงไกรลาศ",
+    "DSTRCT_E_NAME": "Kong Krailat",
+    "DSTRCT_PROV": 52
+  },
+  {
+    "DSTRCT_KEY": 679,
+    "DSTRCT_CODE": "006405",
+    "DSTRCT_NAME": "ศรีสัชนาลัย",
+    "DSTRCT_E_NAME": "Si Satchanalai",
+    "DSTRCT_PROV": 52
+  },
+  {
+    "DSTRCT_KEY": 680,
+    "DSTRCT_CODE": "006406",
+    "DSTRCT_NAME": "ศรีสำโรง",
+    "DSTRCT_E_NAME": "Si Samrong",
+    "DSTRCT_PROV": 52
+  },
+  {
+    "DSTRCT_KEY": 681,
+    "DSTRCT_CODE": "006407",
+    "DSTRCT_NAME": "สวรรคโลก",
+    "DSTRCT_E_NAME": "Sawankhalok",
+    "DSTRCT_PROV": 52
+  },
+  {
+    "DSTRCT_KEY": 682,
+    "DSTRCT_CODE": "006408",
+    "DSTRCT_NAME": "ศรีนคร",
+    "DSTRCT_E_NAME": "Si Nakhon",
+    "DSTRCT_PROV": 52
+  },
+  {
+    "DSTRCT_KEY": 683,
+    "DSTRCT_CODE": "006409",
+    "DSTRCT_NAME": "ทุ่งเสลี่ยม",
+    "DSTRCT_E_NAME": "Thung Saliam",
+    "DSTRCT_PROV": 52
+  },
+  {
+    "DSTRCT_KEY": 684,
+    "DSTRCT_CODE": "006501",
+    "DSTRCT_NAME": "เมืองพิษณุโลก",
+    "DSTRCT_E_NAME": "Mueang Phitsanulok",
+    "DSTRCT_PROV": 53
+  },
+  {
+    "DSTRCT_KEY": 685,
+    "DSTRCT_CODE": "006502",
+    "DSTRCT_NAME": "นครไทย",
+    "DSTRCT_E_NAME": "Nakhon Thai",
+    "DSTRCT_PROV": 53
+  },
+  {
+    "DSTRCT_KEY": 686,
+    "DSTRCT_CODE": "006503",
+    "DSTRCT_NAME": "ชาติตระการ",
+    "DSTRCT_E_NAME": "Chat Trakan",
+    "DSTRCT_PROV": 53
+  },
+  {
+    "DSTRCT_KEY": 687,
+    "DSTRCT_CODE": "006504",
+    "DSTRCT_NAME": "บางระกำ",
+    "DSTRCT_E_NAME": "Bang Rakam",
+    "DSTRCT_PROV": 53
+  },
+  {
+    "DSTRCT_KEY": 688,
+    "DSTRCT_CODE": "006505",
+    "DSTRCT_NAME": "บางกระทุ่ม",
+    "DSTRCT_E_NAME": "Bang Krathum",
+    "DSTRCT_PROV": 53
+  },
+  {
+    "DSTRCT_KEY": 689,
+    "DSTRCT_CODE": "006506",
+    "DSTRCT_NAME": "พรหมพิราม",
+    "DSTRCT_E_NAME": "Phrom Phiram",
+    "DSTRCT_PROV": 53
+  },
+  {
+    "DSTRCT_KEY": 690,
+    "DSTRCT_CODE": "006507",
+    "DSTRCT_NAME": "วัดโบสถ์",
+    "DSTRCT_E_NAME": "Wat Bot",
+    "DSTRCT_PROV": 53
+  },
+  {
+    "DSTRCT_KEY": 691,
+    "DSTRCT_CODE": "006508",
+    "DSTRCT_NAME": "วังทอง",
+    "DSTRCT_E_NAME": "Wang Thong",
+    "DSTRCT_PROV": 53
+  },
+  {
+    "DSTRCT_KEY": 692,
+    "DSTRCT_CODE": "006509",
+    "DSTRCT_NAME": "เนินมะปราง",
+    "DSTRCT_E_NAME": "Noen Maprang",
+    "DSTRCT_PROV": 53
+  },
+  {
+    "DSTRCT_KEY": 693,
+    "DSTRCT_CODE": "006601",
+    "DSTRCT_NAME": "เมืองพิจิตร",
+    "DSTRCT_E_NAME": "Mueang Phichit",
+    "DSTRCT_PROV": 54
+  },
+  {
+    "DSTRCT_KEY": 694,
+    "DSTRCT_CODE": "006602",
+    "DSTRCT_NAME": "วังทรายพูน",
+    "DSTRCT_E_NAME": "Wang Sai Phun",
+    "DSTRCT_PROV": 54
+  },
+  {
+    "DSTRCT_KEY": 695,
+    "DSTRCT_CODE": "006603",
+    "DSTRCT_NAME": "โพธิ์ประทับช้าง",
+    "DSTRCT_E_NAME": "Pho Prathap Chang",
+    "DSTRCT_PROV": 54
+  },
+  {
+    "DSTRCT_KEY": 696,
+    "DSTRCT_CODE": "006604",
+    "DSTRCT_NAME": "ตะพานหิน",
+    "DSTRCT_E_NAME": "Taphan Hin",
+    "DSTRCT_PROV": 54
+  },
+  {
+    "DSTRCT_KEY": 697,
+    "DSTRCT_CODE": "006605",
+    "DSTRCT_NAME": "บางมูลนาก",
+    "DSTRCT_E_NAME": "Bang Mun Nak",
+    "DSTRCT_PROV": 54
+  },
+  {
+    "DSTRCT_KEY": 698,
+    "DSTRCT_CODE": "006606",
+    "DSTRCT_NAME": "โพทะเล",
+    "DSTRCT_E_NAME": "Pho Thale",
+    "DSTRCT_PROV": 54
+  },
+  {
+    "DSTRCT_KEY": 699,
+    "DSTRCT_CODE": "006607",
+    "DSTRCT_NAME": "สามง่าม",
+    "DSTRCT_E_NAME": "Sam Ngam",
+    "DSTRCT_PROV": 54
+  },
+  {
+    "DSTRCT_KEY": 700,
+    "DSTRCT_CODE": "006608",
+    "DSTRCT_NAME": "ทับคล้อ",
+    "DSTRCT_E_NAME": "Tap Khlo",
+    "DSTRCT_PROV": 54
+  },
+  {
+    "DSTRCT_KEY": 701,
+    "DSTRCT_CODE": "006609",
+    "DSTRCT_NAME": "สากเหล็ก",
+    "DSTRCT_E_NAME": "Sak Lek",
+    "DSTRCT_PROV": 54
+  },
+  {
+    "DSTRCT_KEY": 702,
+    "DSTRCT_CODE": "006610",
+    "DSTRCT_NAME": "บึงนาราง",
+    "DSTRCT_E_NAME": "Bueng Na Rang",
+    "DSTRCT_PROV": 54
+  },
+  {
+    "DSTRCT_KEY": 703,
+    "DSTRCT_CODE": "006611",
+    "DSTRCT_NAME": "ดงเจริญ",
+    "DSTRCT_E_NAME": "Dong Charoen",
+    "DSTRCT_PROV": 54
+  },
+  {
+    "DSTRCT_KEY": 704,
+    "DSTRCT_CODE": "006612",
+    "DSTRCT_NAME": "วชิรบารมี",
+    "DSTRCT_E_NAME": "Wachirabarami",
+    "DSTRCT_PROV": 54
+  },
+  {
+    "DSTRCT_KEY": 705,
+    "DSTRCT_CODE": "006701",
+    "DSTRCT_NAME": "เมืองเพชรบูรณ์",
+    "DSTRCT_E_NAME": "Mueang Phetchabun",
+    "DSTRCT_PROV": 55
+  },
+  {
+    "DSTRCT_KEY": 706,
+    "DSTRCT_CODE": "006702",
+    "DSTRCT_NAME": "ชนแดน",
+    "DSTRCT_E_NAME": "Chon Daen",
+    "DSTRCT_PROV": 55
+  },
+  {
+    "DSTRCT_KEY": 707,
+    "DSTRCT_CODE": "006703",
+    "DSTRCT_NAME": "หล่มสัก",
+    "DSTRCT_E_NAME": "Lom Sak",
+    "DSTRCT_PROV": 55
+  },
+  {
+    "DSTRCT_KEY": 708,
+    "DSTRCT_CODE": "006704",
+    "DSTRCT_NAME": "หล่มเก่า",
+    "DSTRCT_E_NAME": "Lom Kao",
+    "DSTRCT_PROV": 55
+  },
+  {
+    "DSTRCT_KEY": 709,
+    "DSTRCT_CODE": "006705",
+    "DSTRCT_NAME": "วิเชียรบุรี",
+    "DSTRCT_E_NAME": "Wichian Buri",
+    "DSTRCT_PROV": 55
+  },
+  {
+    "DSTRCT_KEY": 710,
+    "DSTRCT_CODE": "006706",
+    "DSTRCT_NAME": "ศรีเทพ",
+    "DSTRCT_E_NAME": "Si Thep",
+    "DSTRCT_PROV": 55
+  },
+  {
+    "DSTRCT_KEY": 711,
+    "DSTRCT_CODE": "006707",
+    "DSTRCT_NAME": "หนองไผ่",
+    "DSTRCT_E_NAME": "Nong Phai",
+    "DSTRCT_PROV": 55
+  },
+  {
+    "DSTRCT_KEY": 712,
+    "DSTRCT_CODE": "006708",
+    "DSTRCT_NAME": "บึงสามพัน",
+    "DSTRCT_E_NAME": "Bueng Sam Phan",
+    "DSTRCT_PROV": 55
+  },
+  {
+    "DSTRCT_KEY": 713,
+    "DSTRCT_CODE": "006709",
+    "DSTRCT_NAME": "น้ำหนาว",
+    "DSTRCT_E_NAME": "Nam Nao",
+    "DSTRCT_PROV": 55
+  },
+  {
+    "DSTRCT_KEY": 714,
+    "DSTRCT_CODE": "006710",
+    "DSTRCT_NAME": "วังโป่ง",
+    "DSTRCT_E_NAME": "Wang Pong",
+    "DSTRCT_PROV": 55
+  },
+  {
+    "DSTRCT_KEY": 715,
+    "DSTRCT_CODE": "006711",
+    "DSTRCT_NAME": "เขาค้อ",
+    "DSTRCT_E_NAME": "Khao kho",
+    "DSTRCT_PROV": 55
+  },
+  {
+    "DSTRCT_KEY": 716,
+    "DSTRCT_CODE": "007001",
+    "DSTRCT_NAME": "เมืองราชบุรี",
+    "DSTRCT_E_NAME": "Mueang Ratchaburi",
+    "DSTRCT_PROV": 56
+  },
+  {
+    "DSTRCT_KEY": 717,
+    "DSTRCT_CODE": "007002",
+    "DSTRCT_NAME": "จอมบึง",
+    "DSTRCT_E_NAME": "Chom Bueng",
+    "DSTRCT_PROV": 56
+  },
+  {
+    "DSTRCT_KEY": 718,
+    "DSTRCT_CODE": "007003",
+    "DSTRCT_NAME": "สวนผึ้ง",
+    "DSTRCT_E_NAME": "Suan Phueng",
+    "DSTRCT_PROV": 56
+  },
+  {
+    "DSTRCT_KEY": 719,
+    "DSTRCT_CODE": "007004",
+    "DSTRCT_NAME": "ดำเนินสะดวก",
+    "DSTRCT_E_NAME": "Damnoen Saduak",
+    "DSTRCT_PROV": 56
+  },
+  {
+    "DSTRCT_KEY": 720,
+    "DSTRCT_CODE": "007005",
+    "DSTRCT_NAME": "บ้านโป่ง",
+    "DSTRCT_E_NAME": "Ban Pong",
+    "DSTRCT_PROV": 56
+  },
+  {
+    "DSTRCT_KEY": 721,
+    "DSTRCT_CODE": "007006",
+    "DSTRCT_NAME": "บางแพ",
+    "DSTRCT_E_NAME": "Bang Phae",
+    "DSTRCT_PROV": 56
+  },
+  {
+    "DSTRCT_KEY": 722,
+    "DSTRCT_CODE": "007007",
+    "DSTRCT_NAME": "โพธาราม",
+    "DSTRCT_E_NAME": "Photharam",
+    "DSTRCT_PROV": 56
+  },
+  {
+    "DSTRCT_KEY": 723,
+    "DSTRCT_CODE": "007008",
+    "DSTRCT_NAME": "ปากท่อ",
+    "DSTRCT_E_NAME": "Pak Tho",
+    "DSTRCT_PROV": 56
+  },
+  {
+    "DSTRCT_KEY": 724,
+    "DSTRCT_CODE": "007009",
+    "DSTRCT_NAME": "วัดเพลง",
+    "DSTRCT_E_NAME": "Wat Phleng",
+    "DSTRCT_PROV": 56
+  },
+  {
+    "DSTRCT_KEY": 725,
+    "DSTRCT_CODE": "007010",
+    "DSTRCT_NAME": "บ้านคา",
+    "DSTRCT_E_NAME": "Ban Kha",
+    "DSTRCT_PROV": 56
+  },
+  {
+    "DSTRCT_KEY": 726,
+    "DSTRCT_CODE": "007101",
+    "DSTRCT_NAME": "เมืองกาญจนบุรี",
+    "DSTRCT_E_NAME": "Mueang Kanchanaburi",
+    "DSTRCT_PROV": 57
+  },
+  {
+    "DSTRCT_KEY": 727,
+    "DSTRCT_CODE": "007102",
+    "DSTRCT_NAME": "ไทรโยค",
+    "DSTRCT_E_NAME": "Sai Yok",
+    "DSTRCT_PROV": 57
+  },
+  {
+    "DSTRCT_KEY": 728,
+    "DSTRCT_CODE": "007103",
+    "DSTRCT_NAME": "บ่อพลอย",
+    "DSTRCT_E_NAME": "Bo Phloi",
+    "DSTRCT_PROV": 57
+  },
+  {
+    "DSTRCT_KEY": 729,
+    "DSTRCT_CODE": "007104",
+    "DSTRCT_NAME": "ศรีสวัสดิ์",
+    "DSTRCT_E_NAME": "Si Sawat",
+    "DSTRCT_PROV": 57
+  },
+  {
+    "DSTRCT_KEY": 730,
+    "DSTRCT_CODE": "007105",
+    "DSTRCT_NAME": "ท่ามะกา",
+    "DSTRCT_E_NAME": "Tha Maka",
+    "DSTRCT_PROV": 57
+  },
+  {
+    "DSTRCT_KEY": 731,
+    "DSTRCT_CODE": "007106",
+    "DSTRCT_NAME": "ท่าม่วง",
+    "DSTRCT_E_NAME": "Tha Muang",
+    "DSTRCT_PROV": 57
+  },
+  {
+    "DSTRCT_KEY": 732,
+    "DSTRCT_CODE": "007107",
+    "DSTRCT_NAME": "ทองผาภูมิ",
+    "DSTRCT_E_NAME": "Thong Pha Phum",
+    "DSTRCT_PROV": 57
+  },
+  {
+    "DSTRCT_KEY": 733,
+    "DSTRCT_CODE": "007108",
+    "DSTRCT_NAME": "สังขละบุรี",
+    "DSTRCT_E_NAME": "Sangkhla Buri",
+    "DSTRCT_PROV": 57
+  },
+  {
+    "DSTRCT_KEY": 734,
+    "DSTRCT_CODE": "007109",
+    "DSTRCT_NAME": "พนมทวน",
+    "DSTRCT_E_NAME": "Phanom Thuan",
+    "DSTRCT_PROV": 57
+  },
+  {
+    "DSTRCT_KEY": 735,
+    "DSTRCT_CODE": "007110",
+    "DSTRCT_NAME": "เลาขวัญ",
+    "DSTRCT_E_NAME": "Lao Khwan",
+    "DSTRCT_PROV": 57
+  },
+  {
+    "DSTRCT_KEY": 736,
+    "DSTRCT_CODE": "007111",
+    "DSTRCT_NAME": "ด่านมะขามเตี้ย",
+    "DSTRCT_E_NAME": "Dan Makham Tia",
+    "DSTRCT_PROV": 57
+  },
+  {
+    "DSTRCT_KEY": 737,
+    "DSTRCT_CODE": "007112",
+    "DSTRCT_NAME": "หนองปรือ",
+    "DSTRCT_E_NAME": "Nong Prue",
+    "DSTRCT_PROV": 57
+  },
+  {
+    "DSTRCT_KEY": 738,
+    "DSTRCT_CODE": "007113",
+    "DSTRCT_NAME": "ห้วยกระเจา",
+    "DSTRCT_E_NAME": "Huai Krachao",
+    "DSTRCT_PROV": 57
+  },
+  {
+    "DSTRCT_KEY": 739,
+    "DSTRCT_CODE": "007201",
+    "DSTRCT_NAME": "เมืองสุพรรณบุรี",
+    "DSTRCT_E_NAME": "Mueang Saphan Buri",
+    "DSTRCT_PROV": 58
+  },
+  {
+    "DSTRCT_KEY": 740,
+    "DSTRCT_CODE": "007202",
+    "DSTRCT_NAME": "เดิมบางนางบวช",
+    "DSTRCT_E_NAME": "Doem Bang Nang Buat",
+    "DSTRCT_PROV": 58
+  },
+  {
+    "DSTRCT_KEY": 741,
+    "DSTRCT_CODE": "007203",
+    "DSTRCT_NAME": "ด่านช้าง",
+    "DSTRCT_E_NAME": "Dan Chang",
+    "DSTRCT_PROV": 58
+  },
+  {
+    "DSTRCT_KEY": 742,
+    "DSTRCT_CODE": "007204",
+    "DSTRCT_NAME": "บางปลาม้า",
+    "DSTRCT_E_NAME": "Bang Pla Ma",
+    "DSTRCT_PROV": 58
+  },
+  {
+    "DSTRCT_KEY": 743,
+    "DSTRCT_CODE": "007205",
+    "DSTRCT_NAME": "ศรีประจันต์",
+    "DSTRCT_E_NAME": "Si Prachan",
+    "DSTRCT_PROV": 58
+  },
+  {
+    "DSTRCT_KEY": 744,
+    "DSTRCT_CODE": "007206",
+    "DSTRCT_NAME": "ดอนเจดีย์",
+    "DSTRCT_E_NAME": "Don Chedi",
+    "DSTRCT_PROV": 58
+  },
+  {
+    "DSTRCT_KEY": 745,
+    "DSTRCT_CODE": "007207",
+    "DSTRCT_NAME": "สองพี่น้อง",
+    "DSTRCT_E_NAME": "Song Phi Nong",
+    "DSTRCT_PROV": 58
+  },
+  {
+    "DSTRCT_KEY": 746,
+    "DSTRCT_CODE": "007208",
+    "DSTRCT_NAME": "สามชุก",
+    "DSTRCT_E_NAME": "Sam Chuk",
+    "DSTRCT_PROV": 58
+  },
+  {
+    "DSTRCT_KEY": 747,
+    "DSTRCT_CODE": "007209",
+    "DSTRCT_NAME": "อู่ทอง",
+    "DSTRCT_E_NAME": "U Thong",
+    "DSTRCT_PROV": 58
+  },
+  {
+    "DSTRCT_KEY": 748,
+    "DSTRCT_CODE": "007210",
+    "DSTRCT_NAME": "หนองหญ้าไซ",
+    "DSTRCT_E_NAME": "Nong Ya Sai",
+    "DSTRCT_PROV": 58
+  },
+  {
+    "DSTRCT_KEY": 749,
+    "DSTRCT_CODE": "007301",
+    "DSTRCT_NAME": "เมืองนครปฐม",
+    "DSTRCT_E_NAME": "mueang Nakhon Pathom",
+    "DSTRCT_PROV": 59
+  },
+  {
+    "DSTRCT_KEY": 750,
+    "DSTRCT_CODE": "007302",
+    "DSTRCT_NAME": "กำแพงแสน",
+    "DSTRCT_E_NAME": "Kamphaeng Saen",
+    "DSTRCT_PROV": 59
+  },
+  {
+    "DSTRCT_KEY": 751,
+    "DSTRCT_CODE": "007303",
+    "DSTRCT_NAME": "นครชัยศรี",
+    "DSTRCT_E_NAME": "Nakhon Chai Si",
+    "DSTRCT_PROV": 59
+  },
+  {
+    "DSTRCT_KEY": 752,
+    "DSTRCT_CODE": "007304",
+    "DSTRCT_NAME": "ดอนตูม",
+    "DSTRCT_E_NAME": "Don Tum",
+    "DSTRCT_PROV": 59
+  },
+  {
+    "DSTRCT_KEY": 753,
+    "DSTRCT_CODE": "007305",
+    "DSTRCT_NAME": "บางเลน",
+    "DSTRCT_E_NAME": "Bang Len",
+    "DSTRCT_PROV": 59
+  },
+  {
+    "DSTRCT_KEY": 754,
+    "DSTRCT_CODE": "007306",
+    "DSTRCT_NAME": "สามพราน",
+    "DSTRCT_E_NAME": "Sam Phran",
+    "DSTRCT_PROV": 59
+  },
+  {
+    "DSTRCT_KEY": 755,
+    "DSTRCT_CODE": "007307",
+    "DSTRCT_NAME": "พุทธมณฑล",
+    "DSTRCT_E_NAME": "Phutthamonthon",
+    "DSTRCT_PROV": 59
+  },
+  {
+    "DSTRCT_KEY": 756,
+    "DSTRCT_CODE": "007401",
+    "DSTRCT_NAME": "เมืองสมุทรสาคร",
+    "DSTRCT_E_NAME": "Mueang Samut Sakhon",
+    "DSTRCT_PROV": 60
+  },
+  {
+    "DSTRCT_KEY": 757,
+    "DSTRCT_CODE": "007402",
+    "DSTRCT_NAME": "กระทุ่มแบน",
+    "DSTRCT_E_NAME": "Krathum Baen",
+    "DSTRCT_PROV": 60
+  },
+  {
+    "DSTRCT_KEY": 758,
+    "DSTRCT_CODE": "007403",
+    "DSTRCT_NAME": "บ้านแพ้ว",
+    "DSTRCT_E_NAME": "Ban Phaeo",
+    "DSTRCT_PROV": 60
+  },
+  {
+    "DSTRCT_KEY": 759,
+    "DSTRCT_CODE": "007501",
+    "DSTRCT_NAME": "เมืองสมุทรสงคราม",
+    "DSTRCT_E_NAME": "Mueang Samut Songkhram",
+    "DSTRCT_PROV": 61
+  },
+  {
+    "DSTRCT_KEY": 760,
+    "DSTRCT_CODE": "007502",
+    "DSTRCT_NAME": "บางคนที",
+    "DSTRCT_E_NAME": "Bang Khonthi",
+    "DSTRCT_PROV": 61
+  },
+  {
+    "DSTRCT_KEY": 761,
+    "DSTRCT_CODE": "007503",
+    "DSTRCT_NAME": "อัมพวา",
+    "DSTRCT_E_NAME": "Amphawa",
+    "DSTRCT_PROV": 61
+  },
+  {
+    "DSTRCT_KEY": 762,
+    "DSTRCT_CODE": "007601",
+    "DSTRCT_NAME": "เมืองเพชรบุรี",
+    "DSTRCT_E_NAME": "Mueang Phetchaburi",
+    "DSTRCT_PROV": 62
+  },
+  {
+    "DSTRCT_KEY": 763,
+    "DSTRCT_CODE": "007602",
+    "DSTRCT_NAME": "เขาย้อย",
+    "DSTRCT_E_NAME": "Khao Yoi",
+    "DSTRCT_PROV": 62
+  },
+  {
+    "DSTRCT_KEY": 764,
+    "DSTRCT_CODE": "007603",
+    "DSTRCT_NAME": "หนองหญ้าปล้อง",
+    "DSTRCT_E_NAME": "Nong Ya Plong",
+    "DSTRCT_PROV": 62
+  },
+  {
+    "DSTRCT_KEY": 765,
+    "DSTRCT_CODE": "007604",
+    "DSTRCT_NAME": "ชะอำ",
+    "DSTRCT_E_NAME": "Cha-am",
+    "DSTRCT_PROV": 62
+  },
+  {
+    "DSTRCT_KEY": 766,
+    "DSTRCT_CODE": "007605",
+    "DSTRCT_NAME": "ท่ายาง",
+    "DSTRCT_E_NAME": "Tha Yang",
+    "DSTRCT_PROV": 62
+  },
+  {
+    "DSTRCT_KEY": 767,
+    "DSTRCT_CODE": "007606",
+    "DSTRCT_NAME": "บ้านลาด",
+    "DSTRCT_E_NAME": "Ban Lat",
+    "DSTRCT_PROV": 62
+  },
+  {
+    "DSTRCT_KEY": 768,
+    "DSTRCT_CODE": "007607",
+    "DSTRCT_NAME": "บ้านแหลม",
+    "DSTRCT_E_NAME": "Ban Laem",
+    "DSTRCT_PROV": 62
+  },
+  {
+    "DSTRCT_KEY": 769,
+    "DSTRCT_CODE": "007608",
+    "DSTRCT_NAME": "แก่งกระจาน",
+    "DSTRCT_E_NAME": "Kaeng Krachan",
+    "DSTRCT_PROV": 62
+  },
+  {
+    "DSTRCT_KEY": 770,
+    "DSTRCT_CODE": "007701",
+    "DSTRCT_NAME": "เมืองประจวบคีรีขันธ์",
+    "DSTRCT_E_NAME": "Mueang Prachuap Khiri Khan",
+    "DSTRCT_PROV": 63
+  },
+  {
+    "DSTRCT_KEY": 771,
+    "DSTRCT_CODE": "007702",
+    "DSTRCT_NAME": "กุยบุรี",
+    "DSTRCT_E_NAME": "Kui Buri",
+    "DSTRCT_PROV": 63
+  },
+  {
+    "DSTRCT_KEY": 772,
+    "DSTRCT_CODE": "007703",
+    "DSTRCT_NAME": "ทับสะแก",
+    "DSTRCT_E_NAME": "Thap Sakae",
+    "DSTRCT_PROV": 63
+  },
+  {
+    "DSTRCT_KEY": 773,
+    "DSTRCT_CODE": "007704",
+    "DSTRCT_NAME": "บางสะพาน",
+    "DSTRCT_E_NAME": "Bang Saphan",
+    "DSTRCT_PROV": 63
+  },
+  {
+    "DSTRCT_KEY": 774,
+    "DSTRCT_CODE": "007705",
+    "DSTRCT_NAME": "บางสะพานน้อย",
+    "DSTRCT_E_NAME": "Bang Saphan Noi",
+    "DSTRCT_PROV": 63
+  },
+  {
+    "DSTRCT_KEY": 775,
+    "DSTRCT_CODE": "007706",
+    "DSTRCT_NAME": "ปราณบุรี",
+    "DSTRCT_E_NAME": "Pran Buri",
+    "DSTRCT_PROV": 63
+  },
+  {
+    "DSTRCT_KEY": 776,
+    "DSTRCT_CODE": "007707",
+    "DSTRCT_NAME": "หัวหิน",
+    "DSTRCT_E_NAME": "Hua Hin",
+    "DSTRCT_PROV": 63
+  },
+  {
+    "DSTRCT_KEY": 777,
+    "DSTRCT_CODE": "007708",
+    "DSTRCT_NAME": "สามร้อยยอด",
+    "DSTRCT_E_NAME": "Sam Roi Yot",
+    "DSTRCT_PROV": 63
+  },
+  {
+    "DSTRCT_KEY": 778,
+    "DSTRCT_CODE": "008001",
+    "DSTRCT_NAME": "เมืองนครศรีธรรมราช",
+    "DSTRCT_E_NAME": "Mueang Nakhon Si Thammarat",
+    "DSTRCT_PROV": 64
+  },
+  {
+    "DSTRCT_KEY": 779,
+    "DSTRCT_CODE": "008002",
+    "DSTRCT_NAME": "พรหมคีรี",
+    "DSTRCT_E_NAME": "Phrom Khiri",
+    "DSTRCT_PROV": 64
+  },
+  {
+    "DSTRCT_KEY": 780,
+    "DSTRCT_CODE": "008003",
+    "DSTRCT_NAME": "ลานสกา",
+    "DSTRCT_E_NAME": "Lan Saka",
+    "DSTRCT_PROV": 64
+  },
+  {
+    "DSTRCT_KEY": 781,
+    "DSTRCT_CODE": "008004",
+    "DSTRCT_NAME": "ฉวาง",
+    "DSTRCT_E_NAME": "Chawang",
+    "DSTRCT_PROV": 64
+  },
+  {
+    "DSTRCT_KEY": 782,
+    "DSTRCT_CODE": "008005",
+    "DSTRCT_NAME": "พิปูน",
+    "DSTRCT_E_NAME": "Phipun",
+    "DSTRCT_PROV": 64
+  },
+  {
+    "DSTRCT_KEY": 783,
+    "DSTRCT_CODE": "008006",
+    "DSTRCT_NAME": "เชียรใหญ่",
+    "DSTRCT_E_NAME": "Chian Yai",
+    "DSTRCT_PROV": 64
+  },
+  {
+    "DSTRCT_KEY": 784,
+    "DSTRCT_CODE": "008007",
+    "DSTRCT_NAME": "ชะอวด",
+    "DSTRCT_E_NAME": "Cha-uat",
+    "DSTRCT_PROV": 64
+  },
+  {
+    "DSTRCT_KEY": 785,
+    "DSTRCT_CODE": "008008",
+    "DSTRCT_NAME": "ท่าศาลา",
+    "DSTRCT_E_NAME": "Tha Sala",
+    "DSTRCT_PROV": 64
+  },
+  {
+    "DSTRCT_KEY": 786,
+    "DSTRCT_CODE": "008009",
+    "DSTRCT_NAME": "ทุ่งสง",
+    "DSTRCT_E_NAME": "Thung Song",
+    "DSTRCT_PROV": 64
+  },
+  {
+    "DSTRCT_KEY": 787,
+    "DSTRCT_CODE": "008010",
+    "DSTRCT_NAME": "นาบอน",
+    "DSTRCT_E_NAME": "Na Bon",
+    "DSTRCT_PROV": 64
+  },
+  {
+    "DSTRCT_KEY": 788,
+    "DSTRCT_CODE": "008011",
+    "DSTRCT_NAME": "ทุ่งใหญ่",
+    "DSTRCT_E_NAME": "Thung Yai",
+    "DSTRCT_PROV": 64
+  },
+  {
+    "DSTRCT_KEY": 789,
+    "DSTRCT_CODE": "008012",
+    "DSTRCT_NAME": "ปากพนัง",
+    "DSTRCT_E_NAME": "Pak Phanang",
+    "DSTRCT_PROV": 64
+  },
+  {
+    "DSTRCT_KEY": 790,
+    "DSTRCT_CODE": "008013",
+    "DSTRCT_NAME": "ร่อนพิบูลย์",
+    "DSTRCT_E_NAME": "Ron Phibun",
+    "DSTRCT_PROV": 64
+  },
+  {
+    "DSTRCT_KEY": 791,
+    "DSTRCT_CODE": "008014",
+    "DSTRCT_NAME": "สิชล",
+    "DSTRCT_E_NAME": "Sichon",
+    "DSTRCT_PROV": 64
+  },
+  {
+    "DSTRCT_KEY": 792,
+    "DSTRCT_CODE": "008015",
+    "DSTRCT_NAME": "ขนอม",
+    "DSTRCT_E_NAME": "Khanom",
+    "DSTRCT_PROV": 64
+  },
+  {
+    "DSTRCT_KEY": 793,
+    "DSTRCT_CODE": "008016",
+    "DSTRCT_NAME": "หัวไทร",
+    "DSTRCT_E_NAME": "Hua Sai",
+    "DSTRCT_PROV": 64
+  },
+  {
+    "DSTRCT_KEY": 794,
+    "DSTRCT_CODE": "008017",
+    "DSTRCT_NAME": "บางขัน",
+    "DSTRCT_E_NAME": "Bang Khan",
+    "DSTRCT_PROV": 64
+  },
+  {
+    "DSTRCT_KEY": 795,
+    "DSTRCT_CODE": "008018",
+    "DSTRCT_NAME": "ถ้ำพรรณรา",
+    "DSTRCT_E_NAME": "Tham Phannara",
+    "DSTRCT_PROV": 64
+  },
+  {
+    "DSTRCT_KEY": 796,
+    "DSTRCT_CODE": "008019",
+    "DSTRCT_NAME": "จุฬาภรณ์",
+    "DSTRCT_E_NAME": "Chulabhorn",
+    "DSTRCT_PROV": 64
+  },
+  {
+    "DSTRCT_KEY": 797,
+    "DSTRCT_CODE": "008020",
+    "DSTRCT_NAME": "พระพรหม",
+    "DSTRCT_E_NAME": "Phra Phrom",
+    "DSTRCT_PROV": 64
+  },
+  {
+    "DSTRCT_KEY": 798,
+    "DSTRCT_CODE": "008021",
+    "DSTRCT_NAME": "นบพิตำ",
+    "DSTRCT_E_NAME": "Nopphitam",
+    "DSTRCT_PROV": 64
+  },
+  {
+    "DSTRCT_KEY": 799,
+    "DSTRCT_CODE": "008022",
+    "DSTRCT_NAME": "ช้างกลาง",
+    "DSTRCT_E_NAME": "Chang Klang",
+    "DSTRCT_PROV": 64
+  },
+  {
+    "DSTRCT_KEY": 800,
+    "DSTRCT_CODE": "008023",
+    "DSTRCT_NAME": "เฉลิมพระเกียรติ",
+    "DSTRCT_E_NAME": "Chaloem Phra Kiet",
+    "DSTRCT_PROV": 64
+  },
+  {
+    "DSTRCT_KEY": 801,
+    "DSTRCT_CODE": "008101",
+    "DSTRCT_NAME": "เมืองกระบี่",
+    "DSTRCT_E_NAME": "Mueang Krabi",
+    "DSTRCT_PROV": 65
+  },
+  {
+    "DSTRCT_KEY": 802,
+    "DSTRCT_CODE": "008102",
+    "DSTRCT_NAME": "เขาพนม",
+    "DSTRCT_E_NAME": "Khao Phanom",
+    "DSTRCT_PROV": 65
+  },
+  {
+    "DSTRCT_KEY": 803,
+    "DSTRCT_CODE": "008103",
+    "DSTRCT_NAME": "เกาะลันตา",
+    "DSTRCT_E_NAME": "Ko Lanta",
+    "DSTRCT_PROV": 65
+  },
+  {
+    "DSTRCT_KEY": 804,
+    "DSTRCT_CODE": "008104",
+    "DSTRCT_NAME": "คลองท่อม",
+    "DSTRCT_E_NAME": "Khlong Thom",
+    "DSTRCT_PROV": 65
+  },
+  {
+    "DSTRCT_KEY": 805,
+    "DSTRCT_CODE": "008105",
+    "DSTRCT_NAME": "อ่าวลึก",
+    "DSTRCT_E_NAME": "Ao Luek",
+    "DSTRCT_PROV": 65
+  },
+  {
+    "DSTRCT_KEY": 806,
+    "DSTRCT_CODE": "008106",
+    "DSTRCT_NAME": "ปลายพระยา",
+    "DSTRCT_E_NAME": "Plai Phraya",
+    "DSTRCT_PROV": 65
+  },
+  {
+    "DSTRCT_KEY": 807,
+    "DSTRCT_CODE": "008107",
+    "DSTRCT_NAME": "ลำทับ",
+    "DSTRCT_E_NAME": "Lam Thap",
+    "DSTRCT_PROV": 65
+  },
+  {
+    "DSTRCT_KEY": 808,
+    "DSTRCT_CODE": "008108",
+    "DSTRCT_NAME": "เหนือคลอง",
+    "DSTRCT_E_NAME": "Nuea Khlong",
+    "DSTRCT_PROV": 65
+  },
+  {
+    "DSTRCT_KEY": 809,
+    "DSTRCT_CODE": "008201",
+    "DSTRCT_NAME": "เมืองพังงา",
+    "DSTRCT_E_NAME": "Mueang Phang-nga",
+    "DSTRCT_PROV": 66
+  },
+  {
+    "DSTRCT_KEY": 810,
+    "DSTRCT_CODE": "008202",
+    "DSTRCT_NAME": "เกาะยาว",
+    "DSTRCT_E_NAME": "Ko Yao",
+    "DSTRCT_PROV": 66
+  },
+  {
+    "DSTRCT_KEY": 811,
+    "DSTRCT_CODE": "008203",
+    "DSTRCT_NAME": "กะปง",
+    "DSTRCT_E_NAME": "Kapong",
+    "DSTRCT_PROV": 66
+  },
+  {
+    "DSTRCT_KEY": 812,
+    "DSTRCT_CODE": "008204",
+    "DSTRCT_NAME": "ตะกั่วทุ่ง",
+    "DSTRCT_E_NAME": "Takua Thung",
+    "DSTRCT_PROV": 66
+  },
+  {
+    "DSTRCT_KEY": 813,
+    "DSTRCT_CODE": "008205",
+    "DSTRCT_NAME": "ตะกั่วป่า",
+    "DSTRCT_E_NAME": "Takua Pa",
+    "DSTRCT_PROV": 66
+  },
+  {
+    "DSTRCT_KEY": 814,
+    "DSTRCT_CODE": "008206",
+    "DSTRCT_NAME": "คุระบุรี",
+    "DSTRCT_E_NAME": "Khura Buri",
+    "DSTRCT_PROV": 66
+  },
+  {
+    "DSTRCT_KEY": 815,
+    "DSTRCT_CODE": "008207",
+    "DSTRCT_NAME": "ทับปุด",
+    "DSTRCT_E_NAME": "Thap Put",
+    "DSTRCT_PROV": 66
+  },
+  {
+    "DSTRCT_KEY": 816,
+    "DSTRCT_CODE": "008208",
+    "DSTRCT_NAME": "ท้ายเหมือง",
+    "DSTRCT_E_NAME": "Thai Mueang",
+    "DSTRCT_PROV": 66
+  },
+  {
+    "DSTRCT_KEY": 817,
+    "DSTRCT_CODE": "008301",
+    "DSTRCT_NAME": "เมืองภูเก็ต",
+    "DSTRCT_E_NAME": "Mueang Phuket",
+    "DSTRCT_PROV": 67
+  },
+  {
+    "DSTRCT_KEY": 818,
+    "DSTRCT_CODE": "008302",
+    "DSTRCT_NAME": "กะทู้",
+    "DSTRCT_E_NAME": "Kathu",
+    "DSTRCT_PROV": 67
+  },
+  {
+    "DSTRCT_KEY": 819,
+    "DSTRCT_CODE": "008303",
+    "DSTRCT_NAME": "ถลาง",
+    "DSTRCT_E_NAME": "Thalang",
+    "DSTRCT_PROV": 67
+  },
+  {
+    "DSTRCT_KEY": 820,
+    "DSTRCT_CODE": "008401",
+    "DSTRCT_NAME": "เมืองสุราษฎร์ธานี",
+    "DSTRCT_E_NAME": "Mueang Surat Thani",
+    "DSTRCT_PROV": 68
+  },
+  {
+    "DSTRCT_KEY": 821,
+    "DSTRCT_CODE": "008402",
+    "DSTRCT_NAME": "กาญจนดิษฐ์",
+    "DSTRCT_E_NAME": "Kanchanadit",
+    "DSTRCT_PROV": 68
+  },
+  {
+    "DSTRCT_KEY": 822,
+    "DSTRCT_CODE": "008403",
+    "DSTRCT_NAME": "ดอนสัก",
+    "DSTRCT_E_NAME": "Don Sak",
+    "DSTRCT_PROV": 68
+  },
+  {
+    "DSTRCT_KEY": 823,
+    "DSTRCT_CODE": "008404",
+    "DSTRCT_NAME": "เกาะสมุย",
+    "DSTRCT_E_NAME": "Ko Samui",
+    "DSTRCT_PROV": 68
+  },
+  {
+    "DSTRCT_KEY": 824,
+    "DSTRCT_CODE": "008405",
+    "DSTRCT_NAME": "เกาะพะงัน",
+    "DSTRCT_E_NAME": "Ko Pha-ngan",
+    "DSTRCT_PROV": 68
+  },
+  {
+    "DSTRCT_KEY": 825,
+    "DSTRCT_CODE": "008406",
+    "DSTRCT_NAME": "ไชยา",
+    "DSTRCT_E_NAME": "Chaiya",
+    "DSTRCT_PROV": 68
+  },
+  {
+    "DSTRCT_KEY": 826,
+    "DSTRCT_CODE": "008407",
+    "DSTRCT_NAME": "ท่าชนะ",
+    "DSTRCT_E_NAME": "Tha Chana",
+    "DSTRCT_PROV": 68
+  },
+  {
+    "DSTRCT_KEY": 827,
+    "DSTRCT_CODE": "008408",
+    "DSTRCT_NAME": "คีรีรัฐนิคม",
+    "DSTRCT_E_NAME": "Khiri Rat Nikhom",
+    "DSTRCT_PROV": 68
+  },
+  {
+    "DSTRCT_KEY": 828,
+    "DSTRCT_CODE": "008409",
+    "DSTRCT_NAME": "บ้านตาขุน",
+    "DSTRCT_E_NAME": "Ban Ta Khun",
+    "DSTRCT_PROV": 68
+  },
+  {
+    "DSTRCT_KEY": 829,
+    "DSTRCT_CODE": "008410",
+    "DSTRCT_NAME": "พนม",
+    "DSTRCT_E_NAME": "Phanom",
+    "DSTRCT_PROV": 68
+  },
+  {
+    "DSTRCT_KEY": 830,
+    "DSTRCT_CODE": "008411",
+    "DSTRCT_NAME": "ท่าฉาง",
+    "DSTRCT_E_NAME": "Tha Chang",
+    "DSTRCT_PROV": 68
+  },
+  {
+    "DSTRCT_KEY": 831,
+    "DSTRCT_CODE": "008412",
+    "DSTRCT_NAME": "บ้านนาสาร",
+    "DSTRCT_E_NAME": "Ban Na San",
+    "DSTRCT_PROV": 68
+  },
+  {
+    "DSTRCT_KEY": 832,
+    "DSTRCT_CODE": "008413",
+    "DSTRCT_NAME": "บ้านนาเดิม",
+    "DSTRCT_E_NAME": "Ban Na Doem",
+    "DSTRCT_PROV": 68
+  },
+  {
+    "DSTRCT_KEY": 833,
+    "DSTRCT_CODE": "008414",
+    "DSTRCT_NAME": "เคียนซา",
+    "DSTRCT_E_NAME": "Khian Sa",
+    "DSTRCT_PROV": 68
+  },
+  {
+    "DSTRCT_KEY": 834,
+    "DSTRCT_CODE": "008415",
+    "DSTRCT_NAME": "เวียงสระ",
+    "DSTRCT_E_NAME": "Wiang Sa",
+    "DSTRCT_PROV": 68
+  },
+  {
+    "DSTRCT_KEY": 835,
+    "DSTRCT_CODE": "008416",
+    "DSTRCT_NAME": "พระแสง",
+    "DSTRCT_E_NAME": "Phrasaeng",
+    "DSTRCT_PROV": 68
+  },
+  {
+    "DSTRCT_KEY": 836,
+    "DSTRCT_CODE": "008417",
+    "DSTRCT_NAME": "พุนพิน",
+    "DSTRCT_E_NAME": "Phunphin",
+    "DSTRCT_PROV": 68
+  },
+  {
+    "DSTRCT_KEY": 837,
+    "DSTRCT_CODE": "008418",
+    "DSTRCT_NAME": "ชัยบุรี",
+    "DSTRCT_E_NAME": "Chai Buri",
+    "DSTRCT_PROV": 68
+  },
+  {
+    "DSTRCT_KEY": 838,
+    "DSTRCT_CODE": "008419",
+    "DSTRCT_NAME": "วิภาวดี",
+    "DSTRCT_E_NAME": "Chai Buri",
+    "DSTRCT_PROV": 68
+  },
+  {
+    "DSTRCT_KEY": 839,
+    "DSTRCT_CODE": "008501",
+    "DSTRCT_NAME": "เมืองระนอง",
+    "DSTRCT_E_NAME": "Mueang Ranong",
+    "DSTRCT_PROV": 69
+  },
+  {
+    "DSTRCT_KEY": 840,
+    "DSTRCT_CODE": "008502",
+    "DSTRCT_NAME": "ละอุ่น",
+    "DSTRCT_E_NAME": "La-un",
+    "DSTRCT_PROV": 69
+  },
+  {
+    "DSTRCT_KEY": 841,
+    "DSTRCT_CODE": "008503",
+    "DSTRCT_NAME": "กะเปอร์",
+    "DSTRCT_E_NAME": "Papoe",
+    "DSTRCT_PROV": 69
+  },
+  {
+    "DSTRCT_KEY": 842,
+    "DSTRCT_CODE": "008504",
+    "DSTRCT_NAME": "กระบุรี",
+    "DSTRCT_E_NAME": "Kra Buri",
+    "DSTRCT_PROV": 69
+  },
+  {
+    "DSTRCT_KEY": 843,
+    "DSTRCT_CODE": "008505",
+    "DSTRCT_NAME": "สุขสำราญ",
+    "DSTRCT_E_NAME": "Suk Samran",
+    "DSTRCT_PROV": 69
+  },
+  {
+    "DSTRCT_KEY": 844,
+    "DSTRCT_CODE": "008601",
+    "DSTRCT_NAME": "เมืองชุมพร",
+    "DSTRCT_E_NAME": "Mueang Chumphon",
+    "DSTRCT_PROV": 70
+  },
+  {
+    "DSTRCT_KEY": 845,
+    "DSTRCT_CODE": "008602",
+    "DSTRCT_NAME": "ท่าแซะ",
+    "DSTRCT_E_NAME": "Tha Sae",
+    "DSTRCT_PROV": 70
+  },
+  {
+    "DSTRCT_KEY": 846,
+    "DSTRCT_CODE": "008603",
+    "DSTRCT_NAME": "ปะทิว",
+    "DSTRCT_E_NAME": "Pathio",
+    "DSTRCT_PROV": 70
+  },
+  {
+    "DSTRCT_KEY": 847,
+    "DSTRCT_CODE": "008604",
+    "DSTRCT_NAME": "หลังสวน",
+    "DSTRCT_E_NAME": "Lang Suan",
+    "DSTRCT_PROV": 70
+  },
+  {
+    "DSTRCT_KEY": 848,
+    "DSTRCT_CODE": "008605",
+    "DSTRCT_NAME": "ละแม",
+    "DSTRCT_E_NAME": "Lamae",
+    "DSTRCT_PROV": 70
+  },
+  {
+    "DSTRCT_KEY": 849,
+    "DSTRCT_CODE": "008606",
+    "DSTRCT_NAME": "พะโต๊ะ",
+    "DSTRCT_E_NAME": "Phato",
+    "DSTRCT_PROV": 70
+  },
+  {
+    "DSTRCT_KEY": 850,
+    "DSTRCT_CODE": "008607",
+    "DSTRCT_NAME": "สวี",
+    "DSTRCT_E_NAME": "Sawi",
+    "DSTRCT_PROV": 70
+  },
+  {
+    "DSTRCT_KEY": 851,
+    "DSTRCT_CODE": "008608",
+    "DSTRCT_NAME": "ทุ่งตะโก",
+    "DSTRCT_E_NAME": "Thung Tako",
+    "DSTRCT_PROV": 70
+  },
+  {
+    "DSTRCT_KEY": 852,
+    "DSTRCT_CODE": "009001",
+    "DSTRCT_NAME": "เมืองสงขลา",
+    "DSTRCT_E_NAME": "Muaeng Songkhla",
+    "DSTRCT_PROV": 71
+  },
+  {
+    "DSTRCT_KEY": 853,
+    "DSTRCT_CODE": "009002",
+    "DSTRCT_NAME": "สทิงพระ",
+    "DSTRCT_E_NAME": "Sathing Phra",
+    "DSTRCT_PROV": 71
+  },
+  {
+    "DSTRCT_KEY": 854,
+    "DSTRCT_CODE": "009003",
+    "DSTRCT_NAME": "จะนะ",
+    "DSTRCT_E_NAME": "Chana",
+    "DSTRCT_PROV": 71
+  },
+  {
+    "DSTRCT_KEY": 855,
+    "DSTRCT_CODE": "009004",
+    "DSTRCT_NAME": "นาทวี",
+    "DSTRCT_E_NAME": "Na Thawi",
+    "DSTRCT_PROV": 71
+  },
+  {
+    "DSTRCT_KEY": 856,
+    "DSTRCT_CODE": "009005",
+    "DSTRCT_NAME": "เทพา",
+    "DSTRCT_E_NAME": "Thepha",
+    "DSTRCT_PROV": 71
+  },
+  {
+    "DSTRCT_KEY": 857,
+    "DSTRCT_CODE": "009006",
+    "DSTRCT_NAME": "สะบ้าย้อย",
+    "DSTRCT_E_NAME": "Saba Yoi",
+    "DSTRCT_PROV": 71
+  },
+  {
+    "DSTRCT_KEY": 858,
+    "DSTRCT_CODE": "009007",
+    "DSTRCT_NAME": "ระโนด",
+    "DSTRCT_E_NAME": "Ranot",
+    "DSTRCT_PROV": 71
+  },
+  {
+    "DSTRCT_KEY": 859,
+    "DSTRCT_CODE": "009008",
+    "DSTRCT_NAME": "กระแสสินธุ์",
+    "DSTRCT_E_NAME": "Krasae Sin",
+    "DSTRCT_PROV": 71
+  },
+  {
+    "DSTRCT_KEY": 860,
+    "DSTRCT_CODE": "009009",
+    "DSTRCT_NAME": "รัตภูมิ",
+    "DSTRCT_E_NAME": "Rattaphum",
+    "DSTRCT_PROV": 71
+  },
+  {
+    "DSTRCT_KEY": 861,
+    "DSTRCT_CODE": "009010",
+    "DSTRCT_NAME": "สะเดา",
+    "DSTRCT_E_NAME": "Sadao",
+    "DSTRCT_PROV": 71
+  },
+  {
+    "DSTRCT_KEY": 862,
+    "DSTRCT_CODE": "009011",
+    "DSTRCT_NAME": "หาดใหญ่",
+    "DSTRCT_E_NAME": "Hat Yai",
+    "DSTRCT_PROV": 71
+  },
+  {
+    "DSTRCT_KEY": 863,
+    "DSTRCT_CODE": "009012",
+    "DSTRCT_NAME": "นาหม่อม",
+    "DSTRCT_E_NAME": "Na Mom",
+    "DSTRCT_PROV": 71
+  },
+  {
+    "DSTRCT_KEY": 864,
+    "DSTRCT_CODE": "009013",
+    "DSTRCT_NAME": "ควนเนียง",
+    "DSTRCT_E_NAME": "Khuan Niang",
+    "DSTRCT_PROV": 71
+  },
+  {
+    "DSTRCT_KEY": 865,
+    "DSTRCT_CODE": "009014",
+    "DSTRCT_NAME": "บางกล่ำ",
+    "DSTRCT_E_NAME": "Bang Klam",
+    "DSTRCT_PROV": 71
+  },
+  {
+    "DSTRCT_KEY": 866,
+    "DSTRCT_CODE": "009015",
+    "DSTRCT_NAME": "สิงหนคร",
+    "DSTRCT_E_NAME": "Singhanakhon",
+    "DSTRCT_PROV": 71
+  },
+  {
+    "DSTRCT_KEY": 867,
+    "DSTRCT_CODE": "009016",
+    "DSTRCT_NAME": "คลองหอยโข่ง",
+    "DSTRCT_E_NAME": "Khlong Hoi Khong",
+    "DSTRCT_PROV": 71
+  },
+  {
+    "DSTRCT_KEY": 868,
+    "DSTRCT_CODE": "009101",
+    "DSTRCT_NAME": "เมืองสตูล",
+    "DSTRCT_E_NAME": "Mueang Satun",
+    "DSTRCT_PROV": 72
+  },
+  {
+    "DSTRCT_KEY": 869,
+    "DSTRCT_CODE": "009102",
+    "DSTRCT_NAME": "ควนโดน",
+    "DSTRCT_E_NAME": "Khuan Don",
+    "DSTRCT_PROV": 72
+  },
+  {
+    "DSTRCT_KEY": 870,
+    "DSTRCT_CODE": "009103",
+    "DSTRCT_NAME": "ควนกาหลง",
+    "DSTRCT_E_NAME": "Khuan Kalong",
+    "DSTRCT_PROV": 72
+  },
+  {
+    "DSTRCT_KEY": 871,
+    "DSTRCT_CODE": "009104",
+    "DSTRCT_NAME": "ท่าแพ",
+    "DSTRCT_E_NAME": "Tha Phae",
+    "DSTRCT_PROV": 72
+  },
+  {
+    "DSTRCT_KEY": 872,
+    "DSTRCT_CODE": "009105",
+    "DSTRCT_NAME": "ละงู",
+    "DSTRCT_E_NAME": "La-ngu",
+    "DSTRCT_PROV": 72
+  },
+  {
+    "DSTRCT_KEY": 873,
+    "DSTRCT_CODE": "009106",
+    "DSTRCT_NAME": "ทุ่งหว้า",
+    "DSTRCT_E_NAME": "Thung  Wa",
+    "DSTRCT_PROV": 72
+  },
+  {
+    "DSTRCT_KEY": 874,
+    "DSTRCT_CODE": "009107",
+    "DSTRCT_NAME": "มะนัง",
+    "DSTRCT_E_NAME": "Manang",
+    "DSTRCT_PROV": 72
+  },
+  {
+    "DSTRCT_KEY": 875,
+    "DSTRCT_CODE": "009201",
+    "DSTRCT_NAME": "เมืองตรัง",
+    "DSTRCT_E_NAME": "Mueang Trang",
+    "DSTRCT_PROV": 73
+  },
+  {
+    "DSTRCT_KEY": 876,
+    "DSTRCT_CODE": "009202",
+    "DSTRCT_NAME": "กันตัง",
+    "DSTRCT_E_NAME": "Kantang",
+    "DSTRCT_PROV": 73
+  },
+  {
+    "DSTRCT_KEY": 877,
+    "DSTRCT_CODE": "009203",
+    "DSTRCT_NAME": "ย่านตาขาว",
+    "DSTRCT_E_NAME": "Yan Ta Khao",
+    "DSTRCT_PROV": 73
+  },
+  {
+    "DSTRCT_KEY": 878,
+    "DSTRCT_CODE": "009204",
+    "DSTRCT_NAME": "ปะเหลียน",
+    "DSTRCT_E_NAME": "Palian",
+    "DSTRCT_PROV": 73
+  },
+  {
+    "DSTRCT_KEY": 879,
+    "DSTRCT_CODE": "009205",
+    "DSTRCT_NAME": "สิเกา",
+    "DSTRCT_E_NAME": "Sikao",
+    "DSTRCT_PROV": 73
+  },
+  {
+    "DSTRCT_KEY": 880,
+    "DSTRCT_CODE": "009206",
+    "DSTRCT_NAME": "ห้วยยอด",
+    "DSTRCT_E_NAME": "Huai Yot",
+    "DSTRCT_PROV": 73
+  },
+  {
+    "DSTRCT_KEY": 881,
+    "DSTRCT_CODE": "009207",
+    "DSTRCT_NAME": "วังวิเศษ",
+    "DSTRCT_E_NAME": "Wang Wiset",
+    "DSTRCT_PROV": 73
+  },
+  {
+    "DSTRCT_KEY": 882,
+    "DSTRCT_CODE": "009208",
+    "DSTRCT_NAME": "นาโยง",
+    "DSTRCT_E_NAME": "Na Yong",
+    "DSTRCT_PROV": 73
+  },
+  {
+    "DSTRCT_KEY": 883,
+    "DSTRCT_CODE": "009209",
+    "DSTRCT_NAME": "รัษฎา",
+    "DSTRCT_E_NAME": "Ratsada",
+    "DSTRCT_PROV": 73
+  },
+  {
+    "DSTRCT_KEY": 884,
+    "DSTRCT_CODE": "009210",
+    "DSTRCT_NAME": "หาดสำราญ",
+    "DSTRCT_E_NAME": "Hat Samran",
+    "DSTRCT_PROV": 73
+  },
+  {
+    "DSTRCT_KEY": 885,
+    "DSTRCT_CODE": "009301",
+    "DSTRCT_NAME": "เมืองพัทลุง",
+    "DSTRCT_E_NAME": "Mueang Phatthalung",
+    "DSTRCT_PROV": 74
+  },
+  {
+    "DSTRCT_KEY": 886,
+    "DSTRCT_CODE": "009302",
+    "DSTRCT_NAME": "กงหรา",
+    "DSTRCT_E_NAME": "Kong Ra",
+    "DSTRCT_PROV": 74
+  },
+  {
+    "DSTRCT_KEY": 887,
+    "DSTRCT_CODE": "009303",
+    "DSTRCT_NAME": "เขาชัยสน",
+    "DSTRCT_E_NAME": "Khao Chaison",
+    "DSTRCT_PROV": 74
+  },
+  {
+    "DSTRCT_KEY": 888,
+    "DSTRCT_CODE": "009304",
+    "DSTRCT_NAME": "ตะโหมด",
+    "DSTRCT_E_NAME": "Tamot",
+    "DSTRCT_PROV": 74
+  },
+  {
+    "DSTRCT_KEY": 889,
+    "DSTRCT_CODE": "009305",
+    "DSTRCT_NAME": "ควนขนุน",
+    "DSTRCT_E_NAME": "Khuan Khanun",
+    "DSTRCT_PROV": 74
+  },
+  {
+    "DSTRCT_KEY": 890,
+    "DSTRCT_CODE": "009306",
+    "DSTRCT_NAME": "ปากพะยูน",
+    "DSTRCT_E_NAME": "Pak Phayun",
+    "DSTRCT_PROV": 74
+  },
+  {
+    "DSTRCT_KEY": 891,
+    "DSTRCT_CODE": "009307",
+    "DSTRCT_NAME": "ศรีบรรพต",
+    "DSTRCT_E_NAME": "Si Banphot",
+    "DSTRCT_PROV": 74
+  },
+  {
+    "DSTRCT_KEY": 892,
+    "DSTRCT_CODE": "009308",
+    "DSTRCT_NAME": "ป่าบอน",
+    "DSTRCT_E_NAME": "Pa Bon",
+    "DSTRCT_PROV": 74
+  },
+  {
+    "DSTRCT_KEY": 893,
+    "DSTRCT_CODE": "009309",
+    "DSTRCT_NAME": "บางแก้ว",
+    "DSTRCT_E_NAME": "Bang Kaeo",
+    "DSTRCT_PROV": 74
+  },
+  {
+    "DSTRCT_KEY": 894,
+    "DSTRCT_CODE": "009310",
+    "DSTRCT_NAME": "ป่าพะยอม",
+    "DSTRCT_E_NAME": "Pa Phayom",
+    "DSTRCT_PROV": 74
+  },
+  {
+    "DSTRCT_KEY": 895,
+    "DSTRCT_CODE": "009311",
+    "DSTRCT_NAME": "ศรีนครินทร์",
+    "DSTRCT_E_NAME": "Srinagarindra",
+    "DSTRCT_PROV": 74
+  },
+  {
+    "DSTRCT_KEY": 896,
+    "DSTRCT_CODE": "009401",
+    "DSTRCT_NAME": "เมืองปัตตานี",
+    "DSTRCT_E_NAME": "Mueang Pattani",
+    "DSTRCT_PROV": 75
+  },
+  {
+    "DSTRCT_KEY": 897,
+    "DSTRCT_CODE": "009402",
+    "DSTRCT_NAME": "โคกโพธิ์",
+    "DSTRCT_E_NAME": "Khok Pho",
+    "DSTRCT_PROV": 75
+  },
+  {
+    "DSTRCT_KEY": 898,
+    "DSTRCT_CODE": "009403",
+    "DSTRCT_NAME": "หนองจิก",
+    "DSTRCT_E_NAME": "Nong Chik",
+    "DSTRCT_PROV": 75
+  },
+  {
+    "DSTRCT_KEY": 899,
+    "DSTRCT_CODE": "009404",
+    "DSTRCT_NAME": "ปะนาเระ",
+    "DSTRCT_E_NAME": "Panare",
+    "DSTRCT_PROV": 75
+  },
+  {
+    "DSTRCT_KEY": 900,
+    "DSTRCT_CODE": "009405",
+    "DSTRCT_NAME": "มายอ",
+    "DSTRCT_E_NAME": "Mayo",
+    "DSTRCT_PROV": 75
+  },
+  {
+    "DSTRCT_KEY": 901,
+    "DSTRCT_CODE": "009406",
+    "DSTRCT_NAME": "ทุ่งยางแดง",
+    "DSTRCT_E_NAME": "Thung Yang Daeng",
+    "DSTRCT_PROV": 75
+  },
+  {
+    "DSTRCT_KEY": 902,
+    "DSTRCT_CODE": "009407",
+    "DSTRCT_NAME": "สายบุรี",
+    "DSTRCT_E_NAME": "Sai Buri",
+    "DSTRCT_PROV": 75
+  },
+  {
+    "DSTRCT_KEY": 903,
+    "DSTRCT_CODE": "009408",
+    "DSTRCT_NAME": "ไม้แก่น",
+    "DSTRCT_E_NAME": "Mai Kaen",
+    "DSTRCT_PROV": 75
+  },
+  {
+    "DSTRCT_KEY": 904,
+    "DSTRCT_CODE": "009409",
+    "DSTRCT_NAME": "ยะหริ่ง",
+    "DSTRCT_E_NAME": "Yaring",
+    "DSTRCT_PROV": 75
+  },
+  {
+    "DSTRCT_KEY": 905,
+    "DSTRCT_CODE": "009410",
+    "DSTRCT_NAME": "ยะรัง",
+    "DSTRCT_E_NAME": "Yarang",
+    "DSTRCT_PROV": 75
+  },
+  {
+    "DSTRCT_KEY": 906,
+    "DSTRCT_CODE": "009411",
+    "DSTRCT_NAME": "กะพ้อ",
+    "DSTRCT_E_NAME": "Kapho",
+    "DSTRCT_PROV": 75
+  },
+  {
+    "DSTRCT_KEY": 907,
+    "DSTRCT_CODE": "009412",
+    "DSTRCT_NAME": "แม่ลาน",
+    "DSTRCT_E_NAME": "Mae Lan",
+    "DSTRCT_PROV": 75
+  },
+  {
+    "DSTRCT_KEY": 908,
+    "DSTRCT_CODE": "009501",
+    "DSTRCT_NAME": "เมืองยะลา",
+    "DSTRCT_E_NAME": "Mueang Yala",
+    "DSTRCT_PROV": 76
+  },
+  {
+    "DSTRCT_KEY": 909,
+    "DSTRCT_CODE": "009502",
+    "DSTRCT_NAME": "เบตง",
+    "DSTRCT_E_NAME": "Betong",
+    "DSTRCT_PROV": 76
+  },
+  {
+    "DSTRCT_KEY": 910,
+    "DSTRCT_CODE": "009503",
+    "DSTRCT_NAME": "บันนังสตา",
+    "DSTRCT_E_NAME": "Bannang Sata",
+    "DSTRCT_PROV": 76
+  },
+  {
+    "DSTRCT_KEY": 911,
+    "DSTRCT_CODE": "009504",
+    "DSTRCT_NAME": "ธารโต",
+    "DSTRCT_E_NAME": "Than To",
+    "DSTRCT_PROV": 76
+  },
+  {
+    "DSTRCT_KEY": 912,
+    "DSTRCT_CODE": "009505",
+    "DSTRCT_NAME": "ยะหา",
+    "DSTRCT_E_NAME": "Yaha",
+    "DSTRCT_PROV": 76
+  },
+  {
+    "DSTRCT_KEY": 913,
+    "DSTRCT_CODE": "009506",
+    "DSTRCT_NAME": "รามัน",
+    "DSTRCT_E_NAME": "Raman",
+    "DSTRCT_PROV": 76
+  },
+  {
+    "DSTRCT_KEY": 914,
+    "DSTRCT_CODE": "009507",
+    "DSTRCT_NAME": "กาบัง",
+    "DSTRCT_E_NAME": "Kabang",
+    "DSTRCT_PROV": 76
+  },
+  {
+    "DSTRCT_KEY": 915,
+    "DSTRCT_CODE": "009508",
+    "DSTRCT_NAME": "กรงปินัง",
+    "DSTRCT_E_NAME": "Krong Pinang",
+    "DSTRCT_PROV": 76
+  },
+  {
+    "DSTRCT_KEY": 916,
+    "DSTRCT_CODE": "009601",
+    "DSTRCT_NAME": "เมืองนราธิวาส",
+    "DSTRCT_E_NAME": "Mueang Narathiwat",
+    "DSTRCT_PROV": 77
+  },
+  {
+    "DSTRCT_KEY": 917,
+    "DSTRCT_CODE": "009602",
+    "DSTRCT_NAME": "ตากใบ",
+    "DSTRCT_E_NAME": "Tak Bai",
+    "DSTRCT_PROV": 77
+  },
+  {
+    "DSTRCT_KEY": 918,
+    "DSTRCT_CODE": "009603",
+    "DSTRCT_NAME": "บาเจาะ",
+    "DSTRCT_E_NAME": "Tak Bai",
+    "DSTRCT_PROV": 77
+  },
+  {
+    "DSTRCT_KEY": 919,
+    "DSTRCT_CODE": "009604",
+    "DSTRCT_NAME": "ยี่งอ",
+    "DSTRCT_E_NAME": "Yi-ngo",
+    "DSTRCT_PROV": 77
+  },
+  {
+    "DSTRCT_KEY": 920,
+    "DSTRCT_CODE": "009605",
+    "DSTRCT_NAME": "ระแงะ",
+    "DSTRCT_E_NAME": "Ra-ngae",
+    "DSTRCT_PROV": 77
+  },
+  {
+    "DSTRCT_KEY": 921,
+    "DSTRCT_CODE": "009606",
+    "DSTRCT_NAME": "รือเสาะ",
+    "DSTRCT_E_NAME": "Rueso",
+    "DSTRCT_PROV": 77
+  },
+  {
+    "DSTRCT_KEY": 922,
+    "DSTRCT_CODE": "009607",
+    "DSTRCT_NAME": "ศรีสาคร",
+    "DSTRCT_E_NAME": "Si Sakhon",
+    "DSTRCT_PROV": 77
+  },
+  {
+    "DSTRCT_KEY": 923,
+    "DSTRCT_CODE": "009608",
+    "DSTRCT_NAME": "แว้ง",
+    "DSTRCT_E_NAME": "Waeng",
+    "DSTRCT_PROV": 77
+  },
+  {
+    "DSTRCT_KEY": 924,
+    "DSTRCT_CODE": "009609",
+    "DSTRCT_NAME": "สุคิริน",
+    "DSTRCT_E_NAME": "Sukhirin",
+    "DSTRCT_PROV": 77
+  },
+  {
+    "DSTRCT_KEY": 925,
+    "DSTRCT_CODE": "009610",
+    "DSTRCT_NAME": "สุไหงโก-ลก",
+    "DSTRCT_E_NAME": "Su-ngai Kolok",
+    "DSTRCT_PROV": 77
+  },
+  {
+    "DSTRCT_KEY": 926,
+    "DSTRCT_CODE": "009611",
+    "DSTRCT_NAME": "สุไหงปาดี",
+    "DSTRCT_E_NAME": "Su-ngai Padi",
+    "DSTRCT_PROV": 77
+  },
+  {
+    "DSTRCT_KEY": 927,
+    "DSTRCT_CODE": "009612",
+    "DSTRCT_NAME": "จะแนะ",
+    "DSTRCT_E_NAME": "Chanae",
+    "DSTRCT_PROV": 77
+  },
+  {
+    "DSTRCT_KEY": 928,
+    "DSTRCT_CODE": "009613",
+    "DSTRCT_NAME": "เจาะไอร้อง",
+    "DSTRCT_E_NAME": "Cho-airong",
+    "DSTRCT_PROV": 77
+  }
+]

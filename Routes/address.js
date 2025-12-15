@@ -20,12 +20,15 @@ const {
   getProvinces,
   getDistricts,
   getSubDistricts,
-  syncAllAuto,
+  importStaticData,
+  // syncAllAuto,
 } = require("../Controllers/address");
+
+// router.get("/address/sync-test", syncAllAuto);
+router.get("/address/importStaticData", importStaticData);
 
 router.get("/address/provinces", getProvinces);
 router.get("/address/districts", getDistricts);
 router.get("/address/sub-districts", getSubDistricts);
-router.get("/address/sync-test", syncAllAuto);
 
 module.exports = router;

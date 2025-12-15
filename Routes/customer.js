@@ -16,7 +16,7 @@ router.get("/one-customer/:id", auth, getCustomer);
 
 router.post("/create-customer", auth, createCustomer);
 
-router.put("/update-customer", auth, updateCustomer);
+router.put("/update-customer/:id", auth, updateCustomer);
 
 router.delete("/remove-customer/:id", auth, deleteCustomer);
 

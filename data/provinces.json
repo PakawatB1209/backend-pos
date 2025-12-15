@@ -1,0 +1,541 @@
+[
+  {
+    "PROV_KEY": 1,
+    "PROV_CODE": "000010",
+    "PROV_NAME": "กรุงเทพฯ",
+    "PROV_E_NAME": "Bangkok",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 2,
+    "PROV_CODE": "000011",
+    "PROV_NAME": "สมุทรปราการ",
+    "PROV_E_NAME": "Samut Prakarn",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 3,
+    "PROV_CODE": "000012",
+    "PROV_NAME": "นนทบุรี",
+    "PROV_E_NAME": "Nonthaburi",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 4,
+    "PROV_CODE": "000013",
+    "PROV_NAME": "ปทุมธานี",
+    "PROV_E_NAME": "Pathum Thani",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 5,
+    "PROV_CODE": "000014",
+    "PROV_NAME": "พระนครศรีอยุธยา",
+    "PROV_E_NAME": "Phra Nakhon Si Ayutthaya",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 6,
+    "PROV_CODE": "000015",
+    "PROV_NAME": "อ่างทอง",
+    "PROV_E_NAME": "Ang Thong",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 7,
+    "PROV_CODE": "000016",
+    "PROV_NAME": "ลพบุรี",
+    "PROV_E_NAME": "Lop Buri",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 8,
+    "PROV_CODE": "000017",
+    "PROV_NAME": "สิงห์บุรี",
+    "PROV_E_NAME": "Sing Buri",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 9,
+    "PROV_CODE": "000018",
+    "PROV_NAME": "ชัยนาท",
+    "PROV_E_NAME": "Chai Nat",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 10,
+    "PROV_CODE": "000019",
+    "PROV_NAME": "สระบุรี",
+    "PROV_E_NAME": "Saraburi",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 11,
+    "PROV_CODE": "000020",
+    "PROV_NAME": "ชลบุรี",
+    "PROV_E_NAME": "Chon Buri",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 12,
+    "PROV_CODE": "000021",
+    "PROV_NAME": "ระยอง",
+    "PROV_E_NAME": "Rayong",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 13,
+    "PROV_CODE": "000022",
+    "PROV_NAME": "จันทบุรี",
+    "PROV_E_NAME": "Chanthaburi",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 14,
+    "PROV_CODE": "000023",
+    "PROV_NAME": "ตราด",
+    "PROV_E_NAME": "Trat",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 15,
+    "PROV_CODE": "000024",
+    "PROV_NAME": "ฉะเชิงเทรา",
+    "PROV_E_NAME": "Chachoengsao",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 16,
+    "PROV_CODE": "000025",
+    "PROV_NAME": "ปราจีนบุรี",
+    "PROV_E_NAME": "Prachin Buri",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 17,
+    "PROV_CODE": "000026",
+    "PROV_NAME": "นครนายก",
+    "PROV_E_NAME": "Nakhon Nayok",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 18,
+    "PROV_CODE": "000027",
+    "PROV_NAME": "สระแก้ว",
+    "PROV_E_NAME": "Sa kaeo",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 19,
+    "PROV_CODE": "000030",
+    "PROV_NAME": "นครราชสีมา",
+    "PROV_E_NAME": "Nakhon Ratchasima",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 20,
+    "PROV_CODE": "000031",
+    "PROV_NAME": "บุรีรัมย์",
+    "PROV_E_NAME": "Buri Ram",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 21,
+    "PROV_CODE": "000032",
+    "PROV_NAME": "สุรินทร์",
+    "PROV_E_NAME": "Surin",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 22,
+    "PROV_CODE": "000033",
+    "PROV_NAME": "ศรีสะเกษ",
+    "PROV_E_NAME": "Si Sa Ket",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 23,
+    "PROV_CODE": "000034",
+    "PROV_NAME": "อุบลราชธานี",
+    "PROV_E_NAME": "Ubon Ratchathani",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 24,
+    "PROV_CODE": "000035",
+    "PROV_NAME": "ยโสธร",
+    "PROV_E_NAME": "Yasothon",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 25,
+    "PROV_CODE": "000036",
+    "PROV_NAME": "ชัยภูมิ",
+    "PROV_E_NAME": "Chaiyaphum",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 26,
+    "PROV_CODE": "000037",
+    "PROV_NAME": "อำนาจเจริญ",
+    "PROV_E_NAME": "Amnat Charoen",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 27,
+    "PROV_CODE": "000038",
+    "PROV_NAME": "บึงกาฬ",
+    "PROV_E_NAME": "Bueng Kan",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 28,
+    "PROV_CODE": "000039",
+    "PROV_NAME": "หนองบัวลำภู",
+    "PROV_E_NAME": "Nong Bua Lam Phu",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 29,
+    "PROV_CODE": "000040",
+    "PROV_NAME": "ขอนแก่น",
+    "PROV_E_NAME": "Khon Kaen",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 30,
+    "PROV_CODE": "000041",
+    "PROV_NAME": "อุดรธานี",
+    "PROV_E_NAME": "Udon Thani",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 31,
+    "PROV_CODE": "000042",
+    "PROV_NAME": "เลย",
+    "PROV_E_NAME": "Loei",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 32,
+    "PROV_CODE": "000043",
+    "PROV_NAME": "หนองคาย",
+    "PROV_E_NAME": "Nong Khai",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 33,
+    "PROV_CODE": "000044",
+    "PROV_NAME": "มหาสารคาม",
+    "PROV_E_NAME": "Maha Sarakham",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 34,
+    "PROV_CODE": "000045",
+    "PROV_NAME": "ร้อยเอ็ด",
+    "PROV_E_NAME": "Roi Et",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 35,
+    "PROV_CODE": "000046",
+    "PROV_NAME": "กาฬสินธุ์",
+    "PROV_E_NAME": "Kalasin",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 36,
+    "PROV_CODE": "000047",
+    "PROV_NAME": "สกลนคร",
+    "PROV_E_NAME": "Sakon Nakhon",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 37,
+    "PROV_CODE": "000048",
+    "PROV_NAME": "นครพนม",
+    "PROV_E_NAME": "Nakhon Phanom",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 38,
+    "PROV_CODE": "000049",
+    "PROV_NAME": "มุกดาหาร",
+    "PROV_E_NAME": "Mukdahan",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 39,
+    "PROV_CODE": "000050",
+    "PROV_NAME": "เชียงใหม่",
+    "PROV_E_NAME": "Chiang Mai",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 40,
+    "PROV_CODE": "000051",
+    "PROV_NAME": "ลำพูน",
+    "PROV_E_NAME": "Lamphun",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 41,
+    "PROV_CODE": "000052",
+    "PROV_NAME": "ลำปาง",
+    "PROV_E_NAME": "Lampang",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 42,
+    "PROV_CODE": "000053",
+    "PROV_NAME": "อุตรดิตถ์",
+    "PROV_E_NAME": "Uttaradit",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 43,
+    "PROV_CODE": "000054",
+    "PROV_NAME": "แพร่",
+    "PROV_E_NAME": "Phrae",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 44,
+    "PROV_CODE": "000055",
+    "PROV_NAME": "น่าน",
+    "PROV_E_NAME": "Nan",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 45,
+    "PROV_CODE": "000056",
+    "PROV_NAME": "พะเยา",
+    "PROV_E_NAME": "Phayao",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 46,
+    "PROV_CODE": "000057",
+    "PROV_NAME": "เชียงราย",
+    "PROV_E_NAME": "Chiang Rai",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 47,
+    "PROV_CODE": "000058",
+    "PROV_NAME": "แม่ฮ่องสอน",
+    "PROV_E_NAME": "Mae Hong Son",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 48,
+    "PROV_CODE": "000060",
+    "PROV_NAME": "นครสวรรค์",
+    "PROV_E_NAME": "Nakhon Sawan",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 49,
+    "PROV_CODE": "000061",
+    "PROV_NAME": "อุทัยธานี",
+    "PROV_E_NAME": "Uthai Thani",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 50,
+    "PROV_CODE": "000062",
+    "PROV_NAME": "กำแพงเพชร",
+    "PROV_E_NAME": "Kamphaeng Phet",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 51,
+    "PROV_CODE": "000063",
+    "PROV_NAME": "ตาก",
+    "PROV_E_NAME": "Tak",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 52,
+    "PROV_CODE": "000064",
+    "PROV_NAME": "สุโขทัย",
+    "PROV_E_NAME": "Sukhothai",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 53,
+    "PROV_CODE": "000065",
+    "PROV_NAME": "พิษณุโลก",
+    "PROV_E_NAME": "Phitsanulok",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 54,
+    "PROV_CODE": "000066",
+    "PROV_NAME": "พิจิตร",
+    "PROV_E_NAME": "Phichit",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 55,
+    "PROV_CODE": "000067",
+    "PROV_NAME": "เพชรบูรณ์",
+    "PROV_E_NAME": "Phetchabun",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 56,
+    "PROV_CODE": "000070",
+    "PROV_NAME": "ราชบุรี",
+    "PROV_E_NAME": "Ratchaburi",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 57,
+    "PROV_CODE": "000071",
+    "PROV_NAME": "กาญจนบุรี",
+    "PROV_E_NAME": "Kanchanaburi",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 58,
+    "PROV_CODE": "000072",
+    "PROV_NAME": "สุพรรณบุรี",
+    "PROV_E_NAME": "Suphan Buri",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 59,
+    "PROV_CODE": "000073",
+    "PROV_NAME": "นครปฐม",
+    "PROV_E_NAME": "Nakhon Pathom",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 60,
+    "PROV_CODE": "000074",
+    "PROV_NAME": "สมุทรสาคร",
+    "PROV_E_NAME": "Samut Sakhon",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 61,
+    "PROV_CODE": "000075",
+    "PROV_NAME": "สมุทรสงคราม",
+    "PROV_E_NAME": "Samut Songkhram",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 62,
+    "PROV_CODE": "000076",
+    "PROV_NAME": "เพชรบุรี",
+    "PROV_E_NAME": "Phetchaburi",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 63,
+    "PROV_CODE": "000077",
+    "PROV_NAME": "ประจวบคีรีขันธ์",
+    "PROV_E_NAME": "Prachuap Khiri Khan",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 64,
+    "PROV_CODE": "000080",
+    "PROV_NAME": "นครศรีธรรมราช",
+    "PROV_E_NAME": "Nakhon Si Thammarat",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 65,
+    "PROV_CODE": "000081",
+    "PROV_NAME": "กระบี่",
+    "PROV_E_NAME": "Krabi",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 66,
+    "PROV_CODE": "000082",
+    "PROV_NAME": "พังงา",
+    "PROV_E_NAME": "Phang-nga",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 67,
+    "PROV_CODE": "000083",
+    "PROV_NAME": "ภูเก็ต",
+    "PROV_E_NAME": "Phuket",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 68,
+    "PROV_CODE": "000084",
+    "PROV_NAME": "สุราษฎร์ธานี",
+    "PROV_E_NAME": "Surat Thani",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 69,
+    "PROV_CODE": "000085",
+    "PROV_NAME": "ระนอง",
+    "PROV_E_NAME": "Ranong",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 70,
+    "PROV_CODE": "000086",
+    "PROV_NAME": "ชุมพร",
+    "PROV_E_NAME": "Chumphon",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 71,
+    "PROV_CODE": "000090",
+    "PROV_NAME": "สงขลา",
+    "PROV_E_NAME": "Songkhla",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 72,
+    "PROV_CODE": "000091",
+    "PROV_NAME": "สตูล",
+    "PROV_E_NAME": "Satun",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 73,
+    "PROV_CODE": "000092",
+    "PROV_NAME": "ตรัง",
+    "PROV_E_NAME": "Trang",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 74,
+    "PROV_CODE": "000093",
+    "PROV_NAME": "พัทลุง",
+    "PROV_E_NAME": "Phatthalung",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 75,
+    "PROV_CODE": "000094",
+    "PROV_NAME": "ปัตตานี",
+    "PROV_E_NAME": "Pattani",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 76,
+    "PROV_CODE": "000095",
+    "PROV_NAME": "ยะลา",
+    "PROV_E_NAME": "Yala",
+    "PROV_CNTRY": 1
+  },
+  {
+    "PROV_KEY": 77,
+    "PROV_CODE": "000096",
+    "PROV_NAME": "นราธิวาส",
+    "PROV_E_NAME": "Narathiwat",
+    "PROV_CNTRY": 1
+  }
+]

@@ -21,9 +21,8 @@ exports.createProduct = async (req, res) => {
     }
 
     const data = req.body;
-
-    // --- 1. จัดการรูปภาพ ---
     let filesArray = [];
+
     if (req.files && req.files.length > 0) {
       const uploadDir = "./uploads";
       if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
@@ -48,7 +47,6 @@ exports.createProduct = async (req, res) => {
       );
     }
 
-    // --- 2. เช็คสินค้าซ้ำ ---
     const existingProduct = await Product.findOne({
       product_code: data.code,
       comp_id: user.comp_id,
@@ -60,83 +58,111 @@ exports.createProduct = async (req, res) => {
         message: `Product Code "${data.code}" already exists.`,
       });
     }
+    // debug const getMasterId = async (name, fieldName) => {
+    //   if (!name) return null;
 
-    // --- 3. ฟังก์ชันช่วยค้นหา ID จากชื่อ (Helper) ---
+    //   // ค้นหาโดยดูทั้ง ชื่อ และ comp_id
+    //   const master = await Masters.findOne({
+    //     master_name: name,
+    //     comp_id: user.comp_id,
+    //   }).lean();
+
+    //   // 🚨 LOG จับผิด: ดูว่าหาเจอไหม
+    //   if (!master) {
+    //     console.log(
+    //       `❌ ไม่พบ Master: "${name}" (ในฟิลด์: ${fieldName}) | Comp ID: ${user.comp_id}`
+    //     );
+    //   } else {
+    //     console.log(`✅ พบ Master: "${name}" -> ID: ${master._id}`);
+    //   }
+
+    //   return master ? master._id : null;
+    // };
     const getMasterId = async (name) => {
       if (!name) return null;
-      // ค้นหาโดยดู comp_id ด้วย เพื่อความปลอดภัย
+
       const master = await Masters.findOne({
         master_name: name,
         comp_id: user.comp_id,
-      });
-      if (master) return master._id;
-      return null;
+      }).lean();
+
+      return master ? master._id : null;
     };
 
     const mastersArray = [];
     const pushMaster = (masterId, qty = 0, weight = 0) => {
-      // ต้องมี ID เท่านั้นถึงจะ push ลงไป (กัน Error Cast Failed)
-      if (masterId) {
-        mastersArray.push({ master_id: masterId, qty, weight });
-      }
+      if (masterId) mastersArray.push({ master_id: masterId, qty, weight });
     };
 
-    // --- 4. 🔥 แปลงชื่อเป็น ID แล้วค่อย Push (จุดที่แก้) ---
-
-    // 4.1 Item Type
     const itemTypeId = await getMasterId(data.item_type);
     pushMaster(itemTypeId, 1);
 
-    // 4.2 Metal
     if (data.metal) {
       const metalId = await getMasterId(data.metal);
       const metalColorId = await getMasterId(data.metal_color);
-
       pushMaster(metalId, 1, data.net_weight || 0);
       pushMaster(metalColorId, 1);
     }
 
-    // 4.3 Stone & Attributes
-    let stoneWeight = 0;
-    if (!data.metal && data.stone_name) {
-      stoneWeight = data.net_weight || data.weight || 0;
+    if (data.stones && Array.isArray(data.stones) && data.stones.length > 0) {
+      for (const stone of data.stones) {
+        const stoneNameId = await getMasterId(stone.stone_name);
+        const shapeId = await getMasterId(stone.shape);
+        const sizeId = await getMasterId(stone.size);
+        const colorId = await getMasterId(stone.color);
+        const cuttingId = await getMasterId(stone.cutting);
+        const qualityId = await getMasterId(stone.quality);
+        const clarityId = await getMasterId(stone.clarity);
+
+        const qty = stone.qty ? Number(stone.qty) : 1;
+        const weight = stone.weight ? Number(stone.weight) : 0;
+
+        pushMaster(stoneNameId, qty, weight);
+        pushMaster(shapeId);
+        pushMaster(sizeId);
+        pushMaster(colorId);
+        pushMaster(cuttingId);
+        pushMaster(qualityId);
+        pushMaster(clarityId);
+      }
+    } else if (data.stone_name) {
+      const stoneQty = data.stone_qty ? Number(data.stone_qty) : 1;
+      let stoneWeight = 0;
+      if (data.stone_weight) {
+        stoneWeight = Number(data.stone_weight);
+      } else if (!data.metal) {
+        stoneWeight = data.net_weight || data.weight || 0;
+      }
+
+      const stoneNameId = await getMasterId(data.stone_name);
+      pushMaster(stoneNameId, stoneQty, stoneWeight);
+
+      const shapeId = await getMasterId(data.shape);
+      const sizeId = await getMasterId(data.size);
+      const colorId = await getMasterId(data.color);
+      const cuttingId = await getMasterId(data.cutting);
+      const qualityId = await getMasterId(data.quality);
+      const clarityId = await getMasterId(data.clarity);
+
+      pushMaster(shapeId);
+      pushMaster(sizeId);
+      pushMaster(colorId);
+      pushMaster(cuttingId);
+      pushMaster(qualityId);
+      pushMaster(clarityId);
     }
 
-    // ⚠️ ต้องใช้ await getMasterId ทุกตัว
-    const stoneNameId = await getMasterId(data.stone_name);
-    const shapeId = await getMasterId(data.shape);
-    const sizeId = await getMasterId(data.size);
-    const colorId = await getMasterId(data.color);
-    const cuttingId = await getMasterId(data.cutting);
-    const qualityId = await getMasterId(data.quality);
-    const clarityId = await getMasterId(data.clarity);
-
-    // ส่ง ID ที่แปลงแล้วเข้าไป
-    pushMaster(stoneNameId, 1, stoneWeight);
-    pushMaster(shapeId);
-    pushMaster(sizeId);
-    pushMaster(colorId);
-    pushMaster(cuttingId);
-    pushMaster(qualityId);
-    pushMaster(clarityId);
-
-    // --- 5. สร้าง Detail ---
     const newDetail = await ProductDetail.create({
       unit: data.unit || "pcs",
       size: data.product_size || data.size,
       gross_weight: data.gross_weight || data.weight || 0,
       net_weight: data.net_weight || data.weight || 0,
-      masters: mastersArray, // ตอนนี้ในนี้จะมีแต่ ObjectId ล้วนๆ แล้ว
+      masters: mastersArray,
       description: data.description,
       comp_id: user.comp_id,
     });
 
     try {
-      // --- 6. สร้าง Product Main ---
-
-      // หมายเหตุ: data.item_type เป็นชื่อ (String) อยู่แล้ว เอาไปบันทึกได้เลย
-      // ไม่ต้องไป findById อีกรอบ เพราะจะ Error
-
       const newProduct = await Product.create({
         product_code: data.code,
         product_name: data.product_name,
@@ -144,13 +170,19 @@ exports.createProduct = async (req, res) => {
         comp_id: user.comp_id,
         file: filesArray,
         product_category: data.category,
-        product_item_type: data.item_type, // ใช้ชื่อที่ส่งมาจากหน้าบ้านได้เลย (เช่น "Ring")
+        product_item_type: data.item_type,
       });
-
+      const populatedProduct = await Product.findById(newProduct._id).populate({
+        path: "product_detail_id",
+        populate: {
+          path: "masters.master_id", // เจาะเข้าไปดึงข้อมูล Master
+          select: "master_name master_type", // ดึงเฉพาะฟิลด์ที่ต้องใช้
+        },
+      });
       res.status(201).json({
         success: true,
         message: "Product created successfully.",
-        data: newProduct,
+        data: populatedProduct,
         file: filesArray,
       });
     } catch (productError) {
@@ -182,8 +214,7 @@ exports.getOneProduct = async (req, res) => {
           path: "masters.master_id",
         },
       })
-      .populate("comp_id", "comp_name")
-      .lean();
+      .populate("comp_id", "comp_name");
 
     if (!product) {
       return res.status(404).json({
@@ -236,8 +267,6 @@ exports.list = async (req, res) => {
       ];
     }
 
-    console.log("🔍 Filtering with:", JSON.stringify(query));
-
     const products = await Product.find(query)
       .populate({
         path: "product_detail_id",
@@ -246,8 +275,7 @@ exports.list = async (req, res) => {
           select: "master_name master_type master_color",
         },
       })
-      .sort({ createdAt: -1 })
-      .lean();
+      .sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,

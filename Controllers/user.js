@@ -90,17 +90,46 @@ exports.createUser = async (req, res) => {
 
 exports.createUsersendEmail = async (req, res) => {
   try {
+    // ดึง admin id จาก token
+    const adminId = req.user.id;
+
+    // หา admin ใน DB เพื่อเอา comp_id จริง
+    const adminUser = await User.findById(adminId).select(
+      "comp_id user_role status"
+    );
+
+    if (
+      !adminUser ||
+      adminUser.status !== true ||
+      adminUser.user_role !== "Admin"
+    ) {
+      return res.status(403).json({
+        success: false,
+        error: "Admin Access Denied",
+      });
+    }
+
+    if (!adminUser.comp_id) {
+      return res.status(403).json({
+        success: false,
+        error: "Please assign a company before creating a user",
+      });
+    }
+
+    const targetCompId = adminUser.comp_id;
+
+    // ไม่รับ comp_id จาก body แล้ว
     const {
       user_name,
       user_email,
       user_password,
       user_role,
       user_phone,
-      comp_id,
       permissions,
     } = req.body;
 
-    if (!user_name || !user_password || !comp_id || !user_email) {
+    // ไม่เช็ค comp_id จาก body
+    if (!user_name || !user_password || !user_email) {
       return res
         .status(400)
         .json({ success: false, error: "Complete all fields." });
@@ -108,10 +137,12 @@ exports.createUsersendEmail = async (req, res) => {
 
     const roleToBeCreated = user_role || "User";
 
+    // จำกัด 3 users ต่อบริษัท (นับเฉพาะ active ด้วยจะดี)
     if (roleToBeCreated === "User") {
       const countUsers = await User.countDocuments({
-        comp_id: comp_id,
+        comp_id: targetCompId,
         user_role: "User",
+        status: true,
       });
 
       if (countUsers >= 3) {
@@ -141,9 +172,10 @@ exports.createUsersendEmail = async (req, res) => {
       user_password: hashedPassword,
       user_role: roleToBeCreated,
       user_phone,
-      comp_id,
+      comp_id: targetCompId, // ใช้จาก admin
       permissions: permissions || [],
       status: true,
+      password_changed_at: null, // (optional) ถ้าใช้ field นี้บังคับเปลี่ยนรหัส
     });
 
     const transporter = nodemailer.createTransport({
@@ -180,10 +212,12 @@ Best regards,
 System Admin
       `,
     };
+
     await transporter.sendMail(mailOptions);
-    console.log(`Email sent to ${user_email}`);
 
     const userResponse = newUser.toObject();
+    delete userResponse.user_password;
+    delete userResponse.__v;
 
     return res.status(201).json({
       success: true,
@@ -192,8 +226,7 @@ System Admin
     });
   } catch (err) {
     console.error("Error in createUserAndSendEmail:", err);
-
-    res
+    return res
       .status(500)
       .json({ success: false, error: "Server error or Email sending failed" });
   }

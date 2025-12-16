@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Permission = require("../models/Permission");
 const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const mongoose = require("mongoose");
@@ -46,6 +47,19 @@ exports.createUser = async (req, res) => {
         return res.status(400).json({
           success: false,
           error: "Limited to no more than 3 per company",
+        });
+      }
+    }
+
+    if (permissions && permissions.length > 0) {
+      const count = await Permission.countDocuments({
+        _id: { $in: permissions },
+      });
+
+      if (count !== permissions.length) {
+        return res.status(400).json({
+          success: false,
+          error: "One or more Permission IDs are invalid.",
         });
       }
     }
@@ -409,16 +423,38 @@ exports.updateUserByAdmin = async (req, res) => {
     if (user_name) user.user_name = user_name;
     if (user_email) user.user_email = user_email;
     if (user_phone) user.user_phone = user_phone;
-
     if (comp_id) user.comp_id = comp_id;
-    if (permissions) user.permissions = permissions;
+
+    if (permissions) {
+      if (!Array.isArray(permissions)) {
+        return res.status(400).json({
+          success: false,
+          message: "Permissions must be an array of IDs.",
+        });
+      }
+
+      if (permissions.length > 0) {
+        const validCount = await Permission.countDocuments({
+          _id: { $in: permissions },
+        });
+
+        if (validCount !== permissions.length) {
+          return res.status(400).json({
+            success: false,
+            message: "Some Permission IDs are invalid or do not exist.",
+          });
+        }
+      }
+
+      user.permissions = permissions;
+    }
 
     if (typeof status !== "undefined") user.status = status;
 
     await user.save();
 
     const userResponse = user.toObject();
-    // delete userResponse.user_password;
+    delete userResponse.user_password;
     delete userResponse.__v;
 
     return res.status(200).json({
@@ -434,14 +470,9 @@ exports.updateUserByAdmin = async (req, res) => {
 
 exports.updateUserbyuser = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { user_name, user_email, user_password, user_phone } = req.body;
+    const id = req.user.id;
 
-    if (!mongoose.isValidObjectId(id)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid ID format" });
-    }
+    const { user_name, user_email, user_password, user_phone } = req.body;
 
     const user = await User.findById(id);
     if (!user) {
@@ -473,6 +504,13 @@ exports.updateUserbyuser = async (req, res) => {
     if (user_phone) user.user_phone = user_phone;
 
     if (user_password) {
+      if (user_password.length < 3) {
+        return res.status(400).json({
+          success: false,
+          message: "Password must be at least 3 characters.",
+        });
+      }
+
       const salt = await bcrypt.genSalt(10);
       user.user_password = await bcrypt.hash(user_password, salt);
       user.password_changed_at = new Date();
@@ -481,7 +519,8 @@ exports.updateUserbyuser = async (req, res) => {
     await user.save();
 
     const userResponse = user.toObject();
-    // delete userResponse.user_password;
+
+    delete userResponse.user_password;
     delete userResponse.__v;
 
     return res.status(200).json({

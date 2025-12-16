@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const { auth, adminCheck } = require("../Middleware/auth");
-
 const {
   getOneUser,
   getUserRole,
@@ -31,7 +30,7 @@ router.post("/createandsend-user", auth, adminCheck, createUsersendEmail);
 
 router.put("/update-user-byadmin/:id", auth, adminCheck, updateUserByAdmin);
 
-router.put("/update-user-byuser/:id", auth, updateUserbyuser);
+router.put("/update-user-byuser", auth, updateUserbyuser);
 
 router.put(
   "/resetpass-user-byadmin/:id",

@@ -3,6 +3,7 @@ const router = express.Router();
 const { auth } = require("../Middleware/auth");
 const { validateSchema } = require("../Middleware/productValidator");
 const { upload } = require("../Middleware/upload");
+const { checkPermission } = require("../Middleware/checkPermission");
 
 const {
   createProduct,
@@ -15,7 +16,7 @@ const {
   removeAllFiles,
 } = require("../Controllers/product");
 
-router.get("/product", auth, list);
+router.get("/product", auth, checkPermission("ProductList", "view"), list);
 
 router.get("/product/:id", getOneProduct);
 

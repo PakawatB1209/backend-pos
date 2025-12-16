@@ -6,7 +6,6 @@ exports.createPermission = async (req, res) => {
   try {
     const { permission_name, permission_menu, permission_action } = req.body;
 
-    // Validate: Check if all data has been sent.
     if (!permission_menu || !permission_action) {
       return res.status(400).json({
         success: false,
@@ -14,8 +13,14 @@ exports.createPermission = async (req, res) => {
       });
     }
 
-    // Validate Action: Check that the Action matches the Enum.
-    const allowedActions = ["add", "view", "update", "delete", "export"];
+    const allowedActions = [
+      "add",
+      "view",
+      "update",
+      "delete",
+      "export",
+      "print",
+    ];
     if (!allowedActions.includes(permission_action)) {
       return res.status(400).json({
         success: false,
@@ -23,7 +28,6 @@ exports.createPermission = async (req, res) => {
       });
     }
 
-    // Duplicate Check (Menu + Action)
     const existingPermission = await Permission.findOne({
       permission_menu: permission_menu,
       permission_action: permission_action,
@@ -36,14 +40,12 @@ exports.createPermission = async (req, res) => {
       });
     }
 
-    //Create
     const newPermission = await Permission.create({
       permission_name,
       permission_menu,
       permission_action,
     });
 
-    //Response
     res.status(201).json({
       success: true,
       message: "Successfully created",
@@ -62,7 +64,6 @@ exports.getOnePermission = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Guard Clause
     if (!mongoose.isValidObjectId(id)) {
       return res.status(400).json({
         success: false,

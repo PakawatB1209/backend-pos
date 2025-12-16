@@ -10,6 +10,9 @@ const {
   list,
   removeOneProduct,
   updateProduct,
+  removeAllProducts,
+  removeSingleFile,
+  removeAllFiles,
 } = require("../Controllers/product");
 
 router.get("/product", auth, list);
@@ -35,8 +38,19 @@ router.post(
 
 router.post("/others", auth, validateSchema("others"), upload, createProduct);
 
-router.put("/product/:id", auth, validateSchema("update"), updateProduct);
+router.put(
+  "/update-product/:id",
+  auth,
+  validateSchema("update"),
+  updateProduct
+);
 
-router.delete("/product/:id", removeOneProduct);
+router.delete("/del-productOne/:id", auth, removeOneProduct);
+
+router.delete("/del-productAll", auth, removeAllProducts);
+
+router.put("/remove-file/:id", auth, removeSingleFile);
+
+router.put("/remove-all-files/:id", auth, removeAllFiles);
 
 module.exports = router;

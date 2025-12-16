@@ -201,27 +201,52 @@ exports.getOneProduct = async (req, res) => {
     const { id } = req.params;
 
     if (!mongoose.isValidObjectId(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid ID format.",
-      });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid ID format." });
     }
 
-    const product = await Product.findById(id)
+    const user = await User.findById(req.user.id).select("comp_id").lean();
+
+    const product = await Product.findOne({
+      _id: id,
+      comp_id: user.comp_id,
+    })
       .populate({
         path: "product_detail_id",
         populate: {
           path: "masters.master_id",
+          select: "master_name master_type master_color code", // เลือกเฉพาะที่ใช้
         },
       })
-      .populate("comp_id", "comp_name");
+      .populate("comp_id", "comp_name")
+      .lean();
 
     if (!product) {
-      return res.status(404).json({
-        success: false,
-        message: "Product not found.",
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found." });
+    }
+
+    const attributes = {};
+
+    if (product.product_detail_id && product.product_detail_id.masters) {
+      product.product_detail_id.masters.forEach((m) => {
+        if (m.master_id) {
+          const type = m.master_id.master_type;
+
+          attributes[type] = {
+            _id: m.master_id._id,
+            name: m.master_id.master_name,
+            code: m.master_id.code,
+            qty: m.qty,
+            weight: m.weight,
+          };
+        }
       });
     }
+
+    product.attributes = attributes;
 
     res.status(200).json({
       success: true,
@@ -229,36 +254,30 @@ exports.getOneProduct = async (req, res) => {
     });
   } catch (error) {
     console.log("Error get product:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
 exports.list = async (req, res) => {
   try {
     const userId = req.user.id;
-    const user = await User.findById(userId).select("comp_id");
 
+    const user = await User.findById(userId).select("comp_id").lean();
     if (!user || !user.comp_id) {
-      return res.status(400).json({
-        success: false,
-        message: "User is not associated with a company.",
-      });
+      return res
+        .status(400)
+        .json({ success: false, message: "User not associated with company." });
     }
 
-    const { category, item_type, search } = req.query;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const { category, search } = req.query;
 
     let query = { comp_id: user.comp_id };
 
-    if (category) {
-      query.category = { $in: category.split(",") };
-    }
-
-    if (item_type) {
-      query.item_type = { $in: item_type.split(",") };
-    }
+    if (category) query.category = { $in: category.split(",") };
 
     if (search) {
       query.$or = [
@@ -267,20 +286,77 @@ exports.list = async (req, res) => {
       ];
     }
 
-    const products = await Product.find(query)
-      .populate({
-        path: "product_detail_id",
-        populate: {
-          path: "masters.master_id",
-          select: "master_name master_type master_color",
-        },
-      })
-      .sort({ createdAt: -1 });
+    const [products, total] = await Promise.all([
+      Product.find(query)
+        .select("product_name product_code file category createdAt")
+        .populate({
+          path: "product_detail_id",
+          select: "masters size unit",
+          populate: {
+            path: "masters.master_id",
+            select: "master_name master_type",
+          },
+        })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+
+      Product.countDocuments(query),
+    ]);
+
+    const formattedProducts = products.map((p) => {
+      let foundItemType = "";
+      let foundStone = "";
+      let metal = "";
+      let color = "";
+      let size = "";
+
+      if (p.product_detail_id) {
+        const detail = p.product_detail_id;
+
+        if (detail.size) {
+          size = `${detail.size} ${detail.unit || ""}`.trim();
+        }
+
+        if (detail.masters) {
+          detail.masters.forEach((m) => {
+            if (m.master_id) {
+              const name = m.master_id.master_name;
+              const type = m.master_id.master_type;
+
+              if (type === "metal") metal = name;
+              else if (type === "metal_color" || type === "color") color = name;
+              else if (type === "item_type") foundItemType = name;
+              else if (type === "stone_name") foundStone = name;
+            }
+          });
+        }
+      }
+
+      const finalTypeStone = foundItemType || foundStone || "";
+
+      return {
+        _id: p._id,
+        code: p.product_code,
+        name: p.product_name,
+        image: p.file && p.file.length > 0 ? p.file[0] : "",
+        category: p.category,
+
+        type_stone: finalTypeStone,
+        size: size,
+        metal: metal,
+        color: color,
+      };
+    });
 
     res.status(200).json({
       success: true,
-      count: products.length,
-      data: products,
+      count: formattedProducts.length,
+      total_record: total,
+      total_page: Math.ceil(total / limit),
+      current_page: page,
+      data: formattedProducts,
     });
   } catch (error) {
     console.log("Error list product:", error);
@@ -292,105 +368,109 @@ exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user.id;
-    const user = await User.findById(userId).select("comp_id");
+    const data = req.body;
 
     if (!mongoose.isValidObjectId(id)) {
       return res.status(400).json({ success: false, message: "Invalid ID" });
     }
 
+    const user = await User.findById(userId).select("comp_id");
     const currentProduct = await Product.findOne({
       _id: id,
       comp_id: user.comp_id,
     });
+
     if (!currentProduct) {
       return res
         .status(404)
         .json({ success: false, message: "Product not found" });
     }
 
+    let imageFilename = undefined;
+
+    if (req.file) {
+      const oldImages = currentProduct.file || [];
+
+      if (oldImages.length > 0) {
+        oldImages.forEach((img) => {
+          const oldPath = path.join(__dirname, "../uploads", img);
+          if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+        });
+      }
+
+      imageFilename = req.file.filename;
+    }
+
     const currentDetail = await ProductDetail.findById(
       currentProduct.product_detail_id
-    )
-      .populate("masters.master_id")
-      .lean();
+    ).lean();
 
-    let oldData = {
-      item_type: null,
-      metal: null,
-      metal_color: null,
-      stone_name: null,
-      shape: null,
-      size: null,
-      color: null,
-      cutting: null,
-      quality: null,
-      clarity: null,
-    };
-
+    const oldMastersMap = {};
     if (currentDetail && currentDetail.masters) {
-      currentDetail.masters.forEach((m) => {
+      const populatedDetail = await ProductDetail.findById(
+        currentProduct.product_detail_id
+      )
+        .populate("masters.master_id")
+        .lean();
+
+      populatedDetail.masters.forEach((m) => {
         if (m.master_id) {
-          const type = m.master_id.master_type;
-          const id = m.master_id._id.toString();
-          if (type === "item_type") oldData.item_type = id;
-          if (type === "metal") oldData.metal = id;
-          if (type === "stone_name") oldData.stone_name = id;
-          if (type === "shape") oldData.shape = id;
-          if (oldData[type] !== undefined) oldData[type] = id;
+          oldMastersMap[m.master_id.master_type] = {
+            id: m.master_id._id.toString(),
+            qty: m.qty,
+            weight: m.weight,
+          };
         }
       });
     }
 
-    const data = req.body;
-
-    if (req.file) {
-      data.image = req.file.filename;
-    }
+    const getVal = (newVal, oldType) => {
+      if (newVal) return newVal;
+      if (oldMastersMap[oldType]) return oldMastersMap[oldType].id; // ถ้าไม่มี ใช้ค่าเก่า
+      return null;
+    };
 
     const mastersArray = [];
     const pushMaster = (masterId, qty = 0, weight = 0) => {
       if (masterId) mastersArray.push({ master_id: masterId, qty, weight });
     };
 
-    pushMaster(data.item_type || oldData.item_type, 1);
+    pushMaster(getVal(data.item_type, "item_type"), 1);
 
-    const finalMetal = data.metal || oldData.metal;
+    const finalMetal = getVal(data.metal, "metal");
     if (finalMetal) {
       const finalNetWt =
         data.net_weight !== undefined
           ? data.net_weight
-          : currentDetail.net_weight;
+          : currentDetail.net_weight || 0;
       pushMaster(finalMetal, 1, finalNetWt);
-
-      pushMaster(data.metal_color || oldData.metal_color, 1);
+      pushMaster(getVal(data.metal_color, "metal_color"), 1);
     }
 
-    const finalStone = data.stone_name || oldData.stone_name;
-    let stoneWeight = 0;
+    const finalStone = getVal(data.stone_name, "stone_name");
     if (!finalMetal && finalStone) {
-      stoneWeight =
+      const stoneWt =
         data.net_weight !== undefined
           ? data.net_weight
-          : currentDetail.net_weight;
+          : currentDetail.net_weight || 0;
+      pushMaster(finalStone, 1, stoneWt);
+    } else {
+      pushMaster(finalStone, 1, 0);
     }
-    pushMaster(finalStone, 1, stoneWeight);
 
-    pushMaster(data.shape || oldData.shape);
-    pushMaster(data.size || oldData.size);
-    pushMaster(data.color || oldData.color);
-    pushMaster(data.cutting || oldData.cutting);
-    pushMaster(data.quality || oldData.quality);
-    pushMaster(data.clarity || oldData.clarity);
+    pushMaster(getVal(data.shape, "shape"));
+    pushMaster(getVal(data.size, "size"));
+    pushMaster(getVal(data.color, "color"));
+    pushMaster(getVal(data.cutting, "cutting"));
+    pushMaster(getVal(data.quality, "quality"));
+    pushMaster(getVal(data.clarity, "clarity"));
 
     const detailUpdate = {
       unit: data.unit,
       size: data.product_size || data.size,
       gross_weight: data.gross_weight,
       net_weight: data.net_weight,
-      // cost: data.cost,
-      // price: data.sale_price,
       description: data.description,
-
       masters: mastersArray,
     };
 
@@ -407,9 +487,12 @@ exports.updateProduct = async (req, res) => {
     const productUpdate = {
       product_code: data.code,
       product_name: data.product_name,
-      product_Image: data.image,
-      // sale_price: data.sale_price,
     };
+
+    if (imageFilename) {
+      productUpdate.file = [imageFilename];
+    }
+
     Object.keys(productUpdate).forEach(
       (key) => productUpdate[key] === undefined && delete productUpdate[key]
     );
@@ -420,11 +503,15 @@ exports.updateProduct = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Product updated successfully (Partial Update)",
+      message: "Product updated successfully",
       data: updatedProduct,
     });
   } catch (err) {
     console.log("Error update product:", err);
+    if (req.file) {
+      const tempPath = path.join(__dirname, "../uploads", req.file.filename);
+      if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+    }
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
@@ -439,20 +526,29 @@ exports.removeOneProduct = async (req, res) => {
         .json({ success: false, message: "Invalid ID format" });
     }
 
-    const product = await Product.findById(id);
+    const user = await User.findById(req.user.id).select("comp_id");
+
+    const product = await Product.findOne({ _id: id, comp_id: user.comp_id });
 
     if (!product) {
-      return res
-        .status(404)
-        .json({ success: false, message: "ไม่พบสินค้านี้" });
+      return res.status(404).json({
+        success: false,
+        message: "ไม่พบสินค้านี้ หรือ คุณไม่มีสิทธิ์ลบ",
+      });
     }
 
-    if (product.file) {
-      const imagePath = `./uploads/${product.file}`;
+    if (product.file && product.file.length > 0) {
+      product.file.forEach((fileName) => {
+        const imagePath = path.join(__dirname, "../uploads", fileName);
 
-      fs.unlink(imagePath, (err) => {
-        if (err) console.log("Failed to delete local image:", err);
-        else console.log("Successfully deleted local image");
+        fs.unlink(imagePath, (err) => {
+          if (err)
+            console.log(
+              `Failed to delete local image (${fileName}):`,
+              err.message
+            );
+          else console.log(`Successfully deleted local image: ${fileName}`);
+        });
       });
     }
 
@@ -470,5 +566,129 @@ exports.removeOneProduct = async (req, res) => {
   } catch (error) {
     console.log("Error remove product:", error);
     res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+exports.removeAllProducts = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("comp_id");
+
+    const products = await Product.find({ comp_id: user.comp_id });
+
+    if (!products.length) {
+      return res
+        .status(404)
+        .json({ success: false, message: "ไม่พบสินค้าที่จะลบ" });
+    }
+
+    const detailIds = [];
+
+    products.forEach((product) => {
+      if (product.product_detail_id) {
+        detailIds.push(product.product_detail_id);
+      }
+
+      if (product.file && product.file.length > 0) {
+        product.file.forEach((fileName) => {
+          const imagePath = path.join(__dirname, "../uploads", fileName);
+
+          fs.unlink(imagePath, (err) => {
+            if (err)
+              console.log(
+                `Failed to delete local image (${fileName}):`,
+                err.message
+              );
+          });
+        });
+      }
+    });
+
+    if (detailIds.length > 0) {
+      await ProductDetail.deleteMany({ _id: { $in: detailIds } });
+    }
+
+    await Product.deleteMany({ comp_id: user.comp_id });
+
+    res.status(200).json({
+      success: true,
+      message: `Deleted ${products.length} products and related data successfully.`,
+    });
+  } catch (error) {
+    console.log("Error remove all products:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+exports.removeSingleFile = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { fileName } = req.body;
+
+    const user = await User.findById(req.user.id).select("comp_id");
+    const product = await Product.findOne({ _id: id, comp_id: user.comp_id });
+
+    if (!product) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found." });
+    }
+
+    const filePath = path.join(__dirname, "../uploads", fileName);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+      id,
+      {
+        $pull: { file: fileName },
+      },
+      { new: true }
+    );
+
+    res.json({
+      success: true,
+      message: "File removed successfully",
+      data: updatedProduct,
+    });
+  } catch (err) {
+    console.error("Remove File Error:", err);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+exports.removeAllFiles = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.findById(req.user.id).select("comp_id");
+    const product = await Product.findOne({ _id: id, comp_id: user.comp_id });
+
+    if (!product) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found." });
+    }
+
+    if (product.file && product.file.length > 0) {
+      product.file.forEach((fileName) => {
+        const filePath = path.join(__dirname, "../uploads", fileName);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      });
+    }
+
+    product.file = [];
+    await product.save();
+
+    res.json({
+      success: true,
+      message: "All files deleted successfully.",
+      data: product,
+    });
+  } catch (err) {
+    console.error("Remove All Files Error:", err);
+    res.status(500).json({ success: false, message: "Server Error" });
   }
 };

@@ -27,10 +27,10 @@ exports.createUser = async (req, res) => {
       permissions,
     } = req.body;
 
-    if (!user_name || !user_password || !user_email) {
+    if (!user_name || !user_password) {
       return res
         .status(400)
-        .json({ success: false, error: "Complete all fields." });
+        .json({ success: false, error: "Username and password are required." });
     }
 
     const roleToBeCreated = user_role || "User";
@@ -128,11 +128,16 @@ exports.createUsersendEmail = async (req, res) => {
       permissions,
     } = req.body;
 
-    // ไม่เช็ค comp_id จาก body
-    if (!user_name || !user_password || !user_email) {
+    if (!user_name || !user_password) {
       return res
         .status(400)
-        .json({ success: false, error: "Complete all fields." });
+        .json({ success: false, error: "Username and password are required." });
+    }
+
+    if (!user_email) {
+      return res
+        .status(400)
+        .json({ success: false, error: "Email is required to send password." });
     }
 
     const roleToBeCreated = user_role || "User";

@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 const ProductDetailSchema = new Schema(
   {
     product_detail_id: { type: Schema.Types.ObjectId, auto: true },
-    unit: { type: String, enum: ["pcs", "gram", "carat"], default: "pcs" },
+    unit: { type: String, enum: ["pcs", "g", "ct", "pair"], default: "pcs" },
     color: { type: String },
     size: { type: String },
     masters: [

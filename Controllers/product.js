@@ -318,7 +318,6 @@ exports.list = async (req, res) => {
 
     let query = { comp_id: user.comp_id };
 
-    // 🔥 แก้จุดที่ 1: ใช้ product_category ให้ตรงกับ Schema
     if (category) query.product_category = { $in: category.split(",") };
 
     if (search) {
@@ -330,7 +329,6 @@ exports.list = async (req, res) => {
 
     const [products, total] = await Promise.all([
       Product.find(query)
-        // 🔥 แก้จุดที่ 1: select ให้ถูกชื่อ
         .select(
           "product_name product_code file product_category createdAt related_accessories"
         )
@@ -344,10 +342,10 @@ exports.list = async (req, res) => {
         })
         .populate({
           path: "related_accessories",
-          select: "product_code product_name product_detail_id file", // เพิ่ม file เผื่อใช้รูป
+          select: "product_code product_name product_detail_id file",
           populate: {
             path: "product_detail_id",
-            select: "weight unit", // ดึง weight ออกมา
+            select: "weight unit",
           },
         })
         .sort({ createdAt: -1 })
@@ -389,13 +387,11 @@ exports.list = async (req, res) => {
 
       const finalTypeStone = foundItemType || foundStone || "";
 
-      // 🔥 แก้จุดที่ 2: จัด Format Accessories ให้สวยงาม ดึง weight ออกมาโชว์
       const formattedAccessories = (p.related_accessories || []).map((acc) => ({
         _id: acc._id,
         code: acc.product_code,
         name: acc.product_name,
         image: acc.file && acc.file.length > 0 ? acc.file[0] : "",
-        // ดึง weight จาก detail_id ออกมาไว้ข้างนอก
         weight: acc.product_detail_id ? acc.product_detail_id.weight : 0,
         unit: acc.product_detail_id ? acc.product_detail_id.unit : "pcs",
       }));
@@ -406,7 +402,6 @@ exports.list = async (req, res) => {
         name: p.product_name,
         image: p.file && p.file.length > 0 ? p.file[0] : "",
 
-        // 🔥 แก้จุดที่ 1: ส่งกลับให้ถูกชื่อ
         category: p.product_category,
 
         type_stone: finalTypeStone,
@@ -414,7 +409,7 @@ exports.list = async (req, res) => {
         metal: metal,
         color: color,
 
-        accessories: formattedAccessories, // ส่งตัวที่จัด Format แล้วกลับไป
+        accessories: formattedAccessories,
       };
     });
 

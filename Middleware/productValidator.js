@@ -13,6 +13,9 @@ const baseSchema = {
     .required()
     .messages({ "any.required": "Product Code is required" }),
   description: Joi.string().allow("").optional(),
+  category: Joi.string()
+    .required()
+    .valid("productmaster", "stone", "semimount", "accessory", "others"),
 
   // cost: Joi.number()
   //   .min(0)
@@ -42,6 +45,9 @@ const productMasterSchema = Joi.object({
   cutting: objectId.optional(),
   quality: objectId.optional(),
   clarity: objectId.optional(),
+  related_accessories: Joi.alternatives()
+    .try(objectId, Joi.array().items(objectId))
+    .optional(),
 });
 
 const stoneSchema = Joi.object({
@@ -78,6 +84,9 @@ const semiMountSchema = Joi.object({
 
   stone_name: objectId.optional(),
   shape: objectId.optional(),
+  related_accessories: Joi.alternatives()
+    .try(objectId, Joi.array().items(objectId))
+    .optional(),
 });
 
 const accessorySchema = Joi.object({
@@ -86,7 +95,6 @@ const accessorySchema = Joi.object({
   metal: objectId.required(),
   product_size: Joi.string().required(),
   weight: Joi.number().required(),
-  unit: Joi.number().required(),
 });
 
 const othersSchema = Joi.object({

@@ -16,6 +16,9 @@ const ProductSchema = new mongoose.Schema(
       type: String,
       index: true,
     },
+    related_accessories: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "product" },
+    ],
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );

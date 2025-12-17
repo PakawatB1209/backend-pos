@@ -155,8 +155,9 @@ exports.createProduct = async (req, res) => {
     const newDetail = await ProductDetail.create({
       unit: data.unit || "pcs",
       size: data.product_size || data.size,
-      gross_weight: data.gross_weight || data.weight || 0,
-      net_weight: data.net_weight || data.weight || 0,
+      gross_weight: data.gross_weight || 0,
+      net_weight: data.net_weight || 0,
+      weight: data.weight || 0,
       masters: mastersArray,
       description: data.description,
       comp_id: user.comp_id,
@@ -171,12 +172,17 @@ exports.createProduct = async (req, res) => {
         file: filesArray,
         product_category: data.category,
         product_item_type: data.item_type,
+        related_accessories: data.related_accessories
+          ? Array.isArray(data.related_accessories)
+            ? data.related_accessories
+            : [data.related_accessories]
+          : [],
       });
       const populatedProduct = await Product.findById(newProduct._id).populate({
         path: "product_detail_id",
         populate: {
-          path: "masters.master_id", // เจาะเข้าไปดึงข้อมูล Master
-          select: "master_name master_type", // ดึงเฉพาะฟิลด์ที่ต้องใช้
+          path: "masters.master_id",
+          select: "master_name master_type",
         },
       });
       res.status(201).json({
@@ -207,6 +213,11 @@ exports.getOneProduct = async (req, res) => {
     }
 
     const user = await User.findById(req.user.id).select("comp_id").lean();
+    if (!user) {
+      return res
+        .status(401)
+        .json({ success: false, message: "User not found" });
+    }
 
     const product = await Product.findOne({
       _id: id,
@@ -216,7 +227,15 @@ exports.getOneProduct = async (req, res) => {
         path: "product_detail_id",
         populate: {
           path: "masters.master_id",
-          select: "master_name master_type master_color code", // เลือกเฉพาะที่ใช้
+          select: "master_name master_type master_color code",
+        },
+      })
+      .populate({
+        path: "related_accessories",
+        select: "product_code product_name file product_detail_id",
+        populate: {
+          path: "product_detail_id",
+          select: "weight unit",
         },
       })
       .populate("comp_id", "comp_name")
@@ -235,18 +254,40 @@ exports.getOneProduct = async (req, res) => {
         if (m.master_id) {
           const type = m.master_id.master_type;
 
-          attributes[type] = {
+          const itemData = {
             _id: m.master_id._id,
             name: m.master_id.master_name,
             code: m.master_id.code,
             qty: m.qty,
             weight: m.weight,
           };
+
+          if (attributes[type]) {
+            if (Array.isArray(attributes[type])) {
+              attributes[type].push(itemData);
+            } else {
+              attributes[type] = [attributes[type], itemData];
+            }
+          } else {
+            attributes[type] = itemData;
+          }
         }
       });
     }
 
+    const formattedAccessories = (product.related_accessories || []).map(
+      (acc) => ({
+        _id: acc._id,
+        code: acc.product_code,
+        name: acc.product_name,
+        image: acc.file && acc.file.length > 0 ? acc.file[0] : "",
+        weight: acc.product_detail_id ? acc.product_detail_id.weight : 0,
+        unit: acc.product_detail_id ? acc.product_detail_id.unit : "pcs",
+      })
+    );
+
     product.attributes = attributes;
+    product.related_accessories = formattedAccessories;
 
     res.status(200).json({
       success: true,
@@ -277,7 +318,8 @@ exports.list = async (req, res) => {
 
     let query = { comp_id: user.comp_id };
 
-    if (category) query.category = { $in: category.split(",") };
+    // 🔥 แก้จุดที่ 1: ใช้ product_category ให้ตรงกับ Schema
+    if (category) query.product_category = { $in: category.split(",") };
 
     if (search) {
       query.$or = [
@@ -288,13 +330,24 @@ exports.list = async (req, res) => {
 
     const [products, total] = await Promise.all([
       Product.find(query)
-        .select("product_name product_code file category createdAt")
+        // 🔥 แก้จุดที่ 1: select ให้ถูกชื่อ
+        .select(
+          "product_name product_code file product_category createdAt related_accessories"
+        )
         .populate({
           path: "product_detail_id",
           select: "masters size unit",
           populate: {
             path: "masters.master_id",
             select: "master_name master_type",
+          },
+        })
+        .populate({
+          path: "related_accessories",
+          select: "product_code product_name product_detail_id file", // เพิ่ม file เผื่อใช้รูป
+          populate: {
+            path: "product_detail_id",
+            select: "weight unit", // ดึง weight ออกมา
           },
         })
         .sort({ createdAt: -1 })
@@ -336,17 +389,32 @@ exports.list = async (req, res) => {
 
       const finalTypeStone = foundItemType || foundStone || "";
 
+      // 🔥 แก้จุดที่ 2: จัด Format Accessories ให้สวยงาม ดึง weight ออกมาโชว์
+      const formattedAccessories = (p.related_accessories || []).map((acc) => ({
+        _id: acc._id,
+        code: acc.product_code,
+        name: acc.product_name,
+        image: acc.file && acc.file.length > 0 ? acc.file[0] : "",
+        // ดึง weight จาก detail_id ออกมาไว้ข้างนอก
+        weight: acc.product_detail_id ? acc.product_detail_id.weight : 0,
+        unit: acc.product_detail_id ? acc.product_detail_id.unit : "pcs",
+      }));
+
       return {
         _id: p._id,
         code: p.product_code,
         name: p.product_name,
         image: p.file && p.file.length > 0 ? p.file[0] : "",
-        category: p.category,
+
+        // 🔥 แก้จุดที่ 1: ส่งกลับให้ถูกชื่อ
+        category: p.product_category,
 
         type_stone: finalTypeStone,
         size: size,
         metal: metal,
         color: color,
+
+        accessories: formattedAccessories, // ส่งตัวที่จัด Format แล้วกลับไป
       };
     });
 
@@ -386,25 +454,20 @@ exports.updateProduct = async (req, res) => {
         .json({ success: false, message: "Product not found" });
     }
 
-    let imageFilename = undefined;
-
-    if (req.file) {
-      const oldImages = currentProduct.file || [];
-
-      if (oldImages.length > 0) {
-        oldImages.forEach((img) => {
+    let newFiles = [];
+    if (req.files && req.files.length > 0) {
+      newFiles = req.files.map((f) => f.filename);
+      if (currentProduct.file && currentProduct.file.length > 0) {
+        currentProduct.file.forEach((img) => {
           const oldPath = path.join(__dirname, "../uploads", img);
           if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
         });
       }
-
-      imageFilename = req.file.filename;
     }
 
     const currentDetail = await ProductDetail.findById(
       currentProduct.product_detail_id
     ).lean();
-
     const oldMastersMap = {};
     if (currentDetail && currentDetail.masters) {
       const populatedDetail = await ProductDetail.findById(
@@ -426,7 +489,7 @@ exports.updateProduct = async (req, res) => {
 
     const getVal = (newVal, oldType) => {
       if (newVal) return newVal;
-      if (oldMastersMap[oldType]) return oldMastersMap[oldType].id; // ถ้าไม่มี ใช้ค่าเก่า
+      if (oldMastersMap[oldType]) return oldMastersMap[oldType].id;
       return null;
     };
 
@@ -436,7 +499,6 @@ exports.updateProduct = async (req, res) => {
     };
 
     pushMaster(getVal(data.item_type, "item_type"), 1);
-
     const finalMetal = getVal(data.metal, "metal");
     if (finalMetal) {
       const finalNetWt =
@@ -446,7 +508,6 @@ exports.updateProduct = async (req, res) => {
       pushMaster(finalMetal, 1, finalNetWt);
       pushMaster(getVal(data.metal_color, "metal_color"), 1);
     }
-
     const finalStone = getVal(data.stone_name, "stone_name");
     if (!finalMetal && finalStone) {
       const stoneWt =
@@ -457,7 +518,6 @@ exports.updateProduct = async (req, res) => {
     } else {
       pushMaster(finalStone, 1, 0);
     }
-
     pushMaster(getVal(data.shape, "shape"));
     pushMaster(getVal(data.size, "size"));
     pushMaster(getVal(data.color, "color"));
@@ -470,6 +530,9 @@ exports.updateProduct = async (req, res) => {
       size: data.product_size || data.size,
       gross_weight: data.gross_weight,
       net_weight: data.net_weight,
+
+      weight: data.weight,
+
       description: data.description,
       masters: mastersArray,
     };
@@ -487,10 +550,21 @@ exports.updateProduct = async (req, res) => {
     const productUpdate = {
       product_code: data.code,
       product_name: data.product_name,
+      product_category: data.category,
     };
 
-    if (imageFilename) {
-      productUpdate.file = [imageFilename];
+    if (newFiles.length > 0) {
+      productUpdate.file = newFiles;
+    }
+
+    if (data.related_accessories) {
+      productUpdate.related_accessories = Array.isArray(
+        data.related_accessories
+      )
+        ? data.related_accessories
+        : [data.related_accessories];
+    } else if (data.related_accessories === "") {
+      productUpdate.related_accessories = [];
     }
 
     Object.keys(productUpdate).forEach(
@@ -508,9 +582,11 @@ exports.updateProduct = async (req, res) => {
     });
   } catch (err) {
     console.log("Error update product:", err);
-    if (req.file) {
-      const tempPath = path.join(__dirname, "../uploads", req.file.filename);
-      if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+    if (req.files) {
+      req.files.forEach((f) => {
+        const tempPath = path.join(__dirname, "../uploads", f.filename);
+        if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+      });
     }
     res.status(500).json({ success: false, message: "Server error" });
   }
@@ -527,28 +603,31 @@ exports.removeOneProduct = async (req, res) => {
     }
 
     const user = await User.findById(req.user.id).select("comp_id");
-
     const product = await Product.findOne({ _id: id, comp_id: user.comp_id });
 
     if (!product) {
       return res.status(404).json({
         success: false,
-        message: "ไม่พบสินค้านี้ หรือ คุณไม่มีสิทธิ์ลบ",
+        message:
+          "Product not found or you do not have permission to delete it.",
       });
     }
+
+    await Product.updateMany(
+      { related_accessories: id },
+      { $pull: { related_accessories: id } }
+    );
 
     if (product.file && product.file.length > 0) {
       product.file.forEach((fileName) => {
         const imagePath = path.join(__dirname, "../uploads", fileName);
 
-        fs.unlink(imagePath, (err) => {
-          if (err)
-            console.log(
-              `Failed to delete local image (${fileName}):`,
-              err.message
-            );
-          else console.log(`Successfully deleted local image: ${fileName}`);
-        });
+        if (fs.existsSync(imagePath)) {
+          fs.unlink(imagePath, (err) => {
+            if (err) console.log(`Failed delete img: ${err.message}`);
+            else console.log(`Deleted img: ${fileName}`);
+          });
+        }
       });
     }
 
@@ -578,7 +657,7 @@ exports.removeAllProducts = async (req, res) => {
     if (!products.length) {
       return res
         .status(404)
-        .json({ success: false, message: "ไม่พบสินค้าที่จะลบ" });
+        .json({ success: false, message: "Product not found." });
     }
 
     const detailIds = [];
@@ -592,13 +671,11 @@ exports.removeAllProducts = async (req, res) => {
         product.file.forEach((fileName) => {
           const imagePath = path.join(__dirname, "../uploads", fileName);
 
-          fs.unlink(imagePath, (err) => {
-            if (err)
-              console.log(
-                `Failed to delete local image (${fileName}):`,
-                err.message
-              );
-          });
+          if (fs.existsSync(imagePath)) {
+            fs.unlink(imagePath, (err) => {
+              if (err) console.log(`Failed delete img: ${err.message}`);
+            });
+          }
         });
       }
     });

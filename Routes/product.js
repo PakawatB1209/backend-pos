@@ -16,7 +16,7 @@ const {
   removeAllFiles,
 } = require("../Controllers/product");
 
-router.get("/product", auth, checkPermission("ProductList", "view"), list);
+router.get("/product", auth, checkPermission("Product List", "view"), list);
 
 router.get("/product/:id", getOneProduct);
 

@@ -17,13 +17,13 @@ const actions = ["view", "add", "update", "delete", "print"];
 
 const seedPermissions = async () => {
   try {
-    console.log("⏳ Connecting to Database...");
+    console.log("Connecting to Database...");
     await mongoose.connect(
       "mongodb+srv://SA:$ystem64@poscooperativeeducation.jwqfqk0.mongodb.net/?retryWrites=true&w=majority&appName=poscooperativeeducation"
     );
     console.log("Database Connected!");
 
-    console.log("🚀 Start creating permissions...");
+    console.log("Start creating permissions...");
 
     let count = 0;
     for (const menu of menus) {
@@ -39,18 +39,16 @@ const seedPermissions = async () => {
             permission_menu: menu,
             permission_action: action,
           });
-          console.log(`🟢 Created: ${menu} -> ${action}`);
+          console.log(`Created: ${menu} -> ${action}`);
           count++;
         }
       }
     }
 
-    console.log(
-      `\n🎉 เสร็จสิ้น! สร้าง Permission ใหม่ไปทั้งหมด ${count} รายการ`
-    );
+    console.log(`\n Done! Created ${count} new permissions.`);
     process.exit();
   } catch (error) {
-    console.error("❌ Error:", error);
+    console.error("Error:", error);
     process.exit(1);
   }
 };

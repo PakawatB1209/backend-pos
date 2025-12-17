@@ -94,10 +94,7 @@ exports.getOnePermission = async (req, res) => {
 
 exports.list = async (req, res) => {
   try {
-    const permissions = await Permission.find()
-      .sort({ permission_menu: 1, permission_action: 1 })
-      .select("-__v")
-      .lean();
+    const permissions = await Permission.find().select("-__v").lean();
 
     res.status(200).json({
       success: true,

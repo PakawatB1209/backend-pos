@@ -3,14 +3,13 @@ const mongoose = require("mongoose");
 const Permission = require("./models/Permission");
 
 const menus = [
-  "CompanyProfile",
-  "UserManagement",
-  "ProductMaster",
+  "User Management",
+  "Product Master",
   "Stone",
   "Semi-Mount",
   "Accessories",
   "Others",
-  "ProductList",
+  "Product List",
   "Customer",
 ];
 

@@ -14,7 +14,7 @@ router.get("/permission", list);
 
 router.get("/getone-permission/:id", getOnePermission);
 
-router.post("/vreate-permission", createPermission);
+router.post("/create-permission", createPermission);
 
 router.put("/update-permission/:id", updatePermission);
 

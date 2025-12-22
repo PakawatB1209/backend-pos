@@ -264,7 +264,7 @@ exports.getOneUser = async (req, res) => {
 
     const user = await User.findById(id)
       .select("-user_password -__v")
-      .populate("comp")
+      .populate("comp_id")
       .populate("permissions");
 
     if (!user) {

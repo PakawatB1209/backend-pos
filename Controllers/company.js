@@ -3,6 +3,7 @@ const User = require("../models/User");
 const Warehouse = require("../models/Warehouse");
 const Product = require("../models/Product");
 const Masters = require("../models/masters");
+const mongoose = require("mongoose");
 
 exports.createCompany = async (req, res) => {
   try {

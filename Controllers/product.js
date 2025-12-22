@@ -330,7 +330,7 @@ exports.list = async (req, res) => {
     const [products, total] = await Promise.all([
       Product.find(query)
         .select(
-          "product_name product_code file product_category createdAt related_accessories"
+          "product_name product_code file product_category createdAt related_accessories is_active"
         )
         .populate({
           path: "product_detail_id",
@@ -423,6 +423,40 @@ exports.list = async (req, res) => {
     });
   } catch (error) {
     console.log("Error list product:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+exports.changeStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { is_active } = req.body;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: "Invalid ID" });
+    }
+
+    const user = await User.findById(req.user.id).select("comp_id");
+
+    const product = await Product.findOneAndUpdate(
+      { _id: id, comp_id: user.comp_id },
+      { is_active: is_active },
+      { new: true }
+    ).select("product_name is_active");
+
+    if (!product) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Product is now ${product.is_active ? "Active" : "Inactive"}`,
+      data: product,
+    });
+  } catch (error) {
+    console.log("Error change status:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
@@ -587,6 +621,62 @@ exports.updateProduct = async (req, res) => {
   }
 };
 
+// exports.removeOneProduct = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+
+//     if (!mongoose.isValidObjectId(id)) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "Invalid ID format" });
+//     }
+
+//     const user = await User.findById(req.user.id).select("comp_id");
+//     const product = await Product.findOne({ _id: id, comp_id: user.comp_id });
+
+//     if (!product) {
+//       return res.status(404).json({
+//         success: false,
+//         message:
+//           "Product not found or you do not have permission to delete it.",
+//       });
+//     }
+
+//     await Product.updateMany(
+//       { related_accessories: id },
+//       { $pull: { related_accessories: id } }
+//     );
+
+//     if (product.file && product.file.length > 0) {
+//       product.file.forEach((fileName) => {
+//         const imagePath = path.join(__dirname, "../uploads", fileName);
+
+//         if (fs.existsSync(imagePath)) {
+//           fs.unlink(imagePath, (err) => {
+//             if (err) console.log(`Failed delete img: ${err.message}`);
+//             else console.log(`Deleted img: ${fileName}`);
+//           });
+//         }
+//       });
+//     }
+
+//     if (product.product_detail_id) {
+//       await ProductDetail.findByIdAndDelete(product.product_detail_id);
+//     }
+
+//     await Product.findByIdAndDelete(id);
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Product and related data deleted successfully.",
+//       deletedId: id,
+//     });
+//   } catch (error) {
+//     console.log("Error remove product:", error);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// };
+
 exports.removeOneProduct = async (req, res) => {
   try {
     const { id } = req.params;
@@ -598,29 +688,43 @@ exports.removeOneProduct = async (req, res) => {
     }
 
     const user = await User.findById(req.user.id).select("comp_id");
-    const product = await Product.findOne({ _id: id, comp_id: user.comp_id });
 
+    const product = await Product.findOne({ _id: id, comp_id: user.comp_id });
     if (!product) {
-      return res.status(404).json({
+      return res.status(404).json({ success: false, message: "ไม่พบสินค้า" });
+    }
+
+    const usedAsAccessory = await Product.findOne({
+      related_accessories: id,
+    }).select("product_code product_name");
+
+    if (usedAsAccessory) {
+      return res.status(400).json({
         success: false,
-        message:
-          "Product not found or you do not have permission to delete it.",
+        message: `ไม่สามารถลบได้! สินค้านี้ถูกใช้เป็นส่วนประกอบในสินค้า: ${usedAsAccessory.product_name} (${usedAsAccessory.product_code})`,
       });
     }
 
-    await Product.updateMany(
-      { related_accessories: id },
-      { $pull: { related_accessories: id } }
-    );
+    // (ถ้าทำระบบ Stock/Transaction แล้ว) เคยมีการเคลื่อนไหวในสต็อกหรือไม่?
+    // ถ้าสร้าง Model 'StockTransaction' แล้ว ค่อย Uncomment
+    /*
+    const StockTransaction = require("../models/StockTransaction"); // อย่าลืม require ข้างบน
+    const hasTransaction = await StockTransaction.exists({ product_id: id });
+    
+    if (hasTransaction) {
+       return res.status(400).json({
+         success: false,
+         message: "ไม่สามารถลบได้! สินค้านี้มีประวัติการ รับเข้า/ขายออก แล้ว (กรุณาใช้ปุ่มปิดการใช้งานแทน)",
+       });
+    }
+    */
 
     if (product.file && product.file.length > 0) {
       product.file.forEach((fileName) => {
         const imagePath = path.join(__dirname, "../uploads", fileName);
-
         if (fs.existsSync(imagePath)) {
           fs.unlink(imagePath, (err) => {
-            if (err) console.log(`Failed delete img: ${err.message}`);
-            else console.log(`Deleted img: ${fileName}`);
+            if (err) console.log(`Delete Img Error: ${err.message}`);
           });
         }
       });
@@ -634,7 +738,8 @@ exports.removeOneProduct = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Product and related data deleted successfully.",
+      message:
+        "Product deleted successfully (สินค้านี้ยังไม่เคยถูกใช้งาน จึงลบได้).",
       deletedId: id,
     });
   } catch (error) {
@@ -643,29 +748,89 @@ exports.removeOneProduct = async (req, res) => {
   }
 };
 
+// exports.removeAllProducts = async (req, res) => {
+//   try {
+//     const user = await User.findById(req.user.id).select("comp_id");
+
+//     const products = await Product.find({ comp_id: user.comp_id });
+
+//     if (!products.length) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "Product not found." });
+//     }
+
+//     const detailIds = [];
+
+//     products.forEach((product) => {
+//       if (product.product_detail_id) {
+//         detailIds.push(product.product_detail_id);
+//       }
+
+//       if (product.file && product.file.length > 0) {
+//         product.file.forEach((fileName) => {
+//           const imagePath = path.join(__dirname, "../uploads", fileName);
+
+//           if (fs.existsSync(imagePath)) {
+//             fs.unlink(imagePath, (err) => {
+//               if (err) console.log(`Failed delete img: ${err.message}`);
+//             });
+//           }
+//         });
+//       }
+//     });
+
+//     if (detailIds.length > 0) {
+//       await ProductDetail.deleteMany({ _id: { $in: detailIds } });
+//     }
+
+//     await Product.deleteMany({ comp_id: user.comp_id });
+
+//     res.status(200).json({
+//       success: true,
+//       message: `Deleted ${products.length} products and related data successfully.`,
+//     });
+//   } catch (error) {
+//     console.log("Error remove all products:", error);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// };
+
 exports.removeAllProducts = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("comp_id");
 
-    const products = await Product.find({ comp_id: user.comp_id });
+    const usedAsAccessoryIds = await Product.distinct("related_accessories", {
+      comp_id: user.comp_id,
+    });
 
-    if (!products.length) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Product not found." });
+    const deleteQuery = {
+      comp_id: user.comp_id,
+      _id: { $nin: usedAsAccessoryIds },
+
+      // StockTransaction
+      // _id: { $nin: [...usedAsAccessoryIds, ...usedInStockIds] }
+    };
+
+    const productsToDelete = await Product.find(deleteQuery);
+
+    if (productsToDelete.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "No deletable products found. (All remaining products are currently in use.)",
+      });
     }
 
-    const detailIds = [];
+    const productIds = productsToDelete.map((p) => p._id);
+    const detailIds = productsToDelete
+      .filter((p) => p.product_detail_id)
+      .map((p) => p.product_detail_id);
 
-    products.forEach((product) => {
-      if (product.product_detail_id) {
-        detailIds.push(product.product_detail_id);
-      }
-
+    productsToDelete.forEach((product) => {
       if (product.file && product.file.length > 0) {
         product.file.forEach((fileName) => {
           const imagePath = path.join(__dirname, "../uploads", fileName);
-
           if (fs.existsSync(imagePath)) {
             fs.unlink(imagePath, (err) => {
               if (err) console.log(`Failed delete img: ${err.message}`);
@@ -679,14 +844,14 @@ exports.removeAllProducts = async (req, res) => {
       await ProductDetail.deleteMany({ _id: { $in: detailIds } });
     }
 
-    await Product.deleteMany({ comp_id: user.comp_id });
+    await Product.deleteMany({ _id: { $in: productIds } });
 
     res.status(200).json({
       success: true,
-      message: `Deleted ${products.length} products and related data successfully.`,
+      message: `Cleanup successful! Deleted ${productsToDelete.length} unused products. (Products in use were not deleted.)`,
     });
   } catch (error) {
-    console.log("Error remove all products:", error);
+    console.log("Error clear unused products:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };

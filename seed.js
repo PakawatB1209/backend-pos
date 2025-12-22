@@ -33,30 +33,30 @@ const seedData = async () => {
     // // ==========================================
     // // 1. สร้าง Permissions
     // // ==========================================
-    console.log("Seeding Permissions...");
-    let permCount = 0;
-    for (const menu of menus) {
-      for (const action of actions) {
-        const exists = await Permission.findOne({
-          permission_menu: menu,
-          permission_action: action,
-        });
-        if (!exists) {
-          await Permission.create({
-            permission_name: `${action.toUpperCase()} ${menu}`,
-            permission_menu: menu,
-            permission_action: action,
-          });
-          permCount++;
-        }
-      }
-    }
-    console.log(`-> Added ${permCount} new permissions.`);
+    // console.log("Seeding Permissions...");
+    // let permCount = 0;
+    // for (const menu of menus) {
+    //   for (const action of actions) {
+    //     const exists = await Permission.findOne({
+    //       permission_menu: menu,
+    //       permission_action: action,
+    //     });
+    //     if (!exists) {
+    //       await Permission.create({
+    //         permission_name: `${action.toUpperCase()} ${menu}`,
+    //         permission_menu: menu,
+    //         permission_action: action,
+    //       });
+    //       permCount++;
+    //     }
+    //   }
+    // }
+    // console.log(`-> Added ${permCount} new permissions.`);
     // // ==========================================
     // // 3. สร้าง Admin User
     // // ==========================================
     console.log("Seeding Admin User...");
-    const adminEmail = "65160185@go.buu.ac.th";
+    const adminEmail = "testsemail@gmail.com";
     const userExists = await User.findOne({ user_email: adminEmail });
 
     if (!userExists) {
@@ -66,7 +66,7 @@ const seedData = async () => {
       const hashedPassword = await bcrypt.hash("123456", salt);
 
       await User.create({
-        user_name: "Admin2",
+        user_name: "Admin6",
         user_email: adminEmail,
         user_password: hashedPassword,
         user_role: "Admin",

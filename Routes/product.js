@@ -11,12 +11,13 @@ const {
   list,
   removeOneProduct,
   updateProduct,
+  changeStatus,
   removeAllProducts,
   removeSingleFile,
   removeAllFiles,
 } = require("../Controllers/product");
 
-router.get("/product", auth, checkPermission("Product List", "view"), list);
+router.get("/product/all", auth, checkPermission("Product List", "view"), list);
 
 router.get("/product/:id", getOneProduct);
 
@@ -45,6 +46,8 @@ router.put(
   validateSchema("update"),
   updateProduct
 );
+
+router.put("/update/product/status/:id", auth, changeStatus);
 
 router.delete("/del-productOne/:id", auth, removeOneProduct);
 

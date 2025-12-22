@@ -281,8 +281,6 @@ exports.createCompany = async (req, res) => {
         master_type: "stone_name",
         master_color: "Black",
       },
-
-      // กลุ่ม Organic
       {
         master_name: "Pearl",
         master_type: "stone_name",

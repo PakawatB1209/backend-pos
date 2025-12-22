@@ -19,6 +19,7 @@ const ProductSchema = new mongoose.Schema(
     related_accessories: [
       { type: mongoose.Schema.Types.ObjectId, ref: "product" },
     ],
+    is_active: { type: Boolean, default: true },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );

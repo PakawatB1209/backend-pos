@@ -103,7 +103,16 @@ exports.list = async (req, res) => {
       });
     }
 
-    const masters = await Masters.find({ comp_id: user.comp_id }).sort({
+    const { type } = req.query;
+
+    let query = { comp_id: user.comp_id };
+
+    if (type) {
+      const typeList = type.split(",");
+      query.master_type = { $in: typeList };
+    }
+
+    const masters = await Masters.find(query).sort({
       master_type: 1,
       master_name: 1,
     });

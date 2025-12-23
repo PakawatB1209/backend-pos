@@ -24,7 +24,7 @@ exports.createProduct = async (req, res) => {
     let filesArray = [];
 
     if (req.files && req.files.length > 0) {
-      const uploadDir = "./uploads";
+      const uploadDir = "./uploads/product";
       if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 
       await Promise.all(
@@ -247,6 +247,12 @@ exports.getOneProduct = async (req, res) => {
         .json({ success: false, message: "Product not found." });
     }
 
+    const baseUrl = `${req.protocol}://${req.get("host")}/uploads/product/`;
+
+    if (product.file && product.file.length > 0) {
+      product.file = product.file.map((fileName) => `${baseUrl}${fileName}`);
+    }
+
     const attributes = {};
 
     if (product.product_detail_id && product.product_detail_id.masters) {
@@ -280,7 +286,8 @@ exports.getOneProduct = async (req, res) => {
         _id: acc._id,
         code: acc.product_code,
         name: acc.product_name,
-        image: acc.file && acc.file.length > 0 ? acc.file[0] : "",
+        image:
+          acc.file && acc.file.length > 0 ? `${baseUrl}${acc.file[0]}` : "",
         weight: acc.product_detail_id ? acc.product_detail_id.weight : 0,
         unit: acc.product_detail_id ? acc.product_detail_id.unit : "pcs",
       })
@@ -356,6 +363,7 @@ exports.list = async (req, res) => {
       Product.countDocuments(query),
     ]);
 
+    const baseUrl = `${req.protocol}://${req.get("host")}/uploads/`;
     const formattedProducts = products.map((p) => {
       let foundItemType = "";
       let foundStone = "";
@@ -391,7 +399,8 @@ exports.list = async (req, res) => {
         _id: acc._id,
         code: acc.product_code,
         name: acc.product_name,
-        image: acc.file && acc.file.length > 0 ? acc.file[0] : "",
+        image:
+          acc.file && acc.file.length > 0 ? `${baseUrl}${acc.file[0]}` : "",
         weight: acc.product_detail_id ? acc.product_detail_id.weight : 0,
         unit: acc.product_detail_id ? acc.product_detail_id.unit : "pcs",
       }));
@@ -400,9 +409,10 @@ exports.list = async (req, res) => {
         _id: p._id,
         code: p.product_code,
         name: p.product_name,
-        image: p.file && p.file.length > 0 ? p.file[0] : "",
+        image: p.file && p.file.length > 0 ? `${baseUrl}${p.file[0]}` : "",
 
         category: p.product_category,
+        is_active: p.is_active,
 
         type_stone: finalTypeStone,
         size: size,

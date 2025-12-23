@@ -2,8 +2,13 @@ const Company = require("../models/Company");
 const User = require("../models/User");
 const Warehouse = require("../models/Warehouse");
 const Product = require("../models/Product");
+const ProductDetail = require("../models/Product_detail");
 const Masters = require("../models/masters");
 const mongoose = require("mongoose");
+
+const fs = require("fs");
+const path = require("path");
+const sharp = require("sharp");
 
 exports.createCompany = async (req, res) => {
   try {
@@ -60,6 +65,28 @@ exports.createCompany = async (req, res) => {
       });
     }
 
+    let imageFileName = null;
+
+    if (req.files && req.files.length > 0) {
+      const file = req.files[0];
+      const uploadDir = "./uploads/companyprofile";
+
+      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+
+      imageFileName = `comp-${Date.now()}-${Math.round(
+        Math.random() * 1e9
+      )}.jpeg`;
+      const outputPath = path.join(uploadDir, imageFileName);
+
+      await sharp(file.buffer)
+        .resize(500, 500, {
+          fit: sharp.fit.inside,
+          withoutEnlargement: true,
+        })
+        .toFormat("jpeg", { quality: 80 })
+        .toFile(outputPath);
+    }
+
     const newCompany = await Company.create({
       comp_name,
       comp_addr,
@@ -73,6 +100,7 @@ exports.createCompany = async (req, res) => {
       comp_person_name,
       comp_person_phone,
       comp_person_email,
+      comp_file: imageFileName,
     });
 
     //default warehouse
@@ -338,6 +366,12 @@ exports.getOneCompany = async (req, res) => {
       });
     }
 
+    if (company.comp_file) {
+      company.comp_file = `${req.protocol}://${req.get(
+        "host"
+      )}/uploads/companyprofile/${company.comp_file}`;
+    }
+
     res.status(200).json({
       success: true,
       data: company,
@@ -376,10 +410,9 @@ exports.updateCompany = async (req, res) => {
     const { id } = req.params;
 
     if (!mongoose.isValidObjectId(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid ID format.",
-      });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid ID format." });
     }
 
     const allowedFields = [
@@ -394,6 +427,7 @@ exports.updateCompany = async (req, res) => {
       "comp_phone",
       "comp_person_name",
       "comp_person_phone",
+      "comp_person_email",
     ];
 
     let updateData = {};
@@ -402,6 +436,34 @@ exports.updateCompany = async (req, res) => {
         updateData[key] = req.body[key];
       }
     });
+
+    if (req.files && req.files.length > 0) {
+      const file = req.files[0];
+      const uploadDir = "./uploads";
+      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+
+      const newFileName = `logo-${Date.now()}-${Math.round(
+        Math.random() * 1e9
+      )}.jpeg`;
+      const outputPath = path.join(uploadDir, newFileName);
+
+      await sharp(file.buffer)
+        .resize(500, 500, { fit: sharp.fit.inside, withoutEnlargement: true })
+        .toFormat("jpeg", { quality: 80 })
+        .toFile(outputPath);
+
+      updateData.comp_img = newFileName;
+
+      const oldCompany = await Company.findById(id).select("comp_img");
+      if (oldCompany && oldCompany.comp_img) {
+        const oldImagePath = path.join(uploadDir, oldCompany.comp_img);
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlink(oldImagePath, (err) => {
+            if (err) console.log("Failed to delete old logo:", err);
+          });
+        }
+      }
+    }
 
     if (Object.keys(updateData).length === 0) {
       return res.status(400).json({
@@ -423,6 +485,11 @@ exports.updateCompany = async (req, res) => {
       });
 
       if (exists) {
+        if (updateData.comp_img) {
+          const newImgPath = path.join("./uploads", updateData.comp_img);
+          if (fs.existsSync(newImgPath)) fs.unlinkSync(newImgPath);
+        }
+
         return res.status(400).json({
           success: false,
           message: "Email or Tax ID already exists",
@@ -435,24 +502,26 @@ exports.updateCompany = async (req, res) => {
     });
 
     if (!updatedCompany) {
-      return res.status(404).json({
-        success: false,
-        message: "Company not found.",
-      });
+      return res
+        .status(404)
+        .json({ success: false, message: "Company not found." });
     }
 
-    // 7. ส่ง Response
+    let responseData = updatedCompany.toObject();
+    if (responseData.comp_img) {
+      responseData.comp_img = `${req.protocol}://${req.get("host")}/uploads/${
+        responseData.comp_img
+      }`;
+    }
+
     res.status(200).json({
       success: true,
       message: "Company updated successfully.",
-      data: updatedCompany,
+      data: responseData,
     });
   } catch (error) {
     console.log("Error update company:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -461,44 +530,71 @@ exports.removeOneCompany = async (req, res) => {
     const { id } = req.params;
 
     if (!mongoose.isValidObjectId(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid ID format.",
-      });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid ID format." });
     }
 
     const companyToDelete = await Company.findById(id);
     if (!companyToDelete) {
-      return res.status(404).json({
-        success: false,
-        message: "Company not found.",
-      });
+      return res
+        .status(404)
+        .json({ success: false, message: "Company not found." });
     }
 
+    if (companyToDelete.comp_img) {
+      const logoPath = path.join("./uploads", companyToDelete.comp_img);
+      if (fs.existsSync(logoPath)) {
+        fs.unlinkSync(logoPath);
+      }
+    }
+
+    const products = await Product.find({ comp_id: id });
+    const productDetailIds = [];
+
+    if (products.length > 0) {
+      products.forEach((product) => {
+        if (product.product_detail_id) {
+          productDetailIds.push(product.product_detail_id);
+        }
+
+        if (product.file && product.file.length > 0) {
+          product.file.forEach((fileName) => {
+            const imgPath = path.join("./uploads", fileName);
+            if (fs.existsSync(imgPath)) {
+              fs.unlink(imgPath, (err) => {
+                if (err) console.log("Del img err:", err);
+              });
+            }
+          });
+        }
+      });
+
+      if (productDetailIds.length > 0) {
+        await ProductDetail.deleteMany({ _id: { $in: productDetailIds } });
+      }
+      await Product.deleteMany({ comp_id: id });
+    }
+
+    await Masters.deleteMany({ comp_id: id });
+
+    await Warehouse.deleteMany({ comp_id: id });
+
     const deletedUsers = await User.deleteMany({ comp_id: id });
-    console.log(`Deleted ${deletedUsers.deletedCount} users.`);
-
-    await Warehouse.deleteMany({ comp_id: id });
-
-    await Product.deleteMany({ comp_id: id });
-
-    await Warehouse.deleteMany({ comp_id: id });
 
     await Company.findByIdAndDelete(id);
 
     res.status(200).json({
       success: true,
-      message: `Company "${companyToDelete.comp_name}" and all related data deleted successfully.`,
+      message: `Company "${companyToDelete.comp_name}" and ALL related data (Files, Products, Users, Masters) deleted successfully.`,
       details: {
         deletedCompanyId: id,
         deletedUsersCount: deletedUsers.deletedCount,
+        deletedProductsCount: products.length,
       },
     });
   } catch (error) {
     console.log("Error remove company:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };

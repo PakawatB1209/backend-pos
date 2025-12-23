@@ -14,6 +14,7 @@ const CompanySchema = new mongoose.Schema(
     comp_person_name: { type: String, required: true },
     comp_person_phone: { type: String, required: true },
     comp_person_email: { type: String, required: true },
+    comp_file: { type: String, default: null },
   },
   { timestamps: true }
 );

@@ -119,6 +119,8 @@ const updateProductSchema = Joi.object({
   code: Joi.string().optional(),
   description: Joi.string().allow("").optional(),
   image: Joi.string().allow("").optional(),
+  related_accessories: Joi.any().optional(),
+  stones: Joi.any().optional(),
 
   // cost: Joi.number().min(0).optional(),
   // sale_price: Joi.number().min(0).optional(),

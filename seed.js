@@ -6,12 +6,11 @@ const bcrypt = require("bcryptjs");
 const Permission = require("./models/Permission");
 const Company = require("./models/Company");
 const User = require("./models/User");
-const Masters = require("./models/Masters"); // 🔥 เพิ่ม Model Masters
-const Warehouse = require("./models/Warehouse"); // 🔥 เพิ่ม Model Warehouse
+//const Masters = require("./models/Masters");
+const Warehouse = require("./models/Warehouse");
 
 // Config Permissions
 const menus = [
-  "User Management",
   "Product Master",
   "Stone",
   "Semi-Mount",

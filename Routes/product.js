@@ -43,6 +43,7 @@ router.post("/others", auth, validateSchema("others"), upload, createProduct);
 router.put(
   "/update-product/:id",
   auth,
+  upload,
   validateSchema("update"),
   updateProduct
 );

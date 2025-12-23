@@ -17,7 +17,20 @@ const ProductSchema = new mongoose.Schema(
       index: true,
     },
     related_accessories: [
-      { type: mongoose.Schema.Types.ObjectId, ref: "product" },
+      {
+        _id: false,
+        product_id: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Product",
+          required: true,
+        },
+
+        weight: { type: Number, default: 0 },
+        size: { type: String, default: null },
+        metal: { type: String, default: null },
+
+        // description: { type: String, default: "" },
+      },
     ],
     is_active: { type: Boolean, default: true },
   },

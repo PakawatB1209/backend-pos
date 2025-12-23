@@ -27,6 +27,16 @@ const baseSchema = {
   //   .messages({ "any.required": "Selling Price is required" }),
 };
 
+const accessoryItemSchema = Joi.object({
+  product_id: objectId.required(),
+  weight: Joi.number().required(),
+
+  size: Joi.string().allow("", null).optional(),
+  metal: Joi.string().allow("", null).optional(),
+
+  description: Joi.string().allow("", null).optional(),
+});
+
 const productMasterSchema = Joi.object({
   ...baseSchema,
 
@@ -45,9 +55,7 @@ const productMasterSchema = Joi.object({
   cutting: objectId.optional(),
   quality: objectId.optional(),
   clarity: objectId.optional(),
-  related_accessories: Joi.alternatives()
-    .try(objectId, Joi.array().items(objectId))
-    .optional(),
+  related_accessories: Joi.array().items(accessoryItemSchema).optional(),
 });
 
 const stoneSchema = Joi.object({

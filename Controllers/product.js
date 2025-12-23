@@ -50,6 +50,32 @@ exports.createProduct = async (req, res) => {
       });
     }
 
+    if (
+      data.related_accessories &&
+      Array.isArray(data.related_accessories) &&
+      data.related_accessories.length > 0
+    ) {
+      for (const item of data.related_accessories) {
+        if (!mongoose.isValidObjectId(item.product_id)) {
+          return res.status(400).json({
+            success: false,
+            message: `Invalid Accessory ID format: ${item.product_id}`,
+          });
+        }
+        const accessoryExists = await Product.exists({
+          _id: item.product_id,
+          comp_id: user.comp_id,
+        });
+
+        if (!accessoryExists) {
+          return res.status(400).json({
+            success: false,
+            message: `Accessory product not found: ${item.product_id}`,
+          });
+        }
+      }
+    }
+
     if (req.files && req.files.length > 0) {
       const uploadDir = "./uploads/product";
       if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);

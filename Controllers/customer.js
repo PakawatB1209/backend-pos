@@ -3,6 +3,10 @@ const User = require("../models/User");
 const Customer = require("../models/Customer");
 const Counter = require("../models/Counter");
 
+function escapeRegex(text) {
+  return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+}
+
 // const generateCustomerID = async () => {
 //   const lastCustomer = await Customer.findOne().sort({ createdAt: -1 });
 //   let newId = "CUS-00001";
@@ -113,10 +117,18 @@ exports.createCustomer = async (req, res) => {
         message: "User is not assigned to any company.",
       });
     }
+
     const {
       customer_name,
-      customer_addr,
-      customer_subdist_business,
+      business_type,
+      company_name,
+      contact_person,
+
+      addr_province,
+      addr_district,
+      addr_sub_district,
+      addr_zipcode,
+
       customer_date,
       customer_email,
       customer_phone,
@@ -124,8 +136,6 @@ exports.createCustomer = async (req, res) => {
       customer_gender,
       note,
       tax_addr,
-      contact_person,
-      company_name,
     } = req.body;
 
     if (!customer_name || !customer_phone) {
@@ -134,33 +144,48 @@ exports.createCustomer = async (req, res) => {
         .json({ success: false, message: "Please fill required fields." });
     }
 
-    const counterName = `customer_id_${user.comp_id}`;
+    if (business_type === "Corporation" && !company_name) {
+      return res.status(400).json({
+        success: false,
+        message: "Company name is required for Corporations.",
+      });
+    }
 
+    const counterName = `customer_id_${user.comp_id}`;
     const counter = await Counter.findByIdAndUpdate(
       { _id: counterName },
       { $inc: { seq: 1 } },
       { new: true, upsert: true }
     );
 
-    const seqStr = counter.seq.toString().padStart(4, "0"); // เติม 0 ข้างหน้าให้ครบ 4 หลัก
+    const seqStr = counter.seq.toString().padStart(4, "0");
     const newCustomerID = `CUS-${seqStr}`;
 
     const newCustomer = new Customer({
+      comp_id: user.comp_id,
       customer_id: newCustomerID,
+
+      business_type: business_type || "Corporation",
       customer_name,
-      customer_addr,
-      customer_subdist_business,
-      customer_date,
+
+      company_name: business_type === "Individual" ? "" : company_name,
+      contact_person,
+
+      address: {
+        province: addr_province, // จังหวัด
+        district: addr_district, // เขต
+        sub_district: addr_sub_district, // แขวง
+        zipcode: addr_zipcode, // รหัสไปรษณีย์
+      },
+
+      customer_date: customer_date ? new Date(customer_date) : null,
+
       customer_email,
       customer_phone,
       customer_tax_id,
       customer_gender,
       note,
       tax_addr,
-      contact_person,
-      company_name,
-
-      comp_id: user.comp_id,
     });
 
     await newCustomer.save();
@@ -172,6 +197,11 @@ exports.createCustomer = async (req, res) => {
     });
   } catch (err) {
     console.error("Create Customer Error:", err);
+    if (err.code === 11000) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Customer name already exists." });
+    }
     res
       .status(500)
       .json({ success: false, message: "Server Error", error: err.message });
@@ -192,23 +222,38 @@ exports.listCustomers = async (req, res) => {
 
     let query = { comp_id: user.comp_id };
 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
     const { search } = req.query;
 
     if (search) {
+      const regex = new RegExp(escapeRegex(search), "i"); // สร้าง Regex ที่ปลอดภัย
       query.$or = [
-        { customer_name: { $regex: search, $options: "i" } },
-        { customer_id: { $regex: search, $options: "i" } },
-        { customer_phone: { $regex: search, $options: "i" } },
-        { company_name: { $regex: search, $options: "i" } },
-        { contact_person: { $regex: search, $options: "i" } },
+        { customer_name: regex },
+        { customer_id: regex },
+        { customer_phone: regex },
+        { company_name: regex },
+        { contact_person: regex },
+        { email: regex },
       ];
     }
 
-    const customers = await Customer.find(query).sort({ createdAt: -1 }).lean();
+    const customers = await Customer.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const total = await Customer.countDocuments(query);
 
     res.json({
       success: true,
       count: customers.length,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
       data: customers,
     });
   } catch (err) {
@@ -271,8 +316,14 @@ exports.updateCustomer = async (req, res) => {
 
     const {
       customer_name,
-      customer_addr,
-      customer_subdist_business,
+      business_type,
+      company_name,
+      contact_person,
+      addr_province,
+      addr_district,
+      addr_sub_district,
+      addr_zipcode,
+
       customer_date,
       customer_email,
       customer_phone,
@@ -280,23 +331,30 @@ exports.updateCustomer = async (req, res) => {
       customer_gender,
       note,
       tax_addr,
-      contact_person,
-      company_name,
     } = req.body;
 
     const updateFields = {
-      customer_name,
-      customer_addr,
-      customer_subdist_business,
-      customer_date,
-      customer_email,
-      customer_phone,
-      customer_tax_id,
-      customer_gender,
-      note,
-      tax_addr,
-      contact_person,
-      company_name,
+      ...(customer_name && { customer_name }),
+      ...(business_type && { business_type }),
+      ...(company_name !== undefined && {
+        company_name: business_type === "Individual" ? "" : company_name,
+      }),
+      ...(contact_person && { contact_person }),
+
+      ...(addr_province && { "address.province": addr_province }),
+      ...(addr_district && { "address.district": addr_district }),
+      ...(addr_sub_district && { "address.sub_district": addr_sub_district }),
+      ...(addr_zipcode && { "address.zipcode": addr_zipcode }),
+
+      ...(customer_date && { customer_date: new Date(customer_date) }),
+      ...(customer_email && { customer_email }),
+      ...(customer_phone && { customer_phone }),
+      ...(customer_tax_id && { customer_tax_id }),
+      ...(customer_gender && { customer_gender }),
+      ...(note !== undefined && { note }),
+      ...(tax_addr && { tax_addr }),
+
+      updatedAt: new Date(),
     };
 
     if (customer_name) {
@@ -340,17 +398,35 @@ exports.updateCustomer = async (req, res) => {
 exports.deleteCustomer = async (req, res) => {
   try {
     const { id } = req.params;
-    const deleted = await Customer.findByIdAndDelete(id);
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid ID format." });
+    }
+
+    const user = await User.findById(req.user.id).select("comp_id");
+    if (!user || !user.comp_id) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Access Denied." });
+    }
+
+    const deleted = await Customer.findOneAndDelete({
+      _id: id,
+      comp_id: user.comp_id,
+    });
 
     if (!deleted) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Customer not found." });
+      return res.status(404).json({
+        success: false,
+        message: "Customer not found or access denied.",
+      });
     }
 
     res.json({ success: true, message: "Customer deleted successfully." });
   } catch (err) {
-    console.log(err);
+    console.log("Delete Customer Error:", err);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };

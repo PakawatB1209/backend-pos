@@ -269,7 +269,6 @@ exports.createProduct = async (req, res) => {
 
     const data = req.body;
 
-    // --- Parse JSON Strings ---
     if (typeof data.stones === "string") {
       try {
         data.stones = JSON.parse(data.stones);
@@ -285,7 +284,6 @@ exports.createProduct = async (req, res) => {
       }
     }
 
-    // --- Check Duplicate Code ---
     const existingProduct = await Product.findOne({
       product_code: data.code,
       comp_id: user.comp_id,
@@ -298,7 +296,6 @@ exports.createProduct = async (req, res) => {
       });
     }
 
-    // --- Validate Accessories ---
     if (
       data.related_accessories &&
       Array.isArray(data.related_accessories) &&
@@ -325,7 +322,6 @@ exports.createProduct = async (req, res) => {
       }
     }
 
-    // --- Handle File Uploads ---
     if (req.files && req.files.length > 0) {
       const uploadDir = "./uploads/product";
       if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
@@ -350,22 +346,16 @@ exports.createProduct = async (req, res) => {
       );
     }
 
-    // ==========================================================
-    // 🟠 จุดที่ 1: เปลี่ยน getMasterId เป็น ensureMasterId (Auto-Create)
-    // ==========================================================
     const ensureMasterId = async (name, type) => {
-      // ถ้าไม่มีค่าส่งมา ให้ข้าม
       if (!name || (typeof name === "string" && name.trim() === ""))
         return null;
 
-      // 1. ค้นหา (Case Insensitive) โดยระบุ Type และ Company
       let master = await Masters.findOne({
         master_name: { $regex: new RegExp(`^${name}$`, "i") },
-        master_type: type, // ต้องระบุ Type เพื่อไม่ให้ข้อมูลตีกัน
+        master_type: type,
         comp_id: user.comp_id,
       });
 
-      // 2. ถ้าหาไม่เจอ -> ให้สร้างใหม่ (Create)
       if (!master) {
         master = await Masters.create({
           master_name: name,
@@ -373,7 +363,7 @@ exports.createProduct = async (req, res) => {
           comp_id: user.comp_id,
           master_color: null,
         });
-        console.log(`✅ Auto-created Master: [${type}] ${name}`);
+        console.log(`Auto-created Master: [${type}] ${name}`);
       }
 
       return master._id;
@@ -384,29 +374,21 @@ exports.createProduct = async (req, res) => {
       if (masterId) mastersArray.push({ master_id: masterId, qty, weight });
     };
 
-    // ==========================================================
-    // 🟠 จุดที่ 2: เรียกใช้ ensureMasterId โดยระบุ Type ("...")
-    // ==========================================================
-
-    // 1. Item Type
     const itemTypeId = await ensureMasterId(data.item_type, "item_type");
     pushMaster(itemTypeId, 1);
 
-    // 2. Metal & Color
     if (data.metal) {
       const metalId = await ensureMasterId(data.metal, "metal");
       const metalColorId = await ensureMasterId(
         data.metal_color,
         "metal_color"
-      ); // หรือ 'color' ตาม DB คุณ
+      );
       pushMaster(metalId, 1, data.net_weight || 0);
       pushMaster(metalColorId, 1);
     }
 
-    // 3. Loop Stones
     if (data.stones && Array.isArray(data.stones) && data.stones.length > 0) {
       for (const stone of data.stones) {
-        // ใส่ Type กำกับทุกอัน
         const stoneNameId = await ensureMasterId(
           stone.stone_name,
           "stone_name"
@@ -429,9 +411,7 @@ exports.createProduct = async (req, res) => {
         pushMaster(qualityId);
         pushMaster(clarityId);
       }
-    }
-    // 4. Single Stone (Legacy support)
-    else if (data.stone_name) {
+    } else if (data.stone_name) {
       const stoneQty = data.stone_qty ? Number(data.stone_qty) : 1;
       let stoneWeight = 0;
       if (data.stone_weight) {
@@ -458,7 +438,6 @@ exports.createProduct = async (req, res) => {
       pushMaster(clarityId);
     }
 
-    // --- Create Product Detail ---
     const newDetail = await ProductDetail.create({
       unit: data.unit || "pcs",
       size: data.product_size || data.size,
@@ -471,7 +450,6 @@ exports.createProduct = async (req, res) => {
     });
 
     try {
-      // --- Create Product ---
       const newProduct = await Product.create({
         product_code: data.code,
         product_name: data.product_name,

@@ -4,7 +4,7 @@ const { auth } = require("../Middleware/auth");
 const { validateSchema } = require("../Middleware/productValidator");
 const { upload } = require("../Middleware/upload");
 const { checkPermission } = require("../Middleware/checkPermission");
-const { parseBodyData } = require("../Middleware/parseBodyData");
+const parseBodyData = require("../Middleware/parseBodyData");
 
 const {
   createProduct,

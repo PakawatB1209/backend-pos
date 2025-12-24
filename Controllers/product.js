@@ -8,6 +8,252 @@ const fs = require("fs");
 const sharp = require("sharp");
 const path = require("path");
 
+// exports.createProduct = async (req, res) => {
+//   let filesArray = [];
+//   try {
+//     const userId = req.user.id;
+//     const user = await User.findById(userId).select("comp_id");
+
+//     if (!user || !user.comp_id) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "User is not associated with a company.",
+//       });
+//     }
+
+//     const data = req.body;
+//     if (typeof data.stones === "string") {
+//       try {
+//         data.stones = JSON.parse(data.stones);
+//       } catch (e) {
+//         data.stones = [];
+//       }
+//     }
+
+//     if (typeof data.related_accessories === "string") {
+//       try {
+//         data.related_accessories = JSON.parse(data.related_accessories);
+//       } catch (e) {
+//         data.related_accessories = [];
+//       }
+//     }
+
+//     const existingProduct = await Product.findOne({
+//       product_code: data.code,
+//       comp_id: user.comp_id,
+//     });
+
+//     if (existingProduct) {
+//       return res.status(400).json({
+//         success: false,
+//         message: `Product Code "${data.code}" already exists.`,
+//       });
+//     }
+
+//     if (
+//       data.related_accessories &&
+//       Array.isArray(data.related_accessories) &&
+//       data.related_accessories.length > 0
+//     ) {
+//       for (const item of data.related_accessories) {
+//         if (!mongoose.isValidObjectId(item.product_id)) {
+//           return res.status(400).json({
+//             success: false,
+//             message: `Invalid Accessory ID format: ${item.product_id}`,
+//           });
+//         }
+//         const accessoryExists = await Product.exists({
+//           _id: item.product_id,
+//           comp_id: user.comp_id,
+//         });
+
+//         if (!accessoryExists) {
+//           return res.status(400).json({
+//             success: false,
+//             message: `Accessory product not found: ${item.product_id}`,
+//           });
+//         }
+//       }
+//     }
+
+//     if (req.files && req.files.length > 0) {
+//       const uploadDir = "./uploads/product";
+//       if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+
+//       await Promise.all(
+//         req.files.map(async (file, index) => {
+//           const filename = `product-${Date.now()}-${Math.round(
+//             Math.random() * 1e9
+//           )}-${index}.jpeg`;
+//           const outputPath = path.join(uploadDir, filename);
+
+//           await sharp(file.buffer)
+//             .resize(1200, 1200, {
+//               fit: sharp.fit.inside,
+//               withoutEnlargement: true,
+//             })
+//             .toFormat("jpeg", { quality: 80 })
+//             .toFile(outputPath);
+
+//           filesArray.push(filename);
+//         })
+//       );
+//     }
+
+//     // debug const getMasterId = async (name, fieldName) => {
+//     //   if (!name) return null;
+
+//     //   // ค้นหาโดยดูทั้ง ชื่อ และ comp_id
+//     //   const master = await Masters.findOne({
+//     //     master_name: name,
+//     //     comp_id: user.comp_id,
+//     //   }).lean();
+
+//     //   // 🚨 LOG จับผิด: ดูว่าหาเจอไหม
+//     //   if (!master) {
+//     //     console.log(
+//     //       `❌ ไม่พบ Master: "${name}" (ในฟิลด์: ${fieldName}) | Comp ID: ${user.comp_id}`
+//     //     );
+//     //   } else {
+//     //     console.log(`✅ พบ Master: "${name}" -> ID: ${master._id}`);
+//     //   }
+
+//     //   return master ? master._id : null;
+//     // };
+//     const getMasterId = async (name) => {
+//       if (!name) return null;
+
+//       const master = await Masters.findOne({
+//         master_name: name,
+//         comp_id: user.comp_id,
+//       }).lean();
+
+//       return master ? master._id : null;
+//     };
+
+//     const mastersArray = [];
+//     const pushMaster = (masterId, qty = 0, weight = 0) => {
+//       if (masterId) mastersArray.push({ master_id: masterId, qty, weight });
+//     };
+
+//     const itemTypeId = await getMasterId(data.item_type);
+//     pushMaster(itemTypeId, 1);
+
+//     if (data.metal) {
+//       const metalId = await getMasterId(data.metal);
+//       const metalColorId = await getMasterId(data.metal_color);
+//       pushMaster(metalId, 1, data.net_weight || 0);
+//       pushMaster(metalColorId, 1);
+//     }
+
+//     if (data.stones && Array.isArray(data.stones) && data.stones.length > 0) {
+//       for (const stone of data.stones) {
+//         const stoneNameId = await getMasterId(stone.stone_name);
+//         const shapeId = await getMasterId(stone.shape);
+//         const sizeId = await getMasterId(stone.size);
+//         const colorId = await getMasterId(stone.color);
+//         const cuttingId = await getMasterId(stone.cutting);
+//         const qualityId = await getMasterId(stone.quality);
+//         const clarityId = await getMasterId(stone.clarity);
+
+//         const qty = stone.qty ? Number(stone.qty) : 1;
+//         const weight = stone.weight ? Number(stone.weight) : 0;
+
+//         pushMaster(stoneNameId, qty, weight);
+//         pushMaster(shapeId);
+//         pushMaster(sizeId);
+//         pushMaster(colorId);
+//         pushMaster(cuttingId);
+//         pushMaster(qualityId);
+//         pushMaster(clarityId);
+//       }
+//     } else if (data.stone_name) {
+//       const stoneQty = data.stone_qty ? Number(data.stone_qty) : 1;
+//       let stoneWeight = 0;
+//       if (data.stone_weight) {
+//         stoneWeight = Number(data.stone_weight);
+//       } else if (!data.metal) {
+//         stoneWeight = data.net_weight || data.weight || 0;
+//       }
+
+//       const stoneNameId = await getMasterId(data.stone_name);
+//       pushMaster(stoneNameId, stoneQty, stoneWeight);
+
+//       const shapeId = await getMasterId(data.shape);
+//       const sizeId = await getMasterId(data.size);
+//       const colorId = await getMasterId(data.color);
+//       const cuttingId = await getMasterId(data.cutting);
+//       const qualityId = await getMasterId(data.quality);
+//       const clarityId = await getMasterId(data.clarity);
+
+//       pushMaster(shapeId);
+//       pushMaster(sizeId);
+//       pushMaster(colorId);
+//       pushMaster(cuttingId);
+//       pushMaster(qualityId);
+//       pushMaster(clarityId);
+//     }
+
+//     const newDetail = await ProductDetail.create({
+//       unit: data.unit || "pcs",
+//       size: data.product_size || data.size,
+//       gross_weight: data.gross_weight || 0,
+//       net_weight: data.net_weight || 0,
+//       weight: data.weight || 0,
+//       masters: mastersArray,
+//       description: data.description,
+//       comp_id: user.comp_id,
+//     });
+
+//     try {
+//       const newProduct = await Product.create({
+//         product_code: data.code,
+//         product_name: data.product_name,
+//         product_detail_id: newDetail._id,
+//         comp_id: user.comp_id,
+//         file: filesArray,
+//         product_category: data.category,
+//         product_item_type: data.item_type,
+//         related_accessories: Array.isArray(data.related_accessories)
+//           ? data.related_accessories
+//           : [],
+//       });
+//       const populatedProduct = await Product.findById(newProduct._id).populate({
+//         path: "product_detail_id",
+//         populate: {
+//           path: "masters.master_id",
+//           select: "master_name master_type",
+//         },
+//       });
+//       res.status(201).json({
+//         success: true,
+//         message: "Product created successfully.",
+//         data: populatedProduct,
+//         file: filesArray,
+//       });
+//     } catch (productError) {
+//       console.log("Error creating main product, rolling back detail...");
+//       await ProductDetail.findByIdAndDelete(newDetail._id);
+//       if (filesArray.length > 0) {
+//         filesArray.forEach((file) => {
+//           const filePath = path.join("./uploads/product", file);
+//           if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+//         });
+//       }
+//       throw productError;
+//     }
+//   } catch (err) {
+//     console.log("Error create product:", err);
+//     if (filesArray.length > 0) {
+//       filesArray.forEach((file) => {
+//         const filePath = path.join("./uploads/product", file);
+//         if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+//       });
+//     }
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// };
+
 exports.createProduct = async (req, res) => {
   let filesArray = [];
   try {
@@ -22,6 +268,8 @@ exports.createProduct = async (req, res) => {
     }
 
     const data = req.body;
+
+    // --- Parse JSON Strings ---
     if (typeof data.stones === "string") {
       try {
         data.stones = JSON.parse(data.stones);
@@ -29,7 +277,6 @@ exports.createProduct = async (req, res) => {
         data.stones = [];
       }
     }
-
     if (typeof data.related_accessories === "string") {
       try {
         data.related_accessories = JSON.parse(data.related_accessories);
@@ -38,6 +285,7 @@ exports.createProduct = async (req, res) => {
       }
     }
 
+    // --- Check Duplicate Code ---
     const existingProduct = await Product.findOne({
       product_code: data.code,
       comp_id: user.comp_id,
@@ -50,6 +298,7 @@ exports.createProduct = async (req, res) => {
       });
     }
 
+    // --- Validate Accessories ---
     if (
       data.related_accessories &&
       Array.isArray(data.related_accessories) &&
@@ -76,6 +325,7 @@ exports.createProduct = async (req, res) => {
       }
     }
 
+    // --- Handle File Uploads ---
     if (req.files && req.files.length > 0) {
       const uploadDir = "./uploads/product";
       if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
@@ -100,35 +350,33 @@ exports.createProduct = async (req, res) => {
       );
     }
 
-    // debug const getMasterId = async (name, fieldName) => {
-    //   if (!name) return null;
+    // ==========================================================
+    // 🟠 จุดที่ 1: เปลี่ยน getMasterId เป็น ensureMasterId (Auto-Create)
+    // ==========================================================
+    const ensureMasterId = async (name, type) => {
+      // ถ้าไม่มีค่าส่งมา ให้ข้าม
+      if (!name || (typeof name === "string" && name.trim() === ""))
+        return null;
 
-    //   // ค้นหาโดยดูทั้ง ชื่อ และ comp_id
-    //   const master = await Masters.findOne({
-    //     master_name: name,
-    //     comp_id: user.comp_id,
-    //   }).lean();
-
-    //   // 🚨 LOG จับผิด: ดูว่าหาเจอไหม
-    //   if (!master) {
-    //     console.log(
-    //       `❌ ไม่พบ Master: "${name}" (ในฟิลด์: ${fieldName}) | Comp ID: ${user.comp_id}`
-    //     );
-    //   } else {
-    //     console.log(`✅ พบ Master: "${name}" -> ID: ${master._id}`);
-    //   }
-
-    //   return master ? master._id : null;
-    // };
-    const getMasterId = async (name) => {
-      if (!name) return null;
-
-      const master = await Masters.findOne({
-        master_name: name,
+      // 1. ค้นหา (Case Insensitive) โดยระบุ Type และ Company
+      let master = await Masters.findOne({
+        master_name: { $regex: new RegExp(`^${name}$`, "i") },
+        master_type: type, // ต้องระบุ Type เพื่อไม่ให้ข้อมูลตีกัน
         comp_id: user.comp_id,
-      }).lean();
+      });
 
-      return master ? master._id : null;
+      // 2. ถ้าหาไม่เจอ -> ให้สร้างใหม่ (Create)
+      if (!master) {
+        master = await Masters.create({
+          master_name: name,
+          master_type: type,
+          comp_id: user.comp_id,
+          master_color: null,
+        });
+        console.log(`✅ Auto-created Master: [${type}] ${name}`);
+      }
+
+      return master._id;
     };
 
     const mastersArray = [];
@@ -136,25 +384,39 @@ exports.createProduct = async (req, res) => {
       if (masterId) mastersArray.push({ master_id: masterId, qty, weight });
     };
 
-    const itemTypeId = await getMasterId(data.item_type);
+    // ==========================================================
+    // 🟠 จุดที่ 2: เรียกใช้ ensureMasterId โดยระบุ Type ("...")
+    // ==========================================================
+
+    // 1. Item Type
+    const itemTypeId = await ensureMasterId(data.item_type, "item_type");
     pushMaster(itemTypeId, 1);
 
+    // 2. Metal & Color
     if (data.metal) {
-      const metalId = await getMasterId(data.metal);
-      const metalColorId = await getMasterId(data.metal_color);
+      const metalId = await ensureMasterId(data.metal, "metal");
+      const metalColorId = await ensureMasterId(
+        data.metal_color,
+        "metal_color"
+      ); // หรือ 'color' ตาม DB คุณ
       pushMaster(metalId, 1, data.net_weight || 0);
       pushMaster(metalColorId, 1);
     }
 
+    // 3. Loop Stones
     if (data.stones && Array.isArray(data.stones) && data.stones.length > 0) {
       for (const stone of data.stones) {
-        const stoneNameId = await getMasterId(stone.stone_name);
-        const shapeId = await getMasterId(stone.shape);
-        const sizeId = await getMasterId(stone.size);
-        const colorId = await getMasterId(stone.color);
-        const cuttingId = await getMasterId(stone.cutting);
-        const qualityId = await getMasterId(stone.quality);
-        const clarityId = await getMasterId(stone.clarity);
+        // ใส่ Type กำกับทุกอัน
+        const stoneNameId = await ensureMasterId(
+          stone.stone_name,
+          "stone_name"
+        );
+        const shapeId = await ensureMasterId(stone.shape, "shape");
+        const sizeId = await ensureMasterId(stone.size, "size");
+        const colorId = await ensureMasterId(stone.color, "color");
+        const cuttingId = await ensureMasterId(stone.cutting, "cutting");
+        const qualityId = await ensureMasterId(stone.quality, "quality");
+        const clarityId = await ensureMasterId(stone.clarity, "clarity");
 
         const qty = stone.qty ? Number(stone.qty) : 1;
         const weight = stone.weight ? Number(stone.weight) : 0;
@@ -167,7 +429,9 @@ exports.createProduct = async (req, res) => {
         pushMaster(qualityId);
         pushMaster(clarityId);
       }
-    } else if (data.stone_name) {
+    }
+    // 4. Single Stone (Legacy support)
+    else if (data.stone_name) {
       const stoneQty = data.stone_qty ? Number(data.stone_qty) : 1;
       let stoneWeight = 0;
       if (data.stone_weight) {
@@ -176,15 +440,15 @@ exports.createProduct = async (req, res) => {
         stoneWeight = data.net_weight || data.weight || 0;
       }
 
-      const stoneNameId = await getMasterId(data.stone_name);
+      const stoneNameId = await ensureMasterId(data.stone_name, "stone_name");
       pushMaster(stoneNameId, stoneQty, stoneWeight);
 
-      const shapeId = await getMasterId(data.shape);
-      const sizeId = await getMasterId(data.size);
-      const colorId = await getMasterId(data.color);
-      const cuttingId = await getMasterId(data.cutting);
-      const qualityId = await getMasterId(data.quality);
-      const clarityId = await getMasterId(data.clarity);
+      const shapeId = await ensureMasterId(data.shape, "shape");
+      const sizeId = await ensureMasterId(data.size, "size");
+      const colorId = await ensureMasterId(data.color, "color");
+      const cuttingId = await ensureMasterId(data.cutting, "cutting");
+      const qualityId = await ensureMasterId(data.quality, "quality");
+      const clarityId = await ensureMasterId(data.clarity, "clarity");
 
       pushMaster(shapeId);
       pushMaster(sizeId);
@@ -194,6 +458,7 @@ exports.createProduct = async (req, res) => {
       pushMaster(clarityId);
     }
 
+    // --- Create Product Detail ---
     const newDetail = await ProductDetail.create({
       unit: data.unit || "pcs",
       size: data.product_size || data.size,
@@ -206,6 +471,7 @@ exports.createProduct = async (req, res) => {
     });
 
     try {
+      // --- Create Product ---
       const newProduct = await Product.create({
         product_code: data.code,
         product_name: data.product_name,
@@ -218,6 +484,7 @@ exports.createProduct = async (req, res) => {
           ? data.related_accessories
           : [],
       });
+
       const populatedProduct = await Product.findById(newProduct._id).populate({
         path: "product_detail_id",
         populate: {

@@ -21,24 +21,68 @@ router.get("/product/all", auth, checkPermission("Product List", "view"), list);
 
 router.get("/product/:id", getOneProduct);
 
-router.post("/master", auth, validateSchema("master"), upload, createProduct);
-router.post("/stone", auth, validateSchema("stone"), upload, createProduct);
+const parseBodyData = (req, res, next) => {
+  if (req.body.stones && typeof req.body.stones === "string") {
+    try {
+      req.body.stones = JSON.parse(req.body.stones);
+    } catch (e) {
+      req.body.stones = [];
+    }
+  }
+  if (
+    req.body.related_accessories &&
+    typeof req.body.related_accessories === "string"
+  ) {
+    try {
+      req.body.related_accessories = JSON.parse(req.body.related_accessories);
+    } catch (e) {
+      req.body.related_accessories = [];
+    }
+  }
+  next();
+};
+
+router.post(
+  "/master",
+  auth,
+  upload,
+  parseBodyData,
+  validateSchema("master"),
+  createProduct
+);
+router.post(
+  "/stone",
+  auth,
+  upload,
+  parseBodyData,
+  validateSchema("stone"),
+  createProduct
+);
 router.post(
   "/semimount",
   auth,
-  validateSchema("semimount"),
   upload,
+  parseBodyData,
+  validateSchema("semimount"),
   createProduct
 );
 router.post(
   "/accessory",
   auth,
-  validateSchema("accessory"),
   upload,
+  parseBodyData,
+  validateSchema("accessory"),
   createProduct
 );
 
-router.post("/others", auth, validateSchema("others"), upload, createProduct);
+router.post(
+  "/others",
+  auth,
+  parseBodyData,
+  validateSchema("others"),
+  upload,
+  createProduct
+);
 
 router.put(
   "/update-product/:id",

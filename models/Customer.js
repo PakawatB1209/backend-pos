@@ -20,7 +20,7 @@ const CustomerSchema = new mongoose.Schema(
     customer_email: { type: String },
     customer_phone: {
       type: String,
-      match: [/^0[0-9]{9}$/], // start with 0xxxxxxxxx
+      match: [/^(0|\+66)[0-9]{9}$/], // start with 0xxxxxxxxx
       required: true,
     },
     customer_gender: { type: String, required: true },
@@ -29,12 +29,12 @@ const CustomerSchema = new mongoose.Schema(
       province: { type: String, required: true },
       district: { type: String, required: true },
       sub_district: { type: String, required: true },
-      zipcode: { type: String, required: true },
+      zipcode: { type: String, maxlength: 10, required: true },
     },
 
     customer_tax_id: { type: String, maxlength: 18 },
 
-    tax_addr: { type: String, required: true },
+    tax_addr: { type: String },
 
     note: { type: String },
   },

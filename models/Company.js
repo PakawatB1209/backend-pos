@@ -12,7 +12,7 @@ const CompanySchema = new mongoose.Schema(
     comp_taxid: { type: String, required: true },
     comp_phone: {
       type: String,
-      match: [/^0[0-9]{9}$/], // start with 0xxxxxxxxx
+      match: [/^(0|\+66)[0-9]{9}$/], // start with 0xxxxxxxxx
       required: true,
     },
     comp_person_name: { type: String, required: true },

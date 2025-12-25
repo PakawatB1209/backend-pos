@@ -19,7 +19,7 @@ const UserSchema = new mongoose.Schema(
     },
     user_phone: {
       type: String,
-      match: [/^0[0-9]{9}$/], // start with 0xxxxxxxxx
+      match: [/^(0|\+66)[0-9]{9}$/], // start with 0xxxxxxxxx
     },
     permissions: [{ type: mongoose.Schema.ObjectId, ref: "permission" }],
     comp_id: { type: mongoose.Schema.ObjectId, ref: "comp" },

@@ -1,6 +1,19 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
+const StoneDetailSchema = new Schema({
+  _id: false,
+  stone_name: { type: mongoose.Schema.ObjectId, ref: "masters" },
+  shape: { type: mongoose.Schema.ObjectId, ref: "masters" },
+  size: { type: mongoose.Schema.ObjectId, ref: "masters" },
+  color: { type: mongoose.Schema.ObjectId, ref: "masters" },
+  cutting: { type: mongoose.Schema.ObjectId, ref: "masters" },
+  quality: { type: mongoose.Schema.ObjectId, ref: "masters" },
+  clarity: { type: mongoose.Schema.ObjectId, ref: "masters" },
+  qty: { type: Number, default: 0 },
+  weight: { type: Number, default: 0 },
+});
+
 const ProductDetailSchema = new Schema(
   {
     product_detail_id: { type: Schema.Types.ObjectId, auto: true },
@@ -15,21 +28,10 @@ const ProductDetailSchema = new Schema(
         weight: { type: Number, default: 0 },
       },
     ],
-    stones: [
-      {
-        _id: false,
-        stone_name: { type: mongoose.Schema.ObjectId, ref: "masters" }, // Diamond
-        shape: { type: mongoose.Schema.ObjectId, ref: "masters" }, // Round
-        size: { type: mongoose.Schema.ObjectId, ref: "masters" }, // Size ID
-        color: { type: mongoose.Schema.ObjectId, ref: "masters" }, // D
-        cutting: { type: mongoose.Schema.ObjectId, ref: "masters" }, // Excellent
-        quality: { type: mongoose.Schema.ObjectId, ref: "masters" }, // Good
-        clarity: { type: mongoose.Schema.ObjectId, ref: "masters" }, // VVS1
 
-        qty: { type: Number, default: 0 },
-        weight: { type: Number, default: 0 },
-      },
-    ],
+    primary_stone: StoneDetailSchema,
+    additional_stones: [StoneDetailSchema],
+
     quality: { type: String, enum: ["A", "AA", "AAA"] },
     gross_weight: { type: Number, default: 0, min: 0 },
     net_weight: { type: Number, default: 0, min: 0 },

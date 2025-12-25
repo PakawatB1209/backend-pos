@@ -20,7 +20,7 @@ const {
 
 router.get("/product/all", auth, checkPermission("Product List", "view"), list);
 
-router.get("/product/:id", getOneProduct);
+router.get("/product/:id", auth, getOneProduct);
 
 router.post(
   "/master",

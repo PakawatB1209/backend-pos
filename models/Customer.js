@@ -18,7 +18,11 @@ const CustomerSchema = new mongoose.Schema(
     company_name: { type: String },
     contact_person: { type: String, required: true },
     customer_email: { type: String },
-    customer_phone: { type: String, required: true },
+    customer_phone: {
+      type: String,
+      match: [/^0[0-9]{9}$/], // start with 0xxxxxxxxx
+      required: true,
+    },
     customer_gender: { type: String, required: true },
     customer_date: { type: Date },
     address: {

@@ -269,6 +269,7 @@ exports.createProduct = async (req, res) => {
 
     const data = req.body;
 
+    // --- Parse JSON Strings ---
     if (typeof data.stones === "string") {
       try {
         data.stones = JSON.parse(data.stones);
@@ -284,6 +285,7 @@ exports.createProduct = async (req, res) => {
       }
     }
 
+    // --- Check Duplicate ---
     const existingProduct = await Product.findOne({
       product_code: data.code,
       comp_id: user.comp_id,
@@ -296,6 +298,7 @@ exports.createProduct = async (req, res) => {
       });
     }
 
+    // --- Validate Accessories ---
     if (
       data.related_accessories &&
       Array.isArray(data.related_accessories) &&
@@ -322,15 +325,40 @@ exports.createProduct = async (req, res) => {
       }
     }
 
-    if (req.files && req.files.length > 0) {
+    // --- 🟢 UPDATED: Image Upload Logic (Optimized) ---
+    if (req.files?.length) {
       const uploadDir = "./uploads/product";
-      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+      if (!fs.existsSync(uploadDir))
+        fs.mkdirSync(uploadDir, { recursive: true });
+
+      // Config การแปลงไฟล์แต่ละประเภท
+      const formats = {
+        "image/jpeg": {
+          ext: ".jpeg",
+          type: "jpeg",
+          options: { quality: 80 },
+        },
+        "image/png": {
+          ext: ".png",
+          type: "png",
+          options: { compressionLevel: 8, quality: 80 },
+        },
+        "image/webp": {
+          ext: ".webp",
+          type: "webp",
+          options: { quality: 80 },
+        },
+      };
 
       await Promise.all(
         req.files.map(async (file, index) => {
-          const filename = `product-${Date.now()}-${Math.round(
+          const baseName = `product-${Date.now()}-${Math.round(
             Math.random() * 1e9
-          )}-${index}.jpeg`;
+          )}-${index}`;
+
+          // เลือก Config ตาม MimeType (Default เป็น JPEG)
+          const format = formats[file.mimetype] || formats["image/jpeg"];
+          const filename = `${baseName}${format.ext}`;
           const outputPath = path.join(uploadDir, filename);
 
           await sharp(file.buffer)
@@ -338,7 +366,7 @@ exports.createProduct = async (req, res) => {
               fit: sharp.fit.inside,
               withoutEnlargement: true,
             })
-            .toFormat("jpeg", { quality: 80 })
+            .toFormat(format.type, format.options)
             .toFile(outputPath);
 
           filesArray.push(filename);
@@ -346,24 +374,33 @@ exports.createProduct = async (req, res) => {
       );
     }
 
-    const ensureMasterId = async (name, type) => {
-      if (!name || (typeof name === "string" && name.trim() === ""))
+    // --- Auto-create Master Logic ---
+    const ensureMasterId = async (input, type) => {
+      if (!input || (typeof input === "string" && input.trim() === ""))
         return null;
 
+      if (mongoose.isValidObjectId(input)) {
+        const exists = await Masters.exists({
+          _id: input,
+          comp_id: user.comp_id,
+        });
+        if (exists) return input;
+      }
+
       let master = await Masters.findOne({
-        master_name: { $regex: new RegExp(`^${name}$`, "i") },
+        master_name: { $regex: new RegExp(`^${input}$`, "i") },
         master_type: type,
         comp_id: user.comp_id,
       });
 
       if (!master) {
         master = await Masters.create({
-          master_name: name,
+          master_name: input,
           master_type: type,
           comp_id: user.comp_id,
           master_color: null,
         });
-        console.log(`Auto-created Master: [${type}] ${name}`);
+        console.log(`Auto-created Master: [${type}] ${input}`);
       }
 
       return master._id;
@@ -374,9 +411,11 @@ exports.createProduct = async (req, res) => {
       if (masterId) mastersArray.push({ master_id: masterId, qty, weight });
     };
 
+    // 1. Item Type
     const itemTypeId = await ensureMasterId(data.item_type, "item_type");
     pushMaster(itemTypeId, 1);
 
+    // 2. Metal
     if (data.metal) {
       const metalId = await ensureMasterId(data.metal, "metal");
       const metalColorId = await ensureMasterId(
@@ -387,8 +426,46 @@ exports.createProduct = async (req, res) => {
       pushMaster(metalColorId, 1);
     }
 
-    if (data.stones && Array.isArray(data.stones) && data.stones.length > 0) {
-      for (const stone of data.stones) {
+    let finalStonesList = [];
+
+    // A. ใส่ Additional Stones (จาก Array) เข้าไปก่อน (หรือทีหลังก็ได้)
+    if (data.stones && Array.isArray(data.stones)) {
+      finalStonesList = [...data.stones];
+    }
+
+    // B. ใส่ Primary Stone (จาก Root Fields) เข้าไปรวมด้วย
+    if (data.stone_name) {
+      // คำนวณน้ำหนัก Primary Stone (ใช้ logic เดิมของคุณ)
+      let primaryWeight = 0;
+      if (data.stone_weight) {
+        primaryWeight = Number(data.stone_weight);
+      } else if (!data.metal) {
+        // กรณีไม่มี Metal ให้น้ำหนักรวมตกเป็นของหิน (Logic เดิม)
+        primaryWeight = data.net_weight || data.weight || 0;
+      } else if (data.weight) {
+        // กรณี UI ส่งมาในชื่อ weight (ใต้ Primary Stone)
+        primaryWeight = Number(data.weight);
+      }
+
+      const primaryStone = {
+        stone_name: data.stone_name,
+        shape: data.shape,
+        size: data.size,
+        color: data.color,
+        cutting: data.cutting,
+        quality: data.quality,
+        clarity: data.clarity,
+        qty: data.stone_qty ? Number(data.stone_qty) : 1, // Default Primary = 1
+        weight: primaryWeight,
+      };
+
+      // เอา Primary ไว้ตัวแรก (unshift)
+      finalStonesList.unshift(primaryStone);
+    }
+
+    // 3. Loop Save All Stones (Primary + Additional)
+    if (finalStonesList.length > 0) {
+      for (const stone of finalStonesList) {
         const stoneNameId = await ensureMasterId(
           stone.stone_name,
           "stone_name"
@@ -411,33 +488,9 @@ exports.createProduct = async (req, res) => {
         pushMaster(qualityId);
         pushMaster(clarityId);
       }
-    } else if (data.stone_name) {
-      const stoneQty = data.stone_qty ? Number(data.stone_qty) : 1;
-      let stoneWeight = 0;
-      if (data.stone_weight) {
-        stoneWeight = Number(data.stone_weight);
-      } else if (!data.metal) {
-        stoneWeight = data.net_weight || data.weight || 0;
-      }
-
-      const stoneNameId = await ensureMasterId(data.stone_name, "stone_name");
-      pushMaster(stoneNameId, stoneQty, stoneWeight);
-
-      const shapeId = await ensureMasterId(data.shape, "shape");
-      const sizeId = await ensureMasterId(data.size, "size");
-      const colorId = await ensureMasterId(data.color, "color");
-      const cuttingId = await ensureMasterId(data.cutting, "cutting");
-      const qualityId = await ensureMasterId(data.quality, "quality");
-      const clarityId = await ensureMasterId(data.clarity, "clarity");
-
-      pushMaster(shapeId);
-      pushMaster(sizeId);
-      pushMaster(colorId);
-      pushMaster(cuttingId);
-      pushMaster(qualityId);
-      pushMaster(clarityId);
     }
 
+    // --- Create Detail ---
     const newDetail = await ProductDetail.create({
       unit: data.unit || "pcs",
       size: data.product_size || data.size,
@@ -450,6 +503,7 @@ exports.createProduct = async (req, res) => {
     });
 
     try {
+      // --- Create Product ---
       const newProduct = await Product.create({
         product_code: data.code,
         product_name: data.product_name,
@@ -470,10 +524,38 @@ exports.createProduct = async (req, res) => {
           select: "master_name master_type",
         },
       });
+
+      // --- 🟢 UPDATED: Flatten Response Data ---
+      // แปลงข้อมูลให้ Master แผ่ออกมาอยู่ชั้นเดียว ไม่ซ้อนกัน
+      let responseData = populatedProduct.toObject();
+
+      if (
+        responseData.product_detail_id &&
+        responseData.product_detail_id.masters
+      ) {
+        responseData.product_detail_id.masters =
+          responseData.product_detail_id.masters.map((item) => {
+            if (item.master_id && typeof item.master_id === "object") {
+              const mappedItem = {
+                _id: item.master_id._id,
+                master_name: item.master_id.master_name,
+                master_type: item.master_id.master_type,
+              };
+              if (item.master_id.master_type === "stone_name") {
+                mappedItem.qty = item.qty;
+                mappedItem.weight = item.weight;
+              }
+
+              return mappedItem;
+            }
+            return item;
+          });
+      }
+
       res.status(201).json({
         success: true,
         message: "Product created successfully.",
-        data: populatedProduct,
+        data: responseData,
         file: filesArray,
       });
     } catch (productError) {
@@ -498,6 +580,346 @@ exports.createProduct = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+// exports.createProduct = async (req, res) => {
+//   let filesArray = [];
+//   try {
+//     const userId = req.user.id;
+//     const user = await User.findById(userId).select("comp_id");
+
+//     if (!user || !user.comp_id) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "User is not associated with a company.",
+//       });
+//     }
+
+//     const data = req.body;
+
+//     if (typeof data.stones === "string") {
+//       try {
+//         data.stones = JSON.parse(data.stones);
+//       } catch (e) {
+//         data.stones = [];
+//       }
+//     }
+//     if (typeof data.related_accessories === "string") {
+//       try {
+//         data.related_accessories = JSON.parse(data.related_accessories);
+//       } catch (e) {
+//         data.related_accessories = [];
+//       }
+//     }
+
+//     const existingProduct = await Product.findOne({
+//       product_code: data.code,
+//       comp_id: user.comp_id,
+//     });
+
+//     if (existingProduct) {
+//       return res.status(400).json({
+//         success: false,
+//         message: `Product Code "${data.code}" already exists.`,
+//       });
+//     }
+
+//     if (
+//       data.related_accessories &&
+//       Array.isArray(data.related_accessories) &&
+//       data.related_accessories.length > 0
+//     ) {
+//       for (const item of data.related_accessories) {
+//         if (!mongoose.isValidObjectId(item.product_id)) {
+//           return res.status(400).json({
+//             success: false,
+//             message: `Invalid Accessory ID format: ${item.product_id}`,
+//           });
+//         }
+//         const accessoryExists = await Product.exists({
+//           _id: item.product_id,
+//           comp_id: user.comp_id,
+//         });
+
+//         if (!accessoryExists) {
+//           return res.status(400).json({
+//             success: false,
+//             message: `Accessory product not found: ${item.product_id}`,
+//           });
+//         }
+//       }
+//     }
+
+//     // if (req.files && req.files.length > 0) {
+//     //   const uploadDir = "./uploads/product";
+//     //   if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+
+//     //   await Promise.all(
+//     //     req.files.map(async (file, index) => {
+//     //       const baseFilename = `product-${Date.now()}-${Math.round(
+//     //         Math.random() * 1e9
+//     //       )}-${index}`;
+//     //       let filename;
+//     //       // SVG
+//     //       // if (file.mimetype === "image/svg+xml") {
+//     //       //   filename = `${baseFilename}.svg`;
+//     //       //   const outputPath = path.join(uploadDir, filename);
+
+//     //       //   await fs.promises.writeFile(outputPath, file.buffer);
+//     //       // } else {
+//     //       //   let fileExtension = ".jpeg";
+//     //       //   let formatType = "jpeg";
+//     //       //   let formatOptions = { quality: 80 };
+
+//     //       //   if (file.mimetype === "image/png") {
+//     //       //     fileExtension = ".png";
+//     //       //     formatType = "png";
+//     //       //     formatOptions = { compressionLevel: 8, quality: 80 };
+//     //       //   } else if (file.mimetype === "image/webp") {
+//     //       //     fileExtension = ".webp";
+//     //       //     formatType = "webp";
+//     //       //     formatOptions = { quality: 80 };
+//     //       //   }
+
+//     //       //   filename = `${baseFilename}${fileExtension}`;
+//     //       //   const outputPath = path.join(uploadDir, filename);
+
+//     //       //   await sharp(file.buffer)
+//     //       //     .resize(1200, 1200, {
+//     //       //       fit: sharp.fit.inside,
+//     //       //       withoutEnlargement: true,
+//     //       //     })
+//     //       //     .toFormat(formatType, formatOptions)
+//     //       //     .toFile(outputPath);
+//     //       // }
+
+//     //       let fileExtension = ".jpeg";
+//     //       let formatType = "jpeg";
+//     //       let formatOptions = { quality: 80 };
+
+//     //       if (file.mimetype === "image/png") {
+//     //         fileExtension = ".png";
+//     //         formatType = "png";
+//     //         formatOptions = { compressionLevel: 8, quality: 80 };
+//     //       } else if (file.mimetype === "image/webp") {
+//     //         fileExtension = ".webp";
+//     //         formatType = "webp";
+//     //         formatOptions = { quality: 80 };
+//     //       }
+
+//     //       filename = `${baseFilename}${fileExtension}`;
+//     //       const outputPath = path.join(uploadDir, filename);
+
+//     //       await sharp(file.buffer)
+//     //         .resize(1200, 1200, {
+//     //           fit: sharp.fit.inside,
+//     //           withoutEnlargement: true,
+//     //         })
+//     //         .toFormat(formatType, formatOptions)
+//     //         .toFile(outputPath);
+
+//     //       filesArray.push(filename);
+//     //     })
+//     //   );
+//     // }
+
+//     if (req.files?.length) {
+//       const uploadDir = "./uploads/product";
+//       if (!fs.existsSync(uploadDir))
+//         fs.mkdirSync(uploadDir, { recursive: true });
+
+//       await Promise.all(
+//         req.files.map(async (file, index) => {
+//           const baseName = `product-${Date.now()}-${Math.round(
+//             Math.random() * 1e9
+//           )}-${index}`;
+
+//           const formats = {
+//             "image/jpeg": {
+//               ext: ".jpeg",
+//               type: "jpeg",
+//               options: { quality: 80 },
+//             },
+//             "image/png": {
+//               ext: ".png",
+//               type: "png",
+//               options: { compressionLevel: 8, quality: 80 },
+//             },
+//             "image/webp": {
+//               ext: ".webp",
+//               type: "webp",
+//               options: { quality: 80 },
+//             },
+//           };
+
+//           const format = formats[file.mimetype] || formats["image/jpeg"];
+//           const filename = `${baseName}${format.ext}`;
+//           const outputPath = path.join(uploadDir, filename);
+
+//           await sharp(file.buffer)
+//             .resize(1200, 1200, {
+//               fit: sharp.fit.inside,
+//               withoutEnlargement: true,
+//             })
+//             .toFormat(format.type, format.options)
+//             .toFile(outputPath);
+
+//           filesArray.push(filename);
+//         })
+//       );
+//     }
+
+//     const ensureMasterId = async (name, type) => {
+//       if (!name || (typeof name === "string" && name.trim() === ""))
+//         return null;
+
+//       let master = await Masters.findOne({
+//         master_name: { $regex: new RegExp(`^${name}$`, "i") },
+//         master_type: type,
+//         comp_id: user.comp_id,
+//       });
+
+//       if (!master) {
+//         master = await Masters.create({
+//           master_name: name,
+//           master_type: type,
+//           comp_id: user.comp_id,
+//           master_color: null,
+//         });
+//         console.log(`Auto-created Master: [${type}] ${name}`);
+//       }
+
+//       return master._id;
+//     };
+
+//     const mastersArray = [];
+//     const pushMaster = (masterId, qty = 0, weight = 0) => {
+//       if (masterId) mastersArray.push({ master_id: masterId, qty, weight });
+//     };
+
+//     const itemTypeId = await ensureMasterId(data.item_type, "item_type");
+//     pushMaster(itemTypeId, 1);
+
+//     if (data.metal) {
+//       const metalId = await ensureMasterId(data.metal, "metal");
+//       const metalColorId = await ensureMasterId(
+//         data.metal_color,
+//         "metal_color"
+//       );
+//       pushMaster(metalId, 1, data.net_weight || 0);
+//       pushMaster(metalColorId, 1);
+//     }
+
+//     if (data.stones && Array.isArray(data.stones) && data.stones.length > 0) {
+//       for (const stone of data.stones) {
+//         const stoneNameId = await ensureMasterId(
+//           stone.stone_name,
+//           "stone_name"
+//         );
+//         const shapeId = await ensureMasterId(stone.shape, "shape");
+//         const sizeId = await ensureMasterId(stone.size, "size");
+//         const colorId = await ensureMasterId(stone.color, "color");
+//         const cuttingId = await ensureMasterId(stone.cutting, "cutting");
+//         const qualityId = await ensureMasterId(stone.quality, "quality");
+//         const clarityId = await ensureMasterId(stone.clarity, "clarity");
+
+//         const qty = stone.qty ? Number(stone.qty) : 1;
+//         const weight = stone.weight ? Number(stone.weight) : 0;
+
+//         pushMaster(stoneNameId, qty, weight);
+//         pushMaster(shapeId);
+//         pushMaster(sizeId);
+//         pushMaster(colorId);
+//         pushMaster(cuttingId);
+//         pushMaster(qualityId);
+//         pushMaster(clarityId);
+//       }
+//     } else if (data.stone_name) {
+//       const stoneQty = data.stone_qty ? Number(data.stone_qty) : 1;
+//       let stoneWeight = 0;
+//       if (data.stone_weight) {
+//         stoneWeight = Number(data.stone_weight);
+//       } else if (!data.metal) {
+//         stoneWeight = data.net_weight || data.weight || 0;
+//       }
+
+//       const stoneNameId = await ensureMasterId(data.stone_name, "stone_name");
+//       pushMaster(stoneNameId, stoneQty, stoneWeight);
+
+//       const shapeId = await ensureMasterId(data.shape, "shape");
+//       const sizeId = await ensureMasterId(data.size, "size");
+//       const colorId = await ensureMasterId(data.color, "color");
+//       const cuttingId = await ensureMasterId(data.cutting, "cutting");
+//       const qualityId = await ensureMasterId(data.quality, "quality");
+//       const clarityId = await ensureMasterId(data.clarity, "clarity");
+
+//       pushMaster(shapeId);
+//       pushMaster(sizeId);
+//       pushMaster(colorId);
+//       pushMaster(cuttingId);
+//       pushMaster(qualityId);
+//       pushMaster(clarityId);
+//     }
+
+//     const newDetail = await ProductDetail.create({
+//       unit: data.unit || "pcs",
+//       size: data.product_size || data.size,
+//       gross_weight: data.gross_weight || 0,
+//       net_weight: data.net_weight || 0,
+//       weight: data.weight || 0,
+//       masters: mastersArray,
+//       description: data.description,
+//       comp_id: user.comp_id,
+//     });
+
+//     try {
+//       const newProduct = await Product.create({
+//         product_code: data.code,
+//         product_name: data.product_name,
+//         product_detail_id: newDetail._id,
+//         comp_id: user.comp_id,
+//         file: filesArray,
+//         product_category: data.category,
+//         product_item_type: data.item_type,
+//         related_accessories: Array.isArray(data.related_accessories)
+//           ? data.related_accessories
+//           : [],
+//       });
+
+//       const populatedProduct = await Product.findById(newProduct._id).populate({
+//         path: "product_detail_id",
+//         populate: {
+//           path: "masters.master_id",
+//           select: "master_name master_type",
+//         },
+//       });
+//       res.status(201).json({
+//         success: true,
+//         message: "Product created successfully.",
+//         data: populatedProduct,
+//         file: filesArray,
+//       });
+//     } catch (productError) {
+//       console.log("Error creating main product, rolling back detail...");
+//       await ProductDetail.findByIdAndDelete(newDetail._id);
+//       if (filesArray.length > 0) {
+//         filesArray.forEach((file) => {
+//           const filePath = path.join("./uploads/product", file);
+//           if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+//         });
+//       }
+//       throw productError;
+//     }
+//   } catch (err) {
+//     console.log("Error create product:", err);
+//     if (filesArray.length > 0) {
+//       filesArray.forEach((file) => {
+//         const filePath = path.join("./uploads/product", file);
+//         if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+//       });
+//     }
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// };
 
 exports.getOneProduct = async (req, res) => {
   try {

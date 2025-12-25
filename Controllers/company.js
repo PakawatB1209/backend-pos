@@ -67,23 +67,111 @@ exports.createCompany = async (req, res) => {
 
     let imageFileName = null;
 
-    if (req.files && req.files.length > 0) {
+    // if (req.files && req.files.length > 0) {
+    //   const file = req.files[0];
+    //   const uploadDir = "./uploads/companyprofile";
+
+    //   if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+
+    //   const baseName = `comp-${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    //   // SVG
+    //   // if (file.mimetype === "image/svg+xml") {
+    //   //   imageFileName = `${baseName}.svg`;
+    //   //   const outputPath = path.join(uploadDir, imageFileName);
+
+    //   //   await fs.promises.writeFile(outputPath, file.buffer);
+    //   // } else {
+    //   //   let fileExtension = ".jpeg";
+    //   //   let formatType = "jpeg";
+    //   //   let formatOptions = { quality: 80 };
+
+    //   //   if (file.mimetype === "image/png") {
+    //   //     fileExtension = ".png";
+    //   //     formatType = "png";
+    //   //     formatOptions = { compressionLevel: 8, quality: 80 };
+    //   //   } else if (file.mimetype === "image/webp") {
+    //   //     fileExtension = ".webp";
+    //   //     formatType = "webp";
+    //   //     formatOptions = { quality: 80 };
+    //   //   } else if (file.mimetype === "image/jpeg") {
+    //   //     fileExtension = ".jpeg";
+    //   //     formatType = "jpeg";
+    //   //     formatOptions = { quality: 80, mozjpeg: true };
+    //   //   }
+
+    //   //   imageFileName = `${baseName}${fileExtension}`;
+    //   //   const outputPath = path.join(uploadDir, imageFileName);
+
+    //   //   await sharp(file.buffer)
+    //   //     .resize(300, 300, {
+    //   //       fit: sharp.fit.inside,
+    //   //       withoutEnlargement: true,
+    //   //     })
+    //   //     .toFormat(formatType, formatOptions)
+    //   //     .toFile(outputPath);
+    //   // }
+
+    //   let fileExtension = ".jpeg";
+    //   let formatType = "jpeg";
+    //   let formatOptions = { quality: 80 };
+
+    //   if (file.mimetype === "image/png") {
+    //     fileExtension = ".png";
+    //     formatType = "png";
+    //     formatOptions = { compressionLevel: 8, quality: 80 };
+    //   } else if (file.mimetype === "image/webp") {
+    //     fileExtension = ".webp";
+    //     formatType = "webp";
+    //     formatOptions = { quality: 80 };
+    //   } else if (file.mimetype === "image/jpeg") {
+    //     fileExtension = ".jpeg";
+    //     formatType = "jpeg";
+    //     formatOptions = { quality: 80, mozjpeg: true };
+    //   }
+
+    //   imageFileName = `${baseName}${fileExtension}`;
+    //   const outputPath = path.join(uploadDir, imageFileName);
+
+    //   await sharp(file.buffer)
+    //     .resize(300, 300, {
+    //       fit: sharp.fit.inside,
+    //       withoutEnlargement: true,
+    //     })
+    //     .toFormat(formatType, formatOptions)
+    //     .toFile(outputPath);
+    // }
+    if (req.files?.length) {
       const file = req.files[0];
       const uploadDir = "./uploads/companyprofile";
+      if (!fs.existsSync(uploadDir))
+        fs.mkdirSync(uploadDir, { recursive: true });
 
-      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+      const baseName = `comp-${Date.now()}-${Math.round(Math.random() * 1e9)}`;
 
-      imageFileName = `comp-${Date.now()}-${Math.round(
-        Math.random() * 1e9
-      )}.jpeg`;
+      const formats = {
+        "image/jpeg": {
+          ext: ".jpeg",
+          type: "jpeg",
+          options: { quality: 80, mozjpeg: true },
+        },
+        "image/png": {
+          ext: ".png",
+          type: "png",
+          options: { compressionLevel: 8, quality: 80 },
+        },
+        "image/webp": { ext: ".webp", type: "webp", options: { quality: 80 } },
+      };
+
+      const format = formats[file.mimetype] || formats["image/jpeg"];
+      const imageFileName = `${baseName}${format.ext}`;
       const outputPath = path.join(uploadDir, imageFileName);
 
       await sharp(file.buffer)
-        .resize(500, 500, {
+        .resize(300, 300, {
           fit: sharp.fit.inside,
           withoutEnlargement: true,
         })
-        .toFormat("jpeg", { quality: 80 })
+        .toFormat(format.type, format.options)
         .toFile(outputPath);
     }
 

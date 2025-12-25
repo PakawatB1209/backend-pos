@@ -27,6 +27,18 @@ const baseSchema = {
   //   .messages({ "any.required": "Selling Price is required" }),
 };
 
+const stoneItemSchema = Joi.object({
+  stone_name: Joi.string().required(),
+  shape: Joi.string().required(),
+  size: Joi.string().allow("").optional(),
+  color: Joi.string().allow("").optional(),
+  cutting: Joi.string().allow("").optional(),
+  quality: Joi.string().allow("").optional(),
+  clarity: Joi.string().allow("").optional(),
+  qty: Joi.number().optional(),
+  weight: Joi.number().optional(),
+});
+
 const accessoryItemSchema = Joi.object({
   product_id: objectId.required(),
   weight: Joi.number().required(),
@@ -40,21 +52,21 @@ const accessoryItemSchema = Joi.object({
 const productMasterSchema = Joi.object({
   ...baseSchema,
 
-  item_type: objectId.required(),
+  item_type: Joi.string().required(),
   product_size: Joi.string().required(),
-  metal: objectId.required(),
+  metal: Joi.string().required(),
   metal_color: Joi.string().optional(),
-
   gross_weight: Joi.number().required(),
   net_weight: Joi.number().required(),
   unit: Joi.string().valid("g", "pcs", "pair", "ct").default("pcs").optional(),
-  stone_name: objectId.required(),
-  shape: objectId.required(),
+  stone_name: Joi.string().required(),
+  shape: Joi.string().required(),
   size: Joi.string().optional(),
   color: Joi.string().optional(),
-  cutting: objectId.optional(),
-  quality: objectId.optional(),
-  clarity: objectId.optional(),
+  cutting: Joi.string().optional(),
+  quality: Joi.string().optional(),
+  clarity: Joi.string().optional(),
+  stones: Joi.array().items(stoneItemSchema).optional(),
   related_accessories: Joi.array().items(accessoryItemSchema).optional(),
 });
 

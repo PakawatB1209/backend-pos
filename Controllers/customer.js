@@ -2,6 +2,9 @@ const mongoose = require("mongoose");
 const User = require("../models/User");
 const Customer = require("../models/Customer");
 const Counter = require("../models/Counter");
+const PNF = require("google-libphonenumber").PhoneNumberFormat;
+const phoneUtil =
+  require("google-libphonenumber").PhoneNumberUtil.getInstance();
 
 function escapeRegex(text) {
   return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
@@ -143,6 +146,29 @@ exports.createCustomer = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Please fill required fields." });
     }
+    let finalPhone = customer_phone;
+    // let countryCode = "Unknown";
+
+    if (customer_phone) {
+      try {
+        const number = phoneUtil.parseAndKeepRawInput(customer_phone, TH);
+
+        if (!phoneUtil.isValidNumber(number)) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid phone number format (เบอร์โทรศัพท์ไม่ถูกต้อง)",
+          });
+        }
+
+        finalPhone = phoneUtil.format(number, PNF.E164);
+      } catch (error) {
+        console.log("Phone parse error:", error.message);
+        return res.status(400).json({
+          success: false,
+          message: "Unable to parse phone number (รูปแบบเบอร์โทรศัพท์ผิดพลาด)",
+        });
+      }
+    }
 
     if (business_type === "Corporation" && !company_name) {
       return res.status(400).json({
@@ -172,16 +198,18 @@ exports.createCustomer = async (req, res) => {
       contact_person,
 
       address: {
-        province: addr_province, // จังหวัด
-        district: addr_district, // เขต
-        sub_district: addr_sub_district, // แขวง
-        zipcode: addr_zipcode, // รหัสไปรษณีย์
+        province: addr_province,
+        district: addr_district,
+        sub_district: addr_sub_district,
+        zipcode: addr_zipcode,
       },
 
       customer_date: customer_date ? new Date(customer_date) : null,
 
       customer_email,
-      customer_phone,
+
+      customer_phone: finalPhone,
+
       customer_tax_id,
       customer_gender,
       note,
@@ -333,6 +361,28 @@ exports.updateCustomer = async (req, res) => {
       tax_addr,
     } = req.body;
 
+    let finalPhone = customer_phone;
+
+    if (customer_phone) {
+      try {
+        const number = phoneUtil.parseAndKeepRawInput(customer_phone, "TH");
+
+        if (!phoneUtil.isValidNumber(number)) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid phone number format (เบอร์โทรศัพท์ไม่ถูกต้อง)",
+          });
+        }
+
+        finalPhone = phoneUtil.format(number, PNF.E164);
+      } catch (err) {
+        return res.status(400).json({
+          success: false,
+          message: "Unable to parse phone number (รูปแบบเบอร์โทรศัพท์ผิดพลาด)",
+        });
+      }
+    }
+
     const updateFields = {
       ...(customer_name && { customer_name }),
       ...(business_type && { business_type }),
@@ -348,7 +398,7 @@ exports.updateCustomer = async (req, res) => {
 
       ...(customer_date && { customer_date: new Date(customer_date) }),
       ...(customer_email && { customer_email }),
-      ...(customer_phone && { customer_phone }),
+      ...(customer_phone && { customer_phone: finalPhone }),
       ...(customer_tax_id && { customer_tax_id }),
       ...(customer_gender && { customer_gender }),
       ...(note !== undefined && { note }),

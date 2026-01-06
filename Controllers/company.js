@@ -10,6 +10,10 @@ const fs = require("fs");
 const path = require("path");
 const sharp = require("sharp");
 
+const PNF = require("google-libphonenumber").PhoneNumberFormat;
+const phoneUtil =
+  require("google-libphonenumber").PhoneNumberUtil.getInstance();
+
 exports.createCompany = async (req, res) => {
   try {
     const adminId = req.user.id;
@@ -51,6 +55,34 @@ exports.createCompany = async (req, res) => {
         message: `Please complete all fields (Missing fields: ${missingFields.join(
           ", "
         )})`,
+      });
+    }
+
+    const validatePhone = (phoneNumber, fieldName) => {
+      try {
+        const number = phoneUtil.parseAndKeepRawInput(phoneNumber, TH);
+        if (!phoneUtil.isValidNumber(number)) {
+          throw new Error(`${fieldName}: Invalid format (เบอร์ไม่ถูกต้อง)`);
+        }
+        return phoneUtil.format(number, PNF.E164);
+      } catch (error) {
+        throw new Error(`${fieldName}: Parsing error (รูปแบบผิดพลาด)`);
+      }
+    };
+
+    let finalCompPhone = comp_phone;
+    let finalPersonPhone = comp_person_phone;
+
+    try {
+      finalCompPhone = validatePhone(comp_phone, "Company Phone");
+      finalPersonPhone = validatePhone(
+        comp_person_phone,
+        "Contact Person Phone"
+      );
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
       });
     }
 
@@ -140,6 +172,7 @@ exports.createCompany = async (req, res) => {
     //     .toFormat(formatType, formatOptions)
     //     .toFile(outputPath);
     // }
+
     if (req.files?.length) {
       const file = req.files[0];
       const uploadDir = "./uploads/companyprofile";
@@ -184,9 +217,9 @@ exports.createCompany = async (req, res) => {
       comp_zip,
       comp_email,
       comp_taxid,
-      comp_phone,
+      comp_phone: finalCompPhone,
       comp_person_name,
-      comp_person_phone,
+      comp_person_phone: finalPersonPhone,
       comp_person_email,
       comp_file: imageFileName,
     });
@@ -525,9 +558,33 @@ exports.updateCompany = async (req, res) => {
       }
     });
 
+    const validatePhone = (phoneNumber) => {
+      const number = phoneUtil.parseAndKeepRawInput(phoneNumber, "TH"); // ใส่ 'TH'
+      if (!phoneUtil.isValidNumber(number)) {
+        throw new Error("Invalid phone number format");
+      }
+      return phoneUtil.format(number, PNF.E164);
+    };
+
+    try {
+      if (updateData.comp_phone) {
+        updateData.comp_phone = validatePhone(updateData.comp_phone);
+      }
+      if (updateData.comp_person_phone) {
+        updateData.comp_person_phone = validatePhone(
+          updateData.comp_person_phone
+        );
+      }
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid phone number format (เบอร์โทรศัพท์ไม่ถูกต้อง)",
+      });
+    }
+
     if (req.files && req.files.length > 0) {
       const file = req.files[0];
-      const uploadDir = "./uploads";
+      const uploadDir = "./uploads/companyprofile";
       if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 
       const newFileName = `logo-${Date.now()}-${Math.round(
@@ -574,7 +631,10 @@ exports.updateCompany = async (req, res) => {
 
       if (exists) {
         if (updateData.comp_img) {
-          const newImgPath = path.join("./uploads", updateData.comp_img);
+          const newImgPath = path.join(
+            "./uploads/companyprofile",
+            updateData.comp_img
+          );
           if (fs.existsSync(newImgPath)) fs.unlinkSync(newImgPath);
         }
 
@@ -597,9 +657,9 @@ exports.updateCompany = async (req, res) => {
 
     let responseData = updatedCompany.toObject();
     if (responseData.comp_img) {
-      responseData.comp_img = `${req.protocol}://${req.get("host")}/uploads/${
-        responseData.comp_img
-      }`;
+      responseData.comp_img = `${req.protocol}://${req.get(
+        "host"
+      )}/uploads/companyprofile/${responseData.comp_img}`;
     }
 
     res.status(200).json({

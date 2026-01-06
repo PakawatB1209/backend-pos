@@ -19,7 +19,8 @@ const UserSchema = new mongoose.Schema(
     },
     user_phone: {
       type: String,
-      match: [/^(0|\+66)[0-9]{9}$/], // start with 0xxxxxxxxx
+      required: true,
+      match: [/^\+?[0-9]{8,15}$/, "Please enter a valid phone number."],
     },
     permissions: [{ type: mongoose.Schema.ObjectId, ref: "permission" }],
     comp_id: { type: mongoose.Schema.ObjectId, ref: "comp" },

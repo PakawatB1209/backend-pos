@@ -20,8 +20,8 @@ const CustomerSchema = new mongoose.Schema(
     customer_email: { type: String },
     customer_phone: {
       type: String,
-      match: [/^(0|\+66)[0-9]{9}$/], // start with 0xxxxxxxxx
       required: true,
+      match: [/^\+?[0-9]{8,15}$/, "Please enter a valid phone number."],
     },
     customer_gender: { type: String, required: true },
     customer_date: { type: Date },

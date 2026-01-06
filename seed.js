@@ -65,11 +65,11 @@ const seedData = async () => {
       const hashedPassword = await bcrypt.hash("123456", salt);
 
       await User.create({
-        user_name: "Admin6",
+        user_name: "Admin10",
         user_email: adminEmail,
         user_password: hashedPassword,
         user_role: "Admin",
-        user_phone: "081-000-0000",
+        user_phone: "0810000000",
         comp_id: null,
         permissions: permissionIds,
         status: true,

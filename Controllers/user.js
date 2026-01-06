@@ -3,6 +3,9 @@ const Permission = require("../models/Permission");
 const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const mongoose = require("mongoose");
+const PNF = require("google-libphonenumber").PhoneNumberFormat;
+const phoneUtil =
+  require("google-libphonenumber").PhoneNumberUtil.getInstance();
 require("dotenv").config();
 
 exports.createUser = async (req, res) => {
@@ -32,6 +35,30 @@ exports.createUser = async (req, res) => {
       return res
         .status(400)
         .json({ success: false, error: "Username and password are required." });
+    }
+
+    let finalPhone = user_phone;
+
+    if (user_phone) {
+      try {
+        const number = phoneUtil.parseAndKeepRawInput(user_phone, "TH");
+
+        if (!phoneUtil.isValidNumber(number)) {
+          return res.status(400).json({
+            success: false,
+            error:
+              "Invalid phone number format (รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง)",
+          });
+        }
+        finalPhone = phoneUtil.format(number, PNF.E164);
+      } catch (err) {
+        console.log("Phone parse error:", err.message);
+        return res.status(400).json({
+          success: false,
+          error:
+            "Unable to parse phone number (ไม่สามารถตรวจสอบเบอร์โทรศัพท์ได้)",
+        });
+      }
     }
 
     const roleToBeCreated = user_role || "User";
@@ -82,7 +109,7 @@ exports.createUser = async (req, res) => {
       user_email,
       user_role: roleToBeCreated,
       user_password: hashedPassword,
-      user_phone,
+      user_phone: finalPhone,
       comp_id: targetCompId,
       permissions: permissions || [],
       status: true,
@@ -104,10 +131,8 @@ exports.createUser = async (req, res) => {
 
 exports.createUsersendEmail = async (req, res) => {
   try {
-    // ดึง admin id จาก token
     const adminId = req.user.id;
 
-    // หา admin ใน DB เพื่อเอา comp_id จริง
     const adminUser = await User.findById(adminId).select(
       "comp_id user_role status"
     );
@@ -132,7 +157,6 @@ exports.createUsersendEmail = async (req, res) => {
 
     const targetCompId = adminUser.comp_id;
 
-    // ไม่รับ comp_id จาก body แล้ว
     const {
       user_name,
       user_email,
@@ -154,9 +178,32 @@ exports.createUsersendEmail = async (req, res) => {
         .json({ success: false, error: "Email is required to send password." });
     }
 
+    let finalPhone = user_phone;
+
+    if (user_phone) {
+      try {
+        const number = phoneUtil.parseAndKeepRawInput(user_phone, "TH");
+
+        if (!phoneUtil.isValidNumber(number)) {
+          return res.status(400).json({
+            success: false,
+            error:
+              "Invalid phone number format (รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง)",
+          });
+        }
+        finalPhone = phoneUtil.format(number, PNF.E164);
+      } catch (err) {
+        console.log("Phone parse error:", err.message);
+        return res.status(400).json({
+          success: false,
+          error:
+            "Unable to parse phone number (ไม่สามารถตรวจสอบเบอร์โทรศัพท์ได้)",
+        });
+      }
+    }
+
     const roleToBeCreated = user_role || "User";
 
-    // จำกัด 3 users ต่อบริษัท (นับเฉพาะ active ด้วยจะดี)
     if (roleToBeCreated === "User") {
       const countUsers = await User.countDocuments({
         comp_id: targetCompId,
@@ -190,11 +237,11 @@ exports.createUsersendEmail = async (req, res) => {
       user_email,
       user_password: hashedPassword,
       user_role: roleToBeCreated,
-      user_phone,
-      comp_id: targetCompId, // ใช้จาก admin
+      user_phone: finalPhone,
+      comp_id: targetCompId,
       permissions: permissions || [],
       status: true,
-      password_changed_at: null, // (optional) ถ้าใช้ field นี้บังคับเปลี่ยนรหัส
+      password_changed_at: null,
     });
 
     const transporter = nodemailer.createTransport({
@@ -422,7 +469,24 @@ exports.updateUserByAdmin = async (req, res) => {
 
     if (user_name) user.user_name = user_name;
     if (user_email) user.user_email = user_email;
-    if (user_phone) user.user_phone = user_phone;
+    if (user_phone) {
+      try {
+        const number = phoneUtil.parseAndKeepRawInput(user_phone, "TH");
+
+        if (!phoneUtil.isValidNumber(number)) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid phone number format (เบอร์โทรศัพท์ไม่ถูกต้อง)",
+          });
+        }
+        user.user_phone = phoneUtil.format(number, PNF.E164);
+      } catch (err) {
+        return res.status(400).json({
+          success: false,
+          message: "Unable to parse phone number (รูปแบบเบอร์โทรศัพท์ผิดพลาด)",
+        });
+      }
+    }
     if (comp_id) user.comp_id = comp_id;
 
     if (permissions) {
@@ -501,7 +565,24 @@ exports.updateUserbyuser = async (req, res) => {
 
     if (user_name) user.user_name = user_name;
     if (user_email) user.user_email = user_email;
-    if (user_phone) user.user_phone = user_phone;
+    if (user_phone) {
+      try {
+        const number = phoneUtil.parseAndKeepRawInput(user_phone, "TH");
+
+        if (!phoneUtil.isValidNumber(number)) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid phone number format (เบอร์โทรศัพท์ไม่ถูกต้อง)",
+          });
+        }
+        user.user_phone = phoneUtil.format(number, PNF.E164);
+      } catch (err) {
+        return res.status(400).json({
+          success: false,
+          message: "Unable to parse phone number (รูปแบบเบอร์โทรศัพท์ผิดพลาด)",
+        });
+      }
+    }
 
     if (user_password) {
       if (user_password.length < 3) {

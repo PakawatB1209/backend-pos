@@ -28,21 +28,21 @@ const User = require("../models/User");
 
 exports.auth = async (req, res, next) => {
   try {
-    const token = req.headers["authtoken"];
+    const token =
+      req.headers["authtoken"] ||
+      req.headers.authorization?.replace("Bearer ", "");
+
     if (!token) {
       return res.status(401).json({ success: false, message: "No token" });
     }
 
     const decoded = jwt.verify(token, "jwtsecret");
-
-    // รองรับทั้งแบบ { user: {...} } และแบบ {...} ตรง ๆ
     const user = decoded.user ?? decoded;
 
     if (!user?.id) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid token payload (missing id)",
-      });
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid token payload" });
     }
 
     req.user = user;

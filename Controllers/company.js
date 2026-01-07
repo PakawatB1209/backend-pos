@@ -60,7 +60,7 @@ exports.createCompany = async (req, res) => {
 
     const validatePhone = (phoneNumber, fieldName) => {
       try {
-        const number = phoneUtil.parseAndKeepRawInput(phoneNumber, TH);
+        const number = phoneUtil.parseAndKeepRawInput(phoneNumber, "TH");
         if (!phoneUtil.isValidNumber(number)) {
           throw new Error(`${fieldName}: Invalid format (เบอร์ไม่ถูกต้อง)`);
         }
@@ -196,7 +196,7 @@ exports.createCompany = async (req, res) => {
       };
 
       const format = formats[file.mimetype] || formats["image/jpeg"];
-      const imageFileName = `${baseName}${format.ext}`;
+      imageFileName = `${baseName}${format.ext}`;
       const outputPath = path.join(uploadDir, imageFileName);
 
       await sharp(file.buffer)
@@ -529,6 +529,7 @@ exports.list = async (req, res) => {
 exports.updateCompany = async (req, res) => {
   try {
     const { id } = req.params;
+    const removeFile = req.body.removeFile === "true";
 
     if (!mongoose.isValidObjectId(id)) {
       return res
@@ -582,26 +583,81 @@ exports.updateCompany = async (req, res) => {
       });
     }
 
+    // REMOVE OLD LOGO
+    if (removeFile && !(req.files && req.files.length > 0)) {
+      const uploadDir = "./uploads/companyprofile";
+
+      const oldCompany = await Company.findById(id).select("comp_file");
+      if (oldCompany && oldCompany.comp_file) {
+        const oldImagePath = path.join(uploadDir, oldCompany.comp_file);
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
+      }
+
+      updateData.comp_file = null;
+    }
+
     if (req.files && req.files.length > 0) {
       const file = req.files[0];
-      const uploadDir = "./uploads/companyprofile";
-      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 
+      // 1️. กัน error ไฟล์พัง
+      if (!file || !file.buffer) {
+        return res.status(400).json({ message: "Invalid image file" });
+      }
+
+      const uploadDir = "./uploads/companyprofile";
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+
+      // 2️. map format ตาม mimetype
+      const formats = {
+        "image/jpeg": {
+          ext: ".jpeg",
+          type: "jpeg",
+          options: { quality: 80, mozjpeg: true },
+        },
+        "image/png": {
+          ext: ".png",
+          type: "png",
+          options: { compressionLevel: 8 },
+        },
+        "image/webp": {
+          ext: ".webp",
+          type: "webp",
+          options: { quality: 80 },
+        },
+      };
+
+      const format = formats[file.mimetype];
+      if (!format) {
+        return res.status(400).json({ message: "Unsupported image format" });
+      }
+
+      // 3️. ตั้งชื่อไฟล์ตาม format จริง
       const newFileName = `logo-${Date.now()}-${Math.round(
         Math.random() * 1e9
-      )}.jpeg`;
+      )}${format.ext}`;
+
       const outputPath = path.join(uploadDir, newFileName);
 
+      // 4️. sharp ใช้ format จริง (ไม่ hardcode jpeg)
       await sharp(file.buffer)
-        .resize(500, 500, { fit: sharp.fit.inside, withoutEnlargement: true })
-        .toFormat("jpeg", { quality: 80 })
+        .resize(500, 500, {
+          fit: sharp.fit.inside,
+          withoutEnlargement: true,
+        })
+        .toFormat(format.type, format.options)
         .toFile(outputPath);
 
-      updateData.comp_img = newFileName;
+      // 5️. เซฟชื่อไฟล์ลง DB
+      updateData.comp_file = newFileName;
 
-      const oldCompany = await Company.findById(id).select("comp_img");
-      if (oldCompany && oldCompany.comp_img) {
-        const oldImagePath = path.join(uploadDir, oldCompany.comp_img);
+      // 6️. ลบรูปเก่า
+      const oldCompany = await Company.findById(id).select("comp_file");
+      if (oldCompany && oldCompany.comp_file) {
+        const oldImagePath = path.join(uploadDir, oldCompany.comp_file);
         if (fs.existsSync(oldImagePath)) {
           fs.unlink(oldImagePath, (err) => {
             if (err) console.log("Failed to delete old logo:", err);
@@ -630,10 +686,10 @@ exports.updateCompany = async (req, res) => {
       });
 
       if (exists) {
-        if (updateData.comp_img) {
+        if (updateData.comp_file) {
           const newImgPath = path.join(
             "./uploads/companyprofile",
-            updateData.comp_img
+            updateData.comp_file
           );
           if (fs.existsSync(newImgPath)) fs.unlinkSync(newImgPath);
         }
@@ -656,10 +712,10 @@ exports.updateCompany = async (req, res) => {
     }
 
     let responseData = updatedCompany.toObject();
-    if (responseData.comp_img) {
-      responseData.comp_img = `${req.protocol}://${req.get(
+    if (responseData.comp_file) {
+      responseData.comp_file = `${req.protocol}://${req.get(
         "host"
-      )}/uploads/companyprofile/${responseData.comp_img}`;
+      )}/uploads/companyprofile/${responseData.comp_file}`;
     }
 
     res.status(200).json({
@@ -690,8 +746,11 @@ exports.removeOneCompany = async (req, res) => {
         .json({ success: false, message: "Company not found." });
     }
 
-    if (companyToDelete.comp_img) {
-      const logoPath = path.join("./uploads", companyToDelete.comp_img);
+    if (companyToDelete.comp_file) {
+      const logoPath = path.join(
+        "./uploads/companyprofile",
+        companyToDelete.comp_file
+      );
       if (fs.existsSync(logoPath)) {
         fs.unlinkSync(logoPath);
       }

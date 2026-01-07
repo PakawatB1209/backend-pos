@@ -9,7 +9,11 @@ const CompanySchema = new mongoose.Schema(
     comp_prov: { type: String, required: true },
     comp_zip: { type: String, required: true },
     comp_email: { type: String, required: true },
-    comp_taxid: { type: String, required: true },
+    comp_taxid: {
+      type: String,
+      required: true,
+      match: [/^[0-9]{13}$/, "Please enter a valid 13-digit Tax ID"],
+    },
     comp_phone: {
       type: String,
       required: true,

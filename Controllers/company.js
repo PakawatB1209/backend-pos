@@ -339,15 +339,11 @@ exports.createCompany = async (req, res) => {
         master_color: "Red",
       },
       {
-        master_name: "Blue Sapphire",
+        master_name: "Sapphire",
         master_type: "stone_name",
-        master_color: "Blue",
+        master_color: null,
       },
-      {
-        master_name: "Yellow Sapphire",
-        master_type: "stone_name",
-        master_color: "Yellow",
-      },
+
       {
         master_name: "Emerald",
         master_type: "stone_name",
@@ -373,12 +369,7 @@ exports.createCompany = async (req, res) => {
       {
         master_name: "Topaz",
         master_type: "stone_name",
-        master_color: "Yellow",
-      },
-      {
-        master_name: "Blue Topaz",
-        master_type: "stone_name",
-        master_color: "Light Blue",
+        master_color: null,
       },
       {
         master_name: "Citrine",
@@ -434,6 +425,96 @@ exports.createCompany = async (req, res) => {
         master_name: "Pearl",
         master_type: "stone_name",
         master_color: "White",
+      },
+      {
+        master_name: "Morganite",
+        master_type: "stone_name",
+        master_color: "Pink",
+      },
+      {
+        master_name: "Moonstone",
+        master_type: "stone_name",
+        master_color: "White",
+      },
+      {
+        master_name: "Labradorite",
+        master_type: "stone_name",
+        master_color: "Grey",
+      },
+      {
+        master_name: "Rose Quartz",
+        master_type: "stone_name",
+        master_color: "Pink",
+      },
+      {
+        master_name: "Alexandrite",
+        master_type: "stone_name",
+        master_color: null,
+      },
+      {
+        master_name: "Tsavorite",
+        master_type: "stone_name",
+        master_color: "Green",
+      },
+      {
+        master_name: "Chrysoberyl",
+        master_type: "stone_name",
+        master_color: "Yellowish Green",
+      },
+      {
+        master_name: "Lapis Lazuli",
+        master_type: "stone_name",
+        master_color: "Blue",
+      },
+      {
+        master_name: "Malachite",
+        master_type: "stone_name",
+        master_color: "Green",
+      },
+      {
+        master_name: "Tiger's Eye",
+        master_type: "stone_name",
+        master_color: "Brown",
+      },
+      {
+        master_name: "Agate",
+        master_type: "stone_name",
+        master_color: null,
+      },
+      {
+        master_name: "Amber",
+        master_type: "stone_name",
+        master_color: "Yellow",
+      },
+      {
+        master_name: "Coral",
+        master_type: "stone_name",
+        master_color: "Red",
+      },
+      {
+        master_name: "Mother of Pearl",
+        master_type: "stone_name",
+        master_color: "White",
+      },
+      {
+        master_name: "Moissanite",
+        master_type: "stone_name",
+        master_color: "White",
+      },
+      {
+        master_name: "Cubic Zirconia",
+        master_type: "stone_name",
+        master_color: "White",
+      },
+      {
+        master_name: "Synthetic Diamond",
+        master_type: "stone_name",
+        master_color: "White",
+      },
+      {
+        master_name: "Crystal",
+        master_type: "stone_name",
+        master_color: null,
       },
     ];
 

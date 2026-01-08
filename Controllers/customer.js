@@ -151,7 +151,7 @@ exports.createCustomer = async (req, res) => {
 
     if (customer_phone) {
       try {
-        const number = phoneUtil.parseAndKeepRawInput(customer_phone, TH);
+        const number = phoneUtil.parseAndKeepRawInput(customer_phone, "TH");
 
         if (!phoneUtil.isValidNumber(number)) {
           return res.status(400).json({

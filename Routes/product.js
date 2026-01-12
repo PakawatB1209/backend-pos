@@ -16,11 +16,14 @@ const {
   removeAllProducts,
   removeSingleFile,
   removeAllFiles,
+  exportProductToExcel,
 } = require("../Controllers/product");
 
 router.get("/product/all", auth, checkPermission("Product List", "view"), list);
 
 router.get("/product/:id", auth, getOneProduct);
+
+router.get("/product/export/excel", auth, exportProductToExcel);
 
 router.post(
   "/master",

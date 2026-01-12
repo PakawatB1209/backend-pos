@@ -77,8 +77,8 @@ const stoneSchema = Joi.object({
   metal: Joi.forbidden(),
   item_type: Joi.forbidden(),
   unit: Joi.string().valid("g", "pcs", "ct").default("pcs").optional(),
-  stone_name: objectId.required(),
-  shape: objectId.required(),
+  stone_name: Joi.string().required(),
+  shape: Joi.string().required(),
   size: Joi.string().required(),
 
   net_weight: Joi.number()
@@ -87,27 +87,25 @@ const stoneSchema = Joi.object({
   gross_weight: Joi.forbidden(),
 
   color: Joi.string().optional(),
-  cutting: objectId.optional(),
-  quality: objectId.optional(),
-  clarity: objectId.optional(),
+  cutting: Joi.string().optional(),
+  quality: Joi.string().optional(),
+  clarity: Joi.string().optional(),
 });
 
 const semiMountSchema = Joi.object({
   ...baseSchema,
 
-  item_type: objectId.required(),
+  item_type: Joi.string().required(),
   product_size: Joi.string().required(),
-  metal: objectId.required(),
+  metal: Joi.string().required(),
   metal_color: Joi.string().optional(),
   unit: Joi.string().valid("g", "pcs", "pair", "ct").default("pcs").optional(),
   gross_weight: Joi.number().required(),
   net_weight: Joi.number().required(),
 
-  stone_name: objectId.optional(),
-  shape: objectId.optional(),
-  related_accessories: Joi.alternatives()
-    .try(objectId, Joi.array().items(objectId))
-    .optional(),
+  stone_name: Joi.string().optional(),
+  shape: Joi.string().optional(),
+  related_accessories: Joi.array().items(accessoryItemSchema).optional(),
 });
 
 const accessorySchema = Joi.object({
@@ -132,19 +130,17 @@ const updateProductSchema = Joi.object({
   code: Joi.string().optional(),
   description: Joi.string().allow("").optional(),
   image: Joi.string().allow("").optional(),
-  related_accessories: Joi.any().optional(),
-  stones: Joi.any().optional(),
 
-  // cost: Joi.number().min(0).optional(),
-  // sale_price: Joi.number().min(0).optional(),
+  related_accessories: Joi.array().items(accessoryItemSchema).optional(),
+  stones: Joi.array().items(stoneItemSchema).optional(),
 
-  item_type: objectId.optional(),
-  metal: objectId.optional(),
-  stone_name: objectId.optional(),
-  shape: objectId.optional(),
-  cutting: objectId.optional(),
-  quality: objectId.optional(),
-  clarity: objectId.optional(),
+  item_type: Joi.string().optional(),
+  metal: Joi.string().optional(),
+  stone_name: Joi.string().optional(),
+  shape: Joi.string().optional(),
+  cutting: Joi.string().optional(),
+  quality: Joi.string().optional(),
+  clarity: Joi.string().optional(),
 
   metal_color: Joi.string().optional(),
   color: Joi.string().optional(),

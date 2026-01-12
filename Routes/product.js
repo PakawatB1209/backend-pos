@@ -58,9 +58,9 @@ router.post(
 router.post(
   "/others",
   auth,
+  upload,
   parseBodyData,
   validateSchema("others"),
-  upload,
   createProduct
 );
 

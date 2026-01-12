@@ -8,18 +8,20 @@ const path = require("path");
 const { readdirSync } = require("fs");
 // const companyRouters = require('./Routes/company')
 // const authRouters = require('./Routes/auth')
-
+//const fileUpload = require("express-fileupload");
 const app = express();
 
 connectDB();
 
 app.use(morgan("dev"));
 app.use(cors());
-app.use(bodyParser.json({ limit: "10mb" }));
+app.use(bodyParser.json({ limit: "20mb" }));
+//app.use(fileUpload());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // app.use('/123',companyRouters)
 // app.use('/234',authRouters)
 
 readdirSync("./Routes").map((r) => app.use("/api", require("./Routes/" + r)));
 
-app.listen(3000, () => console.log("server running on post 3000"));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

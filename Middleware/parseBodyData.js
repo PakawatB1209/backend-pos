@@ -1,4 +1,5 @@
 const parseBodyData = (req, res, next) => {
+  req.body = req.body || {};
   if (req.body.stones && typeof req.body.stones === "string") {
     try {
       req.body.stones = JSON.parse(req.body.stones);

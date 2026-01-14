@@ -308,12 +308,16 @@ exports.createCompany = async (req, res) => {
       { master_name: "Old European", master_type: "shape" },
       { master_name: "Radiant", master_type: "shape" },
 
-      { master_name: "Excellent", master_type: "cuting" },
-      { master_name: "Very Good", master_type: "cuting" },
-      { master_name: "Good", master_type: "cuting" },
-      { master_name: "Fair", master_type: "cuting" },
-      { master_name: "Poor", master_type: "cuting" },
-      { master_name: "n/a", master_type: "cuting" },
+      { master_name: "Excellent", master_type: "cutting" },
+      { master_name: "Very Good", master_type: "cutting" },
+      { master_name: "Good", master_type: "cutting" },
+      { master_name: "Fair", master_type: "cutting" },
+      { master_name: "Poor", master_type: "cutting" },
+      { master_name: "n/a", master_type: "cutting" },
+
+      { master_name: "AAA", master_type: "quality" },
+      { master_name: "AA", master_type: "quality" },
+      { master_name: "A", master_type: "quality" },
 
       { master_name: "FL (Flawless)", master_type: "clarity" },
       { master_name: "IF (Internally Flawless)", master_type: "clarity" },

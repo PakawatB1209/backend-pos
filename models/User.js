@@ -5,7 +5,10 @@ const Company = require("./Company");
 const UserSchema = new mongoose.Schema(
   {
     user_name: { type: String, required: true },
-    user_email: String,
+    user_email: {
+      type: String,
+      required: false,
+    },
     user_password: {
       type: String,
       minlength: [6, "Password must be at least 6 characters."],
@@ -19,7 +22,7 @@ const UserSchema = new mongoose.Schema(
     },
     user_phone: {
       type: String,
-      required: true,
+      required: false,
       match: [/^\+?[0-9]{8,15}$/, "Please enter a valid phone number."],
     },
     permissions: [{ type: mongoose.Schema.ObjectId, ref: "permission" }],

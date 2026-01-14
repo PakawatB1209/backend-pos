@@ -37,29 +37,42 @@ exports.createUser = async (req, res) => {
         .json({ success: false, error: "Username and password are required." });
     }
 
-    let finalPhone = user_phone;
+    let finalPhone;
 
-    if (user_phone) {
-      try {
-        const number = phoneUtil.parseAndKeepRawInput(user_phone, "TH");
+    if (user_phone && user_phone.trim()) {
+      const number = phoneUtil.parseAndKeepRawInput(user_phone, "TH");
 
-        if (!phoneUtil.isValidNumber(number)) {
-          return res.status(400).json({
-            success: false,
-            error:
-              "Invalid phone number format (รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง)",
-          });
-        }
-        finalPhone = phoneUtil.format(number, PNF.E164);
-      } catch (err) {
-        console.log("Phone parse error:", err.message);
+      if (!phoneUtil.isValidNumber(number)) {
         return res.status(400).json({
           success: false,
-          error:
-            "Unable to parse phone number (ไม่สามารถตรวจสอบเบอร์โทรศัพท์ได้)",
+          error: "Invalid phone number format",
         });
       }
+
+      finalPhone = phoneUtil.format(number, PNF.E164);
     }
+
+    // if (user_phone) {
+    //   try {
+    //     const number = phoneUtil.parseAndKeepRawInput(user_phone, "TH");
+
+    //     if (!phoneUtil.isValidNumber(number)) {
+    //       return res.status(400).json({
+    //         success: false,
+    //         error:
+    //           "Invalid phone number format (รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง)",
+    //       });
+    //     }
+    //     finalPhone = phoneUtil.format(number, PNF.E164);
+    //   } catch (err) {
+    //     console.log("Phone parse error:", err.message);
+    //     return res.status(400).json({
+    //       success: false,
+    //       error:
+    //         "Unable to parse phone number (ไม่สามารถตรวจสอบเบอร์โทรศัพท์ได้)",
+    //     });
+    //   }
+    // }
 
     const roleToBeCreated = user_role || "User";
 
@@ -91,8 +104,13 @@ exports.createUser = async (req, res) => {
       }
     }
 
+    const orConditions = [];
+
+    if (user_email) orConditions.push({ user_email });
+    if (user_name) orConditions.push({ user_name });
+
     const exists = await User.findOne({
-      $or: [{ user_email }, { user_name }],
+      $or: orConditions,
     });
 
     if (exists) {
@@ -219,8 +237,13 @@ exports.createUsersendEmail = async (req, res) => {
       }
     }
 
+    const orConditions = [];
+
+    if (user_email) orConditions.push({ user_email });
+    if (user_name) orConditions.push({ user_name });
+
     const exists = await User.findOne({
-      $or: [{ user_email }, { user_name }],
+      $or: orConditions,
     });
 
     if (exists) {

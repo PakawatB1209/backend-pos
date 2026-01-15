@@ -620,14 +620,15 @@ exports.list = async (req, res) => {
       let metal = "";
       let color = "";
       let size = "";
+      let unit = "";
 
       if (p.product_detail_id) {
         const detail = p.product_detail_id;
 
         if (detail.size) {
-          size = `${detail.size} ${detail.unit || ""}`.trim();
+          size = detail.size;
         }
-
+        unit = detail.unit || "pcs";
         if (detail.masters) {
           detail.masters.forEach((m) => {
             if (m.master_id) {
@@ -689,6 +690,7 @@ exports.list = async (req, res) => {
         stone_name: foundStone,
         item_type: foundItemType,
 
+        unit: unit,
         size: size,
         metal: metal,
         color: color,

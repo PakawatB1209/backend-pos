@@ -17,7 +17,7 @@ const StoneDetailSchema = new Schema({
 const ProductDetailSchema = new Schema(
   {
     product_detail_id: { type: Schema.Types.ObjectId, auto: true },
-    unit: { type: String, enum: ["pcs", "g", "ct", "pair"], default: "pcs" },
+    unit: { type: String, enum: ["pcs", "g", "cts", "pair"], default: "pcs" },
     color: { type: String },
     size: { type: String },
     masters: [

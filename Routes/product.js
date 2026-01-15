@@ -21,7 +21,12 @@ const {
 
 router.get("/product/all", auth, checkPermission("Product List", "view"), list);
 
-router.get("/product/:id", auth, getOneProduct);
+router.get(
+  "/product/:id",
+  auth,
+  checkPermission("Product List", "view"),
+  getOneProduct
+);
 
 router.get("/product/export/excel", auth, exportProductToExcel);
 

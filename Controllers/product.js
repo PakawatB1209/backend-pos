@@ -807,7 +807,6 @@ exports.updateProduct = async (req, res) => {
         })
       );
 
-      // ลบไฟล์เก่า
       if (currentProduct.file && currentProduct.file.length > 0) {
         currentProduct.file.forEach((oldFile) => {
           const oldPath = path.join(uploadDir, oldFile);
@@ -816,7 +815,6 @@ exports.updateProduct = async (req, res) => {
       }
     }
 
-    // --- ฟังก์ชันอัจฉริยะ (หา ID หรือสร้างใหม่) ---
     const ensureMasterId = async (input, type) => {
       if (!input || (typeof input === "string" && input.trim() === ""))
         return null;

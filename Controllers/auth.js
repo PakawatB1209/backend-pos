@@ -35,7 +35,7 @@ exports.login = async (req, res) => {
       },
     };
 
-    jwt.sign(payload, "jwtsecret", { expiresIn: 3600 }, (err, token) => {
+    jwt.sign(payload, "jwtsecret", { expiresIn: "12h" }, (err, token) => {
       if (err) throw err;
 
       let forceChangePassword = false;

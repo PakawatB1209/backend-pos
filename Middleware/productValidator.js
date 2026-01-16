@@ -76,7 +76,7 @@ const stoneSchema = Joi.object({
 
   metal: Joi.forbidden(),
   item_type: Joi.forbidden(),
-  unit: Joi.string().valid("g", "pcs", "cts").default("pcs").optional(),
+  unit: Joi.string().valid("g", "cts").default("cts").optional(),
   stone_name: Joi.string().required(),
   shape: Joi.string().required(),
   size: Joi.string().required(),

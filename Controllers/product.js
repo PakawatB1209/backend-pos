@@ -564,11 +564,17 @@ exports.list = async (req, res) => {
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
 
-    const { category, search } = req.query;
+    const { category, search, item_type } = req.query;
 
     let query = { comp_id: user.comp_id };
 
-    if (category) query.product_category = { $in: category.split(",") };
+    if (category) {
+      query.product_category = { $in: category.split(",") };
+    }
+
+    if (item_type) {
+      query.product_item_type = { $in: item_type.split(",") };
+    }
 
     if (search) {
       query.$or = [

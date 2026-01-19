@@ -20,7 +20,10 @@ app.use(bodyParser.json({ limit: "20mb" }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // app.use('/123',companyRouters)
 // app.use('/234',authRouters)
-
+// readdirSync("./Routes").map((r) => {
+//   console.log("Loading Route:", r);
+//   app.use("/api/" + r.split(".")[0], require("./Routes/" + r));
+// });
 readdirSync("./Routes").map((r) => app.use("/api", require("./Routes/" + r)));
 
 const PORT = process.env.PORT || 3000;

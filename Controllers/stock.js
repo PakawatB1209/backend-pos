@@ -88,9 +88,7 @@ exports.getOneStock = async (req, res) => {
     })
       .populate({
         path: "product_id",
-        select: "product_code product_name file price", // เลือกฟิลด์ที่หน้าบ้านต้องใช้
-        // ถ้าต้องการ detail ลึกๆ เช่น size/unit ก็ซ้อน populate เข้าไปอีกได้
-        // populate: { path: "product_detail_id" }
+        select: "product_code product_name file price",
       })
       .populate({
         path: "warehouse_id",
@@ -147,15 +145,13 @@ exports.list = async (req, res) => {
 exports.removeOneStock = async (req, res) => {
   try {
     const id = req.params.id;
-    const comp_id = req.user.comp_id; // 1. ต้องเอา comp_id มาด้วยเสมอ
+    const comp_id = req.user.comp_id;
 
-    // 2. ลบโดยระบุทั้ง ID และ Company ID (ป้องกันการลบข้ามบริษัท)
     const remove_stock = await Stock.findOneAndDelete({
       _id: id,
       comp_id: comp_id,
     });
 
-    // 3. เช็คว่าเจอของให้ลบไหม
     if (!remove_stock) {
       return res
         .status(404)
@@ -166,7 +162,6 @@ exports.removeOneStock = async (req, res) => {
 
     res.send(remove_stock);
   } catch (err) {
-    // 4. 🟢 แก้ตรงนี้ให้ชื่อตรงกับข้างใน (เปลี่ยน error เป็น err)
     console.log(err);
     res.status(500).send("Server error");
   }
@@ -174,7 +169,6 @@ exports.removeOneStock = async (req, res) => {
 
 exports.removeStockAll = async (req, res) => {
   try {
-    // 1. Auth & Get Comp ID
     if (!req.user || !req.user.id) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
@@ -188,42 +182,13 @@ exports.removeStockAll = async (req, res) => {
     const comp_id = user.comp_id;
     const { ids } = req.body;
 
-    // ------------------ 🔍 ZONE DEBUG (เริ่ม) ------------------
-    console.log("\n====== DEBUG REMOVE ALL ======");
-    console.log("1. User Comp ID:", comp_id, `(Type: ${typeof comp_id})`);
-    console.log("2. IDs ที่ส่งมาลบ:", ids);
-
-    // ลองค้นหา Stock ดูซิว่ามีของไหม (แบบไม่สน Comp ID)
-    const checkStocks = await Stock.find({ _id: { $in: ids } });
-    console.log(`3. พบสินค้าใน DB จำนวน: ${checkStocks.length} รายการ`);
-
-    if (checkStocks.length > 0) {
-      checkStocks.forEach((s, index) => {
-        console.log(`   [รายการที่ ${index + 1}] ID: ${s._id}`);
-        console.log(
-          `   - Stock Comp ID: ${s.comp_id} (Type: ${typeof s.comp_id})`,
-        );
-
-        // เปรียบเทียบให้ดูชัดๆ (แปลงเป็น String ก่อนเทียบ)
-        const isMatch = String(s.comp_id) === String(comp_id);
-        console.log(
-          `   - Comp ID ตรงกันไหม?: ${isMatch ? "✅ ตรง" : "❌ ไม่ตรง"}`,
-        );
-      });
-    } else {
-      console.log("❌ ไม่พบสินค้า ID เหล่านี้ในระบบเลย (ID ผิด)");
-    }
-    console.log("================================\n");
-    // ------------------ 🔍 ZONE DEBUG (จบ) ------------------
-
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
       return res.status(400).send("Please provide an array of IDs.");
     }
 
-    // คำสั่งลบจริง
     const result = await Stock.deleteMany({
       _id: { $in: ids },
-      comp_id: comp_id, // <--- ตรงนี้แหละที่มันเช็คแล้วไม่ผ่าน
+      comp_id: comp_id,
     });
 
     if (result.deletedCount === 0) {

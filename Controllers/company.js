@@ -53,7 +53,7 @@ exports.createCompany = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: `Please complete all fields (Missing fields: ${missingFields.join(
-          ", "
+          ", ",
         )})`,
       });
     }
@@ -77,7 +77,7 @@ exports.createCompany = async (req, res) => {
       finalCompPhone = validatePhone(comp_phone, "Company Phone");
       finalPersonPhone = validatePhone(
         comp_person_phone,
-        "Contact Person Phone"
+        "Contact Person Phone",
       );
     } catch (error) {
       return res.status(400).json({
@@ -98,80 +98,6 @@ exports.createCompany = async (req, res) => {
     }
 
     let imageFileName = null;
-
-    // if (req.files && req.files.length > 0) {
-    //   const file = req.files[0];
-    //   const uploadDir = "./uploads/companyprofile";
-
-    //   if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
-
-    //   const baseName = `comp-${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    //   // SVG
-    //   // if (file.mimetype === "image/svg+xml") {
-    //   //   imageFileName = `${baseName}.svg`;
-    //   //   const outputPath = path.join(uploadDir, imageFileName);
-
-    //   //   await fs.promises.writeFile(outputPath, file.buffer);
-    //   // } else {
-    //   //   let fileExtension = ".jpeg";
-    //   //   let formatType = "jpeg";
-    //   //   let formatOptions = { quality: 80 };
-
-    //   //   if (file.mimetype === "image/png") {
-    //   //     fileExtension = ".png";
-    //   //     formatType = "png";
-    //   //     formatOptions = { compressionLevel: 8, quality: 80 };
-    //   //   } else if (file.mimetype === "image/webp") {
-    //   //     fileExtension = ".webp";
-    //   //     formatType = "webp";
-    //   //     formatOptions = { quality: 80 };
-    //   //   } else if (file.mimetype === "image/jpeg") {
-    //   //     fileExtension = ".jpeg";
-    //   //     formatType = "jpeg";
-    //   //     formatOptions = { quality: 80, mozjpeg: true };
-    //   //   }
-
-    //   //   imageFileName = `${baseName}${fileExtension}`;
-    //   //   const outputPath = path.join(uploadDir, imageFileName);
-
-    //   //   await sharp(file.buffer)
-    //   //     .resize(300, 300, {
-    //   //       fit: sharp.fit.inside,
-    //   //       withoutEnlargement: true,
-    //   //     })
-    //   //     .toFormat(formatType, formatOptions)
-    //   //     .toFile(outputPath);
-    //   // }
-
-    //   let fileExtension = ".jpeg";
-    //   let formatType = "jpeg";
-    //   let formatOptions = { quality: 80 };
-
-    //   if (file.mimetype === "image/png") {
-    //     fileExtension = ".png";
-    //     formatType = "png";
-    //     formatOptions = { compressionLevel: 8, quality: 80 };
-    //   } else if (file.mimetype === "image/webp") {
-    //     fileExtension = ".webp";
-    //     formatType = "webp";
-    //     formatOptions = { quality: 80 };
-    //   } else if (file.mimetype === "image/jpeg") {
-    //     fileExtension = ".jpeg";
-    //     formatType = "jpeg";
-    //     formatOptions = { quality: 80, mozjpeg: true };
-    //   }
-
-    //   imageFileName = `${baseName}${fileExtension}`;
-    //   const outputPath = path.join(uploadDir, imageFileName);
-
-    //   await sharp(file.buffer)
-    //     .resize(300, 300, {
-    //       fit: sharp.fit.inside,
-    //       withoutEnlargement: true,
-    //     })
-    //     .toFormat(formatType, formatOptions)
-    //     .toFile(outputPath);
-    // }
 
     if (req.files?.length) {
       const file = req.files[0];
@@ -534,7 +460,7 @@ exports.createCompany = async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       adminId,
       { comp_id: newCompany._id },
-      { new: true }
+      { new: true },
     );
 
     res.status(201).json({
@@ -574,7 +500,7 @@ exports.getOneCompany = async (req, res) => {
 
     if (company.comp_file) {
       company.comp_file = `${req.protocol}://${req.get(
-        "host"
+        "host",
       )}/uploads/companyprofile/${company.comp_file}`;
     }
 
@@ -658,7 +584,7 @@ exports.updateCompany = async (req, res) => {
       }
       if (updateData.comp_person_phone) {
         updateData.comp_person_phone = validatePhone(
-          updateData.comp_person_phone
+          updateData.comp_person_phone,
         );
       }
     } catch (error) {
@@ -722,7 +648,7 @@ exports.updateCompany = async (req, res) => {
 
       // 3️. ตั้งชื่อไฟล์ตาม format จริง
       const newFileName = `logo-${Date.now()}-${Math.round(
-        Math.random() * 1e9
+        Math.random() * 1e9,
       )}${format.ext}`;
 
       const outputPath = path.join(uploadDir, newFileName);
@@ -774,7 +700,7 @@ exports.updateCompany = async (req, res) => {
         if (updateData.comp_file) {
           const newImgPath = path.join(
             "./uploads/companyprofile",
-            updateData.comp_file
+            updateData.comp_file,
           );
           if (fs.existsSync(newImgPath)) fs.unlinkSync(newImgPath);
         }
@@ -799,7 +725,7 @@ exports.updateCompany = async (req, res) => {
     let responseData = updatedCompany.toObject();
     if (responseData.comp_file) {
       responseData.comp_file = `${req.protocol}://${req.get(
-        "host"
+        "host",
       )}/uploads/companyprofile/${responseData.comp_file}`;
     }
 
@@ -834,7 +760,7 @@ exports.removeOneCompany = async (req, res) => {
     if (companyToDelete.comp_file) {
       const logoPath = path.join(
         "./uploads/companyprofile",
-        companyToDelete.comp_file
+        companyToDelete.comp_file,
       );
       if (fs.existsSync(logoPath)) {
         fs.unlinkSync(logoPath);

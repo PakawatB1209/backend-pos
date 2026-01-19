@@ -152,7 +152,7 @@ exports.createUsersendEmail = async (req, res) => {
     const adminId = req.user.id;
 
     const adminUser = await User.findById(adminId).select(
-      "comp_id user_role status"
+      "comp_id user_role status",
     );
 
     if (
@@ -392,7 +392,6 @@ exports.getUserRole = async (req, res) => {
 
 exports.list = async (req, res) => {
   try {
-    //Get comp_id from Query String (e.g., /users?comp_id=xxxx)
     const { comp_id, user_role } = req.query;
 
     const query = {};
@@ -499,14 +498,14 @@ exports.updateUserByAdmin = async (req, res) => {
         if (!phoneUtil.isValidNumber(number)) {
           return res.status(400).json({
             success: false,
-            message: "Invalid phone number format (เบอร์โทรศัพท์ไม่ถูกต้อง)",
+            message: "Invalid phone number format",
           });
         }
         user.user_phone = phoneUtil.format(number, PNF.E164);
       } catch (err) {
         return res.status(400).json({
           success: false,
-          message: "Unable to parse phone number (รูปแบบเบอร์โทรศัพท์ผิดพลาด)",
+          message: "Unable to parse phone number",
         });
       }
     }
@@ -595,14 +594,14 @@ exports.updateUserbyuser = async (req, res) => {
         if (!phoneUtil.isValidNumber(number)) {
           return res.status(400).json({
             success: false,
-            message: "Invalid phone number format (เบอร์โทรศัพท์ไม่ถูกต้อง)",
+            message: "Invalid phone number format",
           });
         }
         user.user_phone = phoneUtil.format(number, PNF.E164);
       } catch (err) {
         return res.status(400).json({
           success: false,
-          message: "Unable to parse phone number (รูปแบบเบอร์โทรศัพท์ผิดพลาด)",
+          message: "Unable to parse phone number",
         });
       }
     }
@@ -651,7 +650,7 @@ exports.userRequestResetPassword = async (req, res) => {
 
     const user = await User.findOne({ user_email: email }).populate(
       "comp_id",
-      "comp_name"
+      "comp_name",
     );
 
     if (!user) {
@@ -727,57 +726,6 @@ System Auto-Message
   }
 };
 
-// exports.resetPassUserbyAdmin = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const { user_password } = req.body;
-
-//     if (!mongoose.isValidObjectId(id)) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Invalid ID format",
-//       });
-//     }
-
-//     if (!user_password) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Please enter the new password.",
-//       });
-//     }
-
-//     const user = await User.findById(id);
-//     if (!user) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "User not found",
-//       });
-//     }
-
-//     const salt = await bcrypt.genSalt(10);
-//     user.user_password = await bcrypt.hash(user_password, salt);
-//     user.password_changed_at = null;
-
-//     await user.save();
-
-//     const userResponse = user.toObject();
-//     // delete userResponse.user_password;
-//     delete userResponse.__v;
-
-//     return res.status(200).json({
-//       success: true,
-//       message: "Reset Password Success",
-//       data: userResponse,
-//     });
-//   } catch (err) {
-//     console.log("Server Error reset password:", err);
-//     res.status(500).json({
-//       success: false,
-//       message: "Server error",
-//     });
-//   }
-// };
-
 exports.resetPassUserbyAdmin = async (req, res) => {
   try {
     const adminId = req.user.id;
@@ -830,7 +778,6 @@ exports.resetPassUserbyAdmin = async (req, res) => {
     await user.save();
 
     const userResponse = user.toObject();
-    // delete userResponse.user_password;
     delete userResponse.__v;
 
     return res.status(200).json({
@@ -846,91 +793,6 @@ exports.resetPassUserbyAdmin = async (req, res) => {
     });
   }
 };
-
-// exports.resetPassUserbyAdmin_send = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const { user_password } = req.body;
-
-//     if (!mongoose.isValidObjectId(id)) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Invalid ID format",
-//       });
-//     }
-
-//     if (!user_password) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Please enter the new password.",
-//       });
-//     }
-
-//     const user = await User.findById(id);
-//     if (!user) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "User not found",
-//       });
-//     }
-
-//     const salt = await bcrypt.genSalt(10);
-//     user.user_password = await bcrypt.hash(user_password, salt);
-//     user.password_changed_at = null;
-
-//     await user.save();
-
-//     const transporter = nodemailer.createTransport({
-//       service: "gmail",
-//       auth: {
-//         user: process.env.ADMIN_EMAIL,
-//         pass: process.env.ADMIN_PASS,
-//       },
-//     });
-
-//     const mailOptions = {
-//       from: `"System Admin" <${process.env.ADMIN_EMAIL}>`,
-//       to: user.user_email,
-//       subject: `[Notification] Your password has been reset by Admin`,
-//       text: `
-// Hello ${user.user_name},
-
-// This is a notification that your password has been reset by the Administrator.
-
-// --------------------------
-//  NEW LOGIN CREDENTIALS
-// --------------------------
-// Username : ${user.user_name}
-// Password : ${user_password}
-// Date     : ${new Date().toLocaleString("th-TH")}
-
-// Please login and change your password immediately if this was not requested by you.
-
-// Best regards,
-// IT Support Team
-//       `,
-//     };
-
-//     await transporter.sendMail(mailOptions);
-//     console.log(`Email sent to ${user.user_email}`);
-
-//     const userResponse = user.toObject();
-//     // delete userResponse.user_password;
-//     delete userResponse.__v;
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Password changed and notification email sent.",
-//       data: userResponse,
-//     });
-//   } catch (err) {
-//     console.error("Error resetting password:", err);
-//     res.status(500).json({
-//       success: false,
-//       message: "Server error",
-//     });
-//   }
-// };
 
 exports.resetPassUserbyAdmin_send = async (req, res) => {
   try {
@@ -1053,8 +915,7 @@ exports.remove = async (req, res) => {
       });
     }
 
-    const userResponse = user.toObject(); // หรือถ้า user เป็น doc อยู่แล้วก็ใช้ได้เลย แต่ถ้ามาจาก .lean() ไม่ต้องใช้
-    // delete userResponse.user_password;
+    const userResponse = user.toObject();
     delete userResponse.__v;
 
     res.status(200).json({
@@ -1111,7 +972,7 @@ exports.changeStatus = async (req, res) => {
     const user = await User.findByIdAndUpdate(
       id,
       { status: status },
-      { new: true }
+      { new: true },
     );
 
     if (!user) {
@@ -1121,7 +982,6 @@ exports.changeStatus = async (req, res) => {
     }
 
     const userResponse = user.toObject();
-    // delete userResponse.user_password;
     delete userResponse.__v;
 
     res.status(200).json({

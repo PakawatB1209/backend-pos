@@ -58,7 +58,7 @@ const productMasterSchema = Joi.object({
   metal_color: Joi.string().optional(),
   gross_weight: Joi.number().required(),
   net_weight: Joi.number().required(),
-  unit: Joi.string().valid("g", "pcs", "pair", "cts").default("pcs").optional(),
+  unit: Joi.string().valid("g", "pcs", "pair", "cts").default("g").optional(),
   stone_name: Joi.string().optional(),
   shape: Joi.string().optional(),
   size: Joi.string().optional(),
@@ -99,7 +99,7 @@ const semiMountSchema = Joi.object({
   product_size: Joi.string().required(),
   metal: Joi.string().required(),
   metal_color: Joi.string().optional(),
-  unit: Joi.string().valid("g", "pcs", "pair", "cts").default("pcs").optional(),
+  unit: Joi.string().valid("g", "pcs", "pair", "cts").default("g").optional(),
   gross_weight: Joi.number().required(),
   net_weight: Joi.number().required(),
 
@@ -114,7 +114,7 @@ const accessorySchema = Joi.object({
   metal: objectId.required(),
   product_size: Joi.string().required(),
   weight: Joi.number().required(),
-  unit: Joi.string().valid("g", "pcs", "pair", "cts").default("pcs").optional(),
+  unit: Joi.string().valid("g", "pcs", "pair", "cts").default("g").optional(),
 });
 
 const othersSchema = Joi.object({
@@ -122,7 +122,7 @@ const othersSchema = Joi.object({
 
   product_size: Joi.string().required(),
   weight: Joi.number().required(),
-  unit: Joi.string().valid("g", "pcs", "pair", "cts").default("pcs").optional(),
+  unit: Joi.string().valid("g", "pcs", "pair", "cts").default("g").optional(),
 });
 
 const updateProductSchema = Joi.object({

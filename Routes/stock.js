@@ -1,22 +1,33 @@
 const express = require("express");
 const router = express.Router();
 
+// Import Middleware สำหรับตรวจสอบสิทธิ์ (จำเป็นต้องมีเพราะ Controller ใช้ req.user)
+// (ตรวจสอบ path ของคุณว่าเก็บ auth ไว้ที่ไหน เช่น '../middleware/auth')
+const { auth } = require("../Middleware/auth");
+
+// Import Controller
 const {
   createStock,
   getOneStock,
   list,
   removeOneStock,
-  updateStock,
+  removeStockAll,
+  // stockOut, // (ถ้าคุณทำฟังก์ชัน stockOut แล้ว ให้ uncomment บรรทัดนี้)
 } = require("../Controllers/stock");
 
-router.get("/stock", list);
+// Stock Out / ขายออก (ถ้ามี)
+// router.post("/stock/out", auth, stockOut);
 
-router.get("/stock/:id", getOneStock);
+// List All (GET)
+router.get("/stock", auth, list);
 
-router.post("/stock", createStock);
+// Get One by ID (GET)
+router.get("/stock/:id", auth, getOneStock);
 
-router.put("/stock/:id", updateStock);
+// Create Manual (POST)
+router.post("/stock", auth, createStock);
 
-router.delete("/stock/:id", removeOneStock);
-
+// Remove (DELETE)
+router.delete("/stock/removeOneStock/:id", auth, removeOneStock);
+router.delete("/stock/removeStockAll", auth, removeStockAll);
 module.exports = router;

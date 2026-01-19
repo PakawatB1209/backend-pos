@@ -220,9 +220,9 @@ exports.createProduct = async (req, res) => {
       }
     }
 
-    // --- Create Detail ---
+    // Create Detail
     const newDetail = await ProductDetail.create({
-      unit: data.unit || "pcs",
+      unit: data.unit || "g",
       size: data.product_size || data.size,
       gross_weight: data.gross_weight || 0,
       net_weight: data.net_weight || 0,
@@ -235,7 +235,7 @@ exports.createProduct = async (req, res) => {
     });
 
     try {
-      // --- Create Product ---
+      // Create Product
       const newProduct = await Product.create({
         product_code: data.code,
         product_name: data.product_name,
@@ -278,7 +278,7 @@ exports.createProduct = async (req, res) => {
         })
         .lean();
 
-      // --- UPDATED: Flatten Response Data ---
+      // Flatten Response Data
       let responseData = populatedProduct;
 
       if (responseData.product_detail_id) {
@@ -646,7 +646,7 @@ exports.list = async (req, res) => {
         if (detail.size) {
           size = detail.size;
         }
-        unit = detail.unit || "pcs";
+        unit = detail.unit || "g";
         if (detail.masters) {
           detail.masters.forEach((m) => {
             if (m.master_id) {
@@ -692,9 +692,7 @@ exports.list = async (req, res) => {
               (master.product_detail_id ? master.product_detail_id.weight : 0),
             unit:
               acc.unit ||
-              (master.product_detail_id
-                ? master.product_detail_id.unit
-                : "pcs"),
+              (master.product_detail_id ? master.product_detail_id.unit : "g"),
           };
         })
         .filter((item) => item !== null);
@@ -1089,10 +1087,10 @@ exports.updateProduct = async (req, res) => {
         });
       }
 
-      if (data.unit && !["g", "cts", "pcs"].includes(data.unit)) {
+      if (data.unit && !["g", "cts"].includes(data.unit)) {
         return res.status(400).json({
           success: false,
-          message: "Invalid unit for Stone (allowed: g, cts, pcs)",
+          message: "Invalid unit for Stone (allowed: g, cts)",
         });
       }
     }
@@ -1575,20 +1573,141 @@ exports.removeAllFiles = async (req, res) => {
   }
 };
 
+// exports.exportProductToExcel = async (req, res) => {
+//   try {
+//     if (!req.user || !req.user.id) {
+//       return res.status(401).json({ success: false, message: "Unauthorized" });
+//     }
+//     const user = await User.findById(req.user.id).select("comp_id");
+//     if (!user || !user.comp_id) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "User is not associated with any company.",
+//       });
+//     }
+//     const comp_id = user.comp_id;
+
+//     const products = await Product.find({ comp_id: comp_id }).populate({
+//       path: "product_detail_id",
+//       populate: [
+//         { path: "primary_stone.stone_name", select: "master_name" },
+//         { path: "primary_stone.shape", select: "master_name" },
+//         { path: "primary_stone.color", select: "master_color master_name" },
+//         { path: "primary_stone.clarity", select: "master_name" },
+//         { path: "additional_stones.stone_name", select: "master_name" },
+//         { path: "additional_stones.shape", select: "master_name" },
+//         { path: "additional_stones.color", select: "master_color master_name" },
+//         { path: "additional_stones.clarity", select: "master_name" },
+//         { path: "masters.master_id", select: "master_name" },
+//       ],
+//     });
+
+//     if (products.length === 0) console.log("No products found.");
+
+//     const data = products.map((prod) => {
+//       const detail = prod.product_detail_id || {};
+//       const primaryStone = detail.primary_stone || {};
+//       const additionalStones = detail.additional_stones || [];
+//       const masters = detail.masters || [];
+
+//       const additionalStonesText = additionalStones
+//         .map((s) => {
+//           const name = s.stone_name?.master_name || "-";
+//           const shape = s.shape?.master_name || "";
+//           const qty = s.qty || 0;
+//           return `${name} ${shape} (${qty}pcs)`;
+//         })
+//         .join(", ");
+
+//       const mastersText = masters
+//         .map((m) => {
+//           const name = m.master_id?.master_name || "-";
+//           return `${name}`;
+//         })
+//         .join(", ");
+
+//       return {
+//         Code: prod.product_code,
+//         Name: prod.product_name,
+//         Category: prod.product_category,
+//         Type: prod.product_item_type,
+//         "Gross Weight (g)": detail.gross_weight || 0,
+//         "Net Weight (g)": detail.net_weight || 0,
+//         Size: detail.size || "",
+//         Unit: detail.unit || "",
+//         "Main Stone": primaryStone.stone_name?.master_name || "",
+//         "Main Shape": primaryStone.shape?.master_name || "",
+//         "Main Color":
+//           primaryStone.color?.master_color ||
+//           primaryStone.color?.master_name ||
+//           "",
+//         "Main Clarity": primaryStone.clarity?.master_name || "",
+//         "Main Qty": primaryStone.qty || 0,
+//         "Main Weight": primaryStone.weight || 0,
+//         "Additional Stones": additionalStonesText,
+//         Components: mastersText,
+//         Status: prod.is_active ? "Active" : "Inactive",
+//       };
+//     });
+
+//     const worksheet = xlsx.utils.json_to_sheet(data);
+
+//     if (data.length > 0) {
+//       const headers = Object.keys(data[0]);
+//       const colsWidth = headers.map((header) => {
+//         let maxLength = header.length;
+
+//         data.forEach((row) => {
+//           const cellValue = row[header] ? String(row[header]) : "";
+//           if (cellValue.length > maxLength) {
+//             maxLength = cellValue.length;
+//           }
+//         });
+
+//         return { wch: maxLength + 2 };
+//       });
+
+//       worksheet["!cols"] = colsWidth;
+//     }
+
+//     const workbook = xlsx.utils.book_new();
+//     xlsx.utils.book_append_sheet(workbook, worksheet, "Product Data");
+
+//     const buffer = xlsx.write(workbook, { type: "buffer", bookType: "xlsx" });
+//     const fileName = `Export_Products_${Date.now()}.xlsx`;
+
+//     res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+//     res.setHeader(
+//       "Content-Type",
+//       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+//     );
+
+//     res.send(buffer);
+//   } catch (err) {
+//     console.log(err);
+//     res
+//       .status(500)
+//       .json({ success: false, message: "Export Error", error: err.message });
+//   }
+// };
+
+// models/Stock ไม่ต้องใช้แล้ว
+
 exports.exportProductToExcel = async (req, res) => {
   try {
+    // 1. Check Auth
     if (!req.user || !req.user.id) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
     const user = await User.findById(req.user.id).select("comp_id");
     if (!user || !user.comp_id) {
-      return res.status(400).json({
-        success: false,
-        message: "User is not associated with any company.",
-      });
+      return res
+        .status(400)
+        .json({ success: false, message: "User has no company" });
     }
     const comp_id = user.comp_id;
 
+    // 2. ดึง Product ทั้งหมด
     const products = await Product.find({ comp_id: comp_id }).populate({
       path: "product_detail_id",
       populate: [
@@ -1606,6 +1725,7 @@ exports.exportProductToExcel = async (req, res) => {
 
     if (products.length === 0) console.log("No products found.");
 
+    // 3. Map Data ลง Excel
     const data = products.map((prod) => {
       const detail = prod.product_detail_id || {};
       const primaryStone = detail.primary_stone || {};
@@ -1628,15 +1748,18 @@ exports.exportProductToExcel = async (req, res) => {
         })
         .join(", ");
 
+      // ✅ เรียงลำดับ Key ใน Object ใหม่
       return {
+        // --- ส่วนข้อมูลสินค้า (แสดงผล) ---
         Code: prod.product_code,
         Name: prod.product_name,
         Category: prod.product_category,
         Type: prod.product_item_type,
         "Gross Weight (g)": detail.gross_weight || 0,
         "Net Weight (g)": detail.net_weight || 0,
+        "Product Unit": detail.unit || prod.unit || "",
         Size: detail.size || "",
-        Unit: detail.unit || "",
+
         "Main Stone": primaryStone.stone_name?.master_name || "",
         "Main Shape": primaryStone.shape?.master_name || "",
         "Main Color":
@@ -1649,34 +1772,38 @@ exports.exportProductToExcel = async (req, res) => {
         "Additional Stones": additionalStonesText,
         Components: mastersText,
         Status: prod.is_active ? "Active" : "Inactive",
+
+        // --- ส่วนช่องว่างสำหรับกรอก (ใส่ขีดตามที่ขอ) ---
+        "Purchase Unit": "-",
+        Qty: "-",
+        Cost: "-",
+        Price: "-",
       };
     });
 
+    // 4. Create Worksheet
     const worksheet = xlsx.utils.json_to_sheet(data);
 
     if (data.length > 0) {
       const headers = Object.keys(data[0]);
       const colsWidth = headers.map((header) => {
         let maxLength = header.length;
-
         data.forEach((row) => {
           const cellValue = row[header] ? String(row[header]) : "";
           if (cellValue.length > maxLength) {
             maxLength = cellValue.length;
           }
         });
-
         return { wch: maxLength + 2 };
       });
-
       worksheet["!cols"] = colsWidth;
     }
 
     const workbook = xlsx.utils.book_new();
-    xlsx.utils.book_append_sheet(workbook, worksheet, "Product Data");
+    xlsx.utils.book_append_sheet(workbook, worksheet, "Purchase Template");
 
     const buffer = xlsx.write(workbook, { type: "buffer", bookType: "xlsx" });
-    const fileName = `Export_Products_${Date.now()}.xlsx`;
+    const fileName = `Purchase_Template_${Date.now()}.xlsx`;
 
     res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
     res.setHeader(

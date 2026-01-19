@@ -25,7 +25,7 @@ router.get(
   "/product/:id",
   auth,
   checkPermission("Product List", "view"),
-  getOneProduct
+  getOneProduct,
 );
 
 router.get("/product/export/excel", auth, exportProductToExcel);
@@ -36,7 +36,7 @@ router.post(
   upload,
   parseBodyData,
   validateSchema("master"),
-  createProduct
+  createProduct,
 );
 router.post(
   "/stone",
@@ -44,7 +44,7 @@ router.post(
   upload,
   parseBodyData,
   validateSchema("stone"),
-  createProduct
+  createProduct,
 );
 router.post(
   "/semimount",
@@ -52,7 +52,7 @@ router.post(
   upload,
   parseBodyData,
   validateSchema("semimount"),
-  createProduct
+  createProduct,
 );
 router.post(
   "/accessory",
@@ -60,7 +60,7 @@ router.post(
   upload,
   parseBodyData,
   validateSchema("accessory"),
-  createProduct
+  createProduct,
 );
 
 router.post(
@@ -69,7 +69,7 @@ router.post(
   upload,
   parseBodyData,
   validateSchema("others"),
-  createProduct
+  createProduct,
 );
 
 router.put(
@@ -77,7 +77,7 @@ router.put(
   auth,
   upload,
   validateSchema("update"),
-  updateProduct
+  updateProduct,
 );
 
 router.put("/update/product/status/:id", auth, changeStatus);

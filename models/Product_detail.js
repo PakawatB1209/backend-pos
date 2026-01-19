@@ -17,7 +17,7 @@ const StoneDetailSchema = new Schema({
 const ProductDetailSchema = new Schema(
   {
     product_detail_id: { type: Schema.Types.ObjectId, auto: true },
-    unit: { type: String, enum: ["pcs", "g", "cts", "pair"], default: "pcs" },
+    unit: { type: String, enum: ["pcs", "g", "cts", "pair"], default: "g" },
     color: { type: String },
     size: { type: String },
     masters: [
@@ -66,7 +66,7 @@ const ProductDetailSchema = new Schema(
         return ret;
       },
     },
-  }
+  },
 );
 
 module.exports = mongoose.model("productdetail", ProductDetailSchema);

@@ -102,7 +102,7 @@ exports.createProduct = async (req, res) => {
       await Promise.all(
         req.files.map(async (file, index) => {
           const baseName = `product-${Date.now()}-${Math.round(
-            Math.random() * 1e9
+            Math.random() * 1e9,
           )}-${index}`;
           const format = formats[file.mimetype] || formats["image/jpeg"];
           const filename = `${baseName}${format.ext}`;
@@ -117,7 +117,7 @@ exports.createProduct = async (req, res) => {
             .toFile(outputPath);
 
           filesArray.push(filename);
-        })
+        }),
       );
     }
 
@@ -165,7 +165,7 @@ exports.createProduct = async (req, res) => {
       const metalId = await ensureMasterId(data.metal, "metal");
       const metalColorId = await ensureMasterId(
         data.metal_color,
-        "metal_color"
+        "metal_color",
       );
       pushMaster(metalId, 1, data.net_weight || 0);
       pushMaster(metalColorId, 1);
@@ -303,19 +303,19 @@ exports.createProduct = async (req, res) => {
 
         if (detail.primary_stone) {
           detail.primary_stone.stone_name = extractName(
-            detail.primary_stone.stone_name
+            detail.primary_stone.stone_name,
           );
           detail.primary_stone.shape = extractName(detail.primary_stone.shape);
           detail.primary_stone.size = extractName(detail.primary_stone.size);
           detail.primary_stone.color = extractName(detail.primary_stone.color);
           detail.primary_stone.cutting = extractName(
-            detail.primary_stone.cutting
+            detail.primary_stone.cutting,
           );
           detail.primary_stone.quality = extractName(
-            detail.primary_stone.quality
+            detail.primary_stone.quality,
           );
           detail.primary_stone.clarity = extractName(
-            detail.primary_stone.clarity
+            detail.primary_stone.clarity,
           );
         }
 
@@ -441,19 +441,19 @@ exports.getOneProduct = async (req, res) => {
 
       if (detail.primary_stone) {
         detail.primary_stone.stone_name = extractName(
-          detail.primary_stone.stone_name
+          detail.primary_stone.stone_name,
         );
         detail.primary_stone.shape = extractName(detail.primary_stone.shape);
         detail.primary_stone.size = extractName(detail.primary_stone.size);
         detail.primary_stone.color = extractName(detail.primary_stone.color);
         detail.primary_stone.cutting = extractName(
-          detail.primary_stone.cutting
+          detail.primary_stone.cutting,
         );
         detail.primary_stone.quality = extractName(
-          detail.primary_stone.quality
+          detail.primary_stone.quality,
         );
         detail.primary_stone.clarity = extractName(
-          detail.primary_stone.clarity
+          detail.primary_stone.clarity,
         );
       }
 
@@ -564,7 +564,7 @@ exports.list = async (req, res) => {
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
 
-    const { category, search, item_type } = req.query;
+    const { category, search, item_type, stone } = req.query;
 
     let query = { comp_id: user.comp_id };
 
@@ -574,6 +574,18 @@ exports.list = async (req, res) => {
 
     if (item_type) {
       query.product_item_type = { $in: item_type.split(",") };
+    }
+
+    if (stone) {
+      const stoneIds = stone.split(",");
+
+      const matchedDetails = await ProductDetail.find({
+        "primary_stone.stone_name": { $in: stoneIds },
+      }).select("_id");
+
+      const detailIds = matchedDetails.map((detail) => detail._id);
+
+      query.product_detail_id = { $in: detailIds };
     }
 
     if (search) {
@@ -586,7 +598,7 @@ exports.list = async (req, res) => {
     const [products, total] = await Promise.all([
       Product.find(query)
         .select(
-          "product_name product_code file product_category createdAt related_accessories is_active"
+          "product_name product_code file product_category createdAt related_accessories is_active",
         )
         .populate({
           path: "product_detail_id",
@@ -655,7 +667,11 @@ exports.list = async (req, res) => {
         }
       }
 
-      const finalTypeStone = foundItemType || foundStone || "";
+      const parts = [];
+      if (foundItemType) parts.push(foundItemType);
+      if (foundStone) parts.push(foundStone);
+
+      const finalTypeStone = parts.join(" / ");
 
       const formattedAccessories = (p.related_accessories || [])
         .map((acc) => {
@@ -733,7 +749,7 @@ exports.changeStatus = async (req, res) => {
     const product = await Product.findOneAndUpdate(
       { _id: id, comp_id: user.comp_id },
       { is_active: is_active },
-      { new: true }
+      { new: true },
     ).select("product_name is_active");
 
     if (!product) {
@@ -1059,7 +1075,7 @@ exports.updateProduct = async (req, res) => {
     }
 
     const currentDetail = await ProductDetail.findById(
-      currentProduct.product_detail_id
+      currentProduct.product_detail_id,
     ).lean();
 
     const category = currentProduct.product_category;
@@ -1091,7 +1107,7 @@ exports.updateProduct = async (req, res) => {
         "color",
       ];
       const hasForbiddenField = forbiddenStoneFields.some(
-        (field) => data[field]
+        (field) => data[field],
       );
 
       if (hasForbiddenField || (data.stones && data.stones.length > 0)) {
@@ -1117,7 +1133,7 @@ exports.updateProduct = async (req, res) => {
       await Promise.all(
         req.files.map(async (file, index) => {
           const filename = `product-${Date.now()}-${Math.round(
-            Math.random() * 1e9
+            Math.random() * 1e9,
           )}-${index}.jpeg`;
           const outputPath = path.join(uploadDir, filename);
 
@@ -1130,7 +1146,7 @@ exports.updateProduct = async (req, res) => {
             .toFile(outputPath);
 
           newFilesArray.push(filename);
-        })
+        }),
       );
 
       if (currentProduct.file && currentProduct.file.length > 0) {
@@ -1201,7 +1217,7 @@ exports.updateProduct = async (req, res) => {
       if (data.metal_color) {
         const newMetalColorId = await ensureMasterId(
           data.metal_color,
-          "metal_color"
+          "metal_color",
         );
         if (newMetalColorId)
           tempMasters.push({ master_id: newMetalColorId, qty: 1 });
@@ -1219,7 +1235,7 @@ exports.updateProduct = async (req, res) => {
         if (data[fieldName]) {
           primaryStoneObj[fieldName] = await ensureMasterId(
             data[fieldName],
-            type
+            type,
           );
         }
       };
@@ -1284,7 +1300,7 @@ exports.updateProduct = async (req, res) => {
     await ProductDetail.findByIdAndUpdate(
       currentProduct.product_detail_id,
       { $set: detailUpdate },
-      { new: true }
+      { new: true },
     );
 
     const productUpdate = {
@@ -1302,13 +1318,13 @@ exports.updateProduct = async (req, res) => {
     }
 
     Object.keys(productUpdate).forEach(
-      (key) => productUpdate[key] === undefined && delete productUpdate[key]
+      (key) => productUpdate[key] === undefined && delete productUpdate[key],
     );
 
     const updatedProduct = await Product.findByIdAndUpdate(
       id,
       { $set: productUpdate },
-      { new: true }
+      { new: true },
     )
       .populate({
         path: "product_detail_id",
@@ -1427,7 +1443,7 @@ exports.removeAllProducts = async (req, res) => {
       "related_accessories.product_id",
       {
         comp_id: user.comp_id,
-      }
+      },
     );
 
     const deleteQuery = {
@@ -1509,7 +1525,7 @@ exports.removeSingleFile = async (req, res) => {
       {
         $pull: { file: fileName },
       },
-      { new: true }
+      { new: true },
     );
 
     res.json({
@@ -1665,7 +1681,7 @@ exports.exportProductToExcel = async (req, res) => {
     res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
     res.setHeader(
       "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     );
 
     res.send(buffer);

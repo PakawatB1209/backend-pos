@@ -8,6 +8,21 @@ const sharp = require("sharp");
 const xlsx = require("xlsx");
 const path = require("path");
 
+const buildColumnWidth = (data) => {
+  if (!data.length) return [];
+  const headers = Object.keys(data[0]);
+
+  return headers.map((h) => ({
+    wch: Math.max(h.length, ...data.map((r) => String(r[h] ?? "").length)) + 2,
+  }));
+};
+
+const createSheet = (workbook, name, data) => {
+  const ws = xlsx.utils.json_to_sheet(data);
+  ws["!cols"] = buildColumnWidth(data);
+  xlsx.utils.book_append_sheet(workbook, ws, name);
+};
+
 exports.createProduct = async (req, res) => {
   let filesArray = [];
   try {
@@ -1298,207 +1313,73 @@ exports.removeAllFiles = async (req, res) => {
   }
 };
 
-// exports.exportProductToExcel = async (req, res) => {
-//   try {
-//     if (!req.user || !req.user.id) {
-//       return res.status(401).json({ success: false, message: "Unauthorized" });
-//     }
-//     const user = await User.findById(req.user.id).select("comp_id");
-//     if (!user || !user.comp_id) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "User is not associated with any company.",
-//       });
-//     }
-//     const comp_id = user.comp_id;
-
-//     const products = await Product.find({ comp_id: comp_id }).populate({
-//       path: "product_detail_id",
-//       populate: [
-//         { path: "primary_stone.stone_name", select: "master_name" },
-//         { path: "primary_stone.shape", select: "master_name" },
-//         { path: "primary_stone.color", select: "master_color master_name" },
-//         { path: "primary_stone.clarity", select: "master_name" },
-//         { path: "additional_stones.stone_name", select: "master_name" },
-//         { path: "additional_stones.shape", select: "master_name" },
-//         { path: "additional_stones.color", select: "master_color master_name" },
-//         { path: "additional_stones.clarity", select: "master_name" },
-//         { path: "masters.master_id", select: "master_name" },
-//       ],
-//     });
-
-//     if (products.length === 0) console.log("No products found.");
-
-//     const data = products.map((prod) => {
-//       const detail = prod.product_detail_id || {};
-//       const primaryStone = detail.primary_stone || {};
-//       const additionalStones = detail.additional_stones || [];
-//       const masters = detail.masters || [];
-
-//       const additionalStonesText = additionalStones
-//         .map((s) => {
-//           const name = s.stone_name?.master_name || "-";
-//           const shape = s.shape?.master_name || "";
-//           const qty = s.qty || 0;
-//           return `${name} ${shape} (${qty}pcs)`;
-//         })
-//         .join(", ");
-
-//       const mastersText = masters
-//         .map((m) => {
-//           const name = m.master_id?.master_name || "-";
-//           return `${name}`;
-//         })
-//         .join(", ");
-
-//       return {
-//         Code: prod.product_code,
-//         Name: prod.product_name,
-//         Category: prod.product_category,
-//         Type: prod.product_item_type,
-//         "Gross Weight (g)": detail.gross_weight || 0,
-//         "Net Weight (g)": detail.net_weight || 0,
-//         Size: detail.size || "",
-//         Unit: detail.unit || "",
-//         "Main Stone": primaryStone.stone_name?.master_name || "",
-//         "Main Shape": primaryStone.shape?.master_name || "",
-//         "Main Color":
-//           primaryStone.color?.master_color ||
-//           primaryStone.color?.master_name ||
-//           "",
-//         "Main Clarity": primaryStone.clarity?.master_name || "",
-//         "Main Qty": primaryStone.qty || 0,
-//         "Main Weight": primaryStone.weight || 0,
-//         "Additional Stones": additionalStonesText,
-//         Components: mastersText,
-//         Status: prod.is_active ? "Active" : "Inactive",
-//       };
-//     });
-
-//     const worksheet = xlsx.utils.json_to_sheet(data);
-
-//     if (data.length > 0) {
-//       const headers = Object.keys(data[0]);
-//       const colsWidth = headers.map((header) => {
-//         let maxLength = header.length;
-
-//         data.forEach((row) => {
-//           const cellValue = row[header] ? String(row[header]) : "";
-//           if (cellValue.length > maxLength) {
-//             maxLength = cellValue.length;
-//           }
-//         });
-
-//         return { wch: maxLength + 2 };
-//       });
-
-//       worksheet["!cols"] = colsWidth;
-//     }
-
-//     const workbook = xlsx.utils.book_new();
-//     xlsx.utils.book_append_sheet(workbook, worksheet, "Product Data");
-
-//     const buffer = xlsx.write(workbook, { type: "buffer", bookType: "xlsx" });
-//     const fileName = `Export_Products_${Date.now()}.xlsx`;
-
-//     res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
-//     res.setHeader(
-//       "Content-Type",
-//       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-//     );
-
-//     res.send(buffer);
-//   } catch (err) {
-//     console.log(err);
-//     res
-//       .status(500)
-//       .json({ success: false, message: "Export Error", error: err.message });
-//   }
-// };
-
-// models/Stock ไม่ต้องใช้แล้ว
-
 exports.exportProductToExcel = async (req, res) => {
   try {
-    // 1. Check Auth
-    if (!req.user || !req.user.id) {
+    if (!req.user?.id)
       return res.status(401).json({ success: false, message: "Unauthorized" });
-    }
-    const user = await User.findById(req.user.id).select("comp_id");
-    if (!user || !user.comp_id) {
+
+    const user = await User.findById(req.user.id).select("comp_id").lean();
+    if (!user?.comp_id)
       return res
         .status(400)
         .json({ success: false, message: "User has no company" });
-    }
-    const comp_id = user.comp_id;
 
-    // 2. ดึง Product ทั้งหมด
-    const products = await Product.find({ comp_id: comp_id }).populate({
-      path: "product_detail_id",
-      populate: [
-        { path: "primary_stone.stone_name", select: "master_name" },
-        { path: "primary_stone.shape", select: "master_name" },
-        { path: "primary_stone.color", select: "master_color master_name" },
-        { path: "primary_stone.clarity", select: "master_name" },
-        { path: "additional_stones.stone_name", select: "master_name" },
-        { path: "additional_stones.shape", select: "master_name" },
-        { path: "additional_stones.color", select: "master_color master_name" },
-        { path: "additional_stones.clarity", select: "master_name" },
-        { path: "masters.master_id", select: "master_name" },
-      ],
-    });
+    const { type, value } = req.body;
+    const query = {
+      comp_id: user.comp_id,
+      ...(type === "category" && value && { product_category: value }),
+      ...(type === "selected" &&
+        Array.isArray(value) &&
+        value.length && { _id: { $in: value } }),
+    };
 
-    if (products.length === 0) console.log("No products found.");
+    const products = await Product.find(query)
+      .populate({
+        path: "product_detail_id",
+        populate: [
+          "primary_stone.stone_name",
+          "primary_stone.shape",
+          "primary_stone.color",
+          "primary_stone.clarity",
+          "additional_stones.stone_name",
+          "additional_stones.shape",
+          "additional_stones.color",
+          "additional_stones.clarity",
+          "masters.master_id",
+        ],
+      })
+      .lean();
 
-    // 3. Map Data ลง Excel
-    const data = products.map((prod) => {
-      const detail = prod.product_detail_id || {};
-      const primaryStone = detail.primary_stone || {};
-      const additionalStones = detail.additional_stones || [];
-      const masters = detail.masters || [];
-
-      const additionalStonesText = additionalStones
-        .map((s) => {
-          const name = s.stone_name?.master_name || "-";
-          const shape = s.shape?.master_name || "";
-          const qty = s.qty || 0;
-          return `${name} ${shape} (${qty}pcs)`;
-        })
+    const rows = products.map((p) => {
+      const d = p.product_detail_id || {};
+      const ps = d.primary_stone || {};
+      const addText = (d.additional_stones || [])
+        .map(
+          (s) =>
+            `${s.stone_name?.master_name || "-"} ${s.shape?.master_name || ""} (${s.qty || 0}pcs)`,
+        )
         .join(", ");
 
-      const mastersText = masters
-        .map((m) => {
-          const name = m.master_id?.master_name || "-";
-          return `${name}`;
-        })
-        .join(", ");
-
-      // ✅ เรียงลำดับ Key ใน Object ใหม่
       return {
-        // --- ส่วนข้อมูลสินค้า (แสดงผล) ---
-        Code: prod.product_code,
-        Name: prod.product_name,
-        Category: prod.product_category,
-        Type: prod.product_item_type,
-        "Gross Weight (g)": detail.gross_weight || 0,
-        "Net Weight (g)": detail.net_weight || 0,
-        "Product Unit": detail.unit || prod.unit || "",
-        Size: detail.size || "",
-
-        "Main Stone": primaryStone.stone_name?.master_name || "",
-        "Main Shape": primaryStone.shape?.master_name || "",
-        "Main Color":
-          primaryStone.color?.master_color ||
-          primaryStone.color?.master_name ||
-          "",
-        "Main Clarity": primaryStone.clarity?.master_name || "",
-        "Main Qty": primaryStone.qty || 0,
-        "Main Weight": primaryStone.weight || 0,
-        "Additional Stones": additionalStonesText,
-        Components: mastersText,
-        Status: prod.is_active ? "Active" : "Inactive",
-
-        // --- ส่วนช่องว่างสำหรับกรอก (ใส่ขีดตามที่ขอ) ---
+        Code: p.product_code,
+        Name: p.product_name,
+        Category: p.product_category,
+        Type: p.product_item_type,
+        "Gross Weight (g)": d.gross_weight || 0,
+        "Net Weight (g)": d.net_weight || 0,
+        "Product Unit": d.unit || p.unit || "",
+        Size: d.size || "",
+        "Main Stone": ps.stone_name?.master_name || "",
+        "Main Shape": ps.shape?.master_name || "",
+        "Main Color": ps.color?.master_color || ps.color?.master_name || "",
+        "Main Clarity": ps.clarity?.master_name || "",
+        "Main Qty": ps.qty || 0,
+        "Main Weight": ps.weight || 0,
+        "Additional Stones": addText,
+        Components: (d.masters || [])
+          .map((m) => m.master_id?.master_name || "-")
+          .join(", "),
+        Status: p.is_active ? "Active" : "Inactive",
         "Purchase Unit": "-",
         Qty: "-",
         Cost: "-",
@@ -1506,31 +1387,39 @@ exports.exportProductToExcel = async (req, res) => {
       };
     });
 
-    // 4. Create Worksheet
-    const worksheet = xlsx.utils.json_to_sheet(data);
+    const workbook = xlsx.utils.book_new();
 
-    if (data.length > 0) {
-      const headers = Object.keys(data[0]);
-      const colsWidth = headers.map((header) => {
-        let maxLength = header.length;
-        data.forEach((row) => {
-          const cellValue = row[header] ? String(row[header]) : "";
-          if (cellValue.length > maxLength) {
-            maxLength = cellValue.length;
-          }
-        });
-        return { wch: maxLength + 2 };
-      });
-      worksheet["!cols"] = colsWidth;
+    if (type === "category") {
+      const grouped = rows.reduce((acc, r) => {
+        const key = r.Category || "Uncategorized";
+        acc[key] = acc[key] || [];
+        acc[key].push(r);
+        return acc;
+      }, {});
+
+      Object.entries(grouped).forEach(([cat, data]) =>
+        createSheet(
+          workbook,
+          cat.substring(0, 30).replace(/[\\/?*[\]]/g, ""),
+          data,
+        ),
+      );
+    } else {
+      createSheet(workbook, "Products", rows);
     }
 
-    const workbook = xlsx.utils.book_new();
-    xlsx.utils.book_append_sheet(workbook, worksheet, "Purchase Template");
+    const buffer = xlsx.write(workbook, {
+      type: "buffer",
+      bookType: "xlsx",
+    });
 
-    const buffer = xlsx.write(workbook, { type: "buffer", bookType: "xlsx" });
-    const fileName = `Purchase_Template_${Date.now()}.xlsx`;
+    const prefix =
+      type === "category" ? value : type === "selected" ? "Selected" : "All";
 
-    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="Purchase_Template_${prefix}_${Date.now()}.xlsx"`,
+    );
     res.setHeader(
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -1538,7 +1427,7 @@ exports.exportProductToExcel = async (req, res) => {
 
     res.send(buffer);
   } catch (err) {
-    console.log(err);
+    console.error(err);
     res
       .status(500)
       .json({ success: false, message: "Export Error", error: err.message });

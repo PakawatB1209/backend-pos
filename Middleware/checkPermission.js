@@ -1,5 +1,5 @@
 const User = require("../models/User");
-const Permission = require("../models/Permission"); // Import Model Permission
+const Permission = require("../models/Permission");
 
 exports.checkPermission = (requiredMenu, requiredAction) => {
   return async (req, res, next) => {

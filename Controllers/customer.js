@@ -10,101 +10,6 @@ function escapeRegex(text) {
   return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 }
 
-// const generateCustomerID = async () => {
-//   const lastCustomer = await Customer.findOne().sort({ createdAt: -1 });
-//   let newId = "CUS-00001";
-
-//   if (lastCustomer && lastCustomer.customer_id) {
-//     const lastId = lastCustomer.customer_id;
-//     const numberPart = parseInt(lastId.split("-")[1]);
-//     const nextNumber = numberPart + 1;
-//     newId = `CUS-${String(nextNumber).padStart(5, "0")}`;
-//   }
-//   return newId;
-// };
-// exports.createCustomer = async (req, res) => {
-//   try {
-//     if (!req.user || !req.user.id) {
-//       return res
-//         .status(401)
-//         .json({ success: false, message: "Unauthorized access." });
-//     }
-
-//     const user = await User.findById(req.user.id).select("comp_id");
-
-//     if (!user || !user.comp_id) {
-//       return res.status(403).json({
-//         success: false,
-//         message: "User is not assigned to any company.",
-//       });
-//     }
-
-//     const {
-//       customer_name,
-//       customer_addr,
-//       customer_subdist_business,
-//       customer_date,
-//       customer_email,
-//       customer_phone,
-//       customer_tax_id,
-//       customer_gender,
-//       note,
-//       tax_addr,
-//       contact_person,
-//       company_name,
-//     } = req.body;
-
-//     if (!customer_name || !customer_phone) {
-//       return res
-//         .status(400)
-//         .json({ success: false, message: "Please fill required fields." });
-//     }
-
-//     const existing = await Customer.findOne({
-//       customer_name: customer_name,
-//       comp_id: user.comp_id,
-//     });
-
-//     if (existing) {
-//       return res.status(400).json({
-//         success: false,
-//         message: `Customer "${customer_name}" already exists in your company.`,
-//       });
-//     }
-//     const newCustomerID = await generateCustomerID(user.comp_id);
-
-//     const newCustomer = new Customer({
-//       customer_id: newCustomerID,
-//       customer_name,
-//       customer_addr,
-//       customer_subdist_business,
-//       customer_date,
-//       customer_email,
-//       customer_phone,
-//       customer_tax_id,
-//       customer_gender,
-//       note,
-//       tax_addr,
-//       contact_person,
-//       company_name,
-//       comp_id: user.comp_id,
-//     });
-
-//     await newCustomer.save();
-
-//     res.status(201).json({
-//       success: true,
-//       message: "Customer added successfully.",
-//       data: newCustomer,
-//     });
-//   } catch (err) {
-//     console.error("Create Customer Error:", err);
-//     res
-//       .status(500)
-//       .json({ success: false, message: "Server Error", error: err.message });
-//   }
-// };
-
 exports.createCustomer = async (req, res) => {
   try {
     if (!req.user || !req.user.id) {
@@ -181,7 +86,7 @@ exports.createCustomer = async (req, res) => {
     const counter = await Counter.findByIdAndUpdate(
       { _id: counterName },
       { $inc: { seq: 1 } },
-      { new: true, upsert: true }
+      { new: true, upsert: true },
     );
 
     const seqStr = counter.seq.toString().padStart(4, "0");
@@ -424,7 +329,7 @@ exports.updateCustomer = async (req, res) => {
     const updatedCustomer = await Customer.findOneAndUpdate(
       { _id: id, comp_id: user.comp_id },
       { $set: updateFields },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     if (!updatedCustomer) {

@@ -28,7 +28,7 @@ router.get(
   getOneProduct,
 );
 
-router.get("/product/export/excel", auth, exportProductToExcel);
+router.post("/product/export/excel", auth, exportProductToExcel);
 
 router.post(
   "/master",

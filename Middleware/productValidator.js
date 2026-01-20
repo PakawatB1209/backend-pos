@@ -28,7 +28,7 @@ const baseSchema = {
 };
 
 const stoneItemSchema = Joi.object({
-  stone_name: Joi.string().required(),
+  stone_name: Joi.string().allow("", null).optional(),
   shape: Joi.string().allow("", null).optional(),
   size: Joi.string().allow("", null).optional(),
   color: Joi.string().allow("", null).optional(),

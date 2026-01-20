@@ -105,14 +105,14 @@ const semiMountSchema = Joi.object({
   net_weight: Joi.number().required(),
 
   stone_name: Joi.string().allow("", null).optional(),
-  shape: Joi.string().optional(),
+  shape: Joi.string().allow("", null).optional(),
   size: Joi.string().allow("", null).optional(),
   color: Joi.string().allow("", null).optional(),
   cutting: Joi.string().allow("", null).optional(),
   quality: Joi.string().allow("", null).optional(),
   clarity: Joi.string().allow("", null).optional(),
   stones: Joi.array().items(stoneItemSchema).optional(),
-  stone_weight: Joi.number().allow("", null).optional(),
+  weight: Joi.number().allow("", null).optional(),
   related_accessories: Joi.array().items(accessoryItemSchema).optional(),
 });
 

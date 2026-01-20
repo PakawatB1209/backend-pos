@@ -29,14 +29,14 @@ const baseSchema = {
 
 const stoneItemSchema = Joi.object({
   stone_name: Joi.string().required(),
-  shape: Joi.string().required(),
-  size: Joi.string().allow("").optional(),
-  color: Joi.string().allow("").optional(),
-  cutting: Joi.string().allow("").optional(),
-  quality: Joi.string().allow("").optional(),
-  clarity: Joi.string().allow("").optional(),
-  qty: Joi.number().optional(),
-  weight: Joi.number().optional(),
+  shape: Joi.string().allow("", null).optional(),
+  size: Joi.string().allow("", null).optional(),
+  color: Joi.string().allow("", null).optional(),
+  cutting: Joi.string().allow("", null).optional(),
+  quality: Joi.string().allow("", null).optional(),
+  clarity: Joi.string().allow("", null).optional(),
+  qty: Joi.number().allow("", null).optional(),
+  weight: Joi.number().allow("", null).optional(),
 });
 
 const accessoryItemSchema = Joi.object({
@@ -55,18 +55,18 @@ const productMasterSchema = Joi.object({
   item_type: Joi.string().required(),
   product_size: Joi.string().required(),
   metal: Joi.string().required(),
-  metal_color: Joi.string().optional(),
+  metal_color: Joi.string().allow("", null).optional(),
   gross_weight: Joi.number().required(),
   net_weight: Joi.number().required(),
   unit: Joi.string().valid("g", "pcs", "pair", "cts").default("g").optional(),
-  stone_name: Joi.string().optional(),
-  shape: Joi.string().optional(),
-  size: Joi.string().optional(),
-  weight: Joi.number().optional(),
-  color: Joi.string().optional(),
-  cutting: Joi.string().optional(),
-  quality: Joi.string().optional(),
-  clarity: Joi.string().optional(),
+  stone_name: Joi.string().allow("", null).optional(),
+  shape: Joi.string().allow("", null).optional(),
+  size: Joi.string().allow("", null).optional(),
+  weight: Joi.number().allow("", null).optional(),
+  color: Joi.string().allow("", null).optional(),
+  cutting: Joi.string().allow("", null).optional(),
+  quality: Joi.string().allow("", null).optional(),
+  clarity: Joi.string().allow("", null).optional(),
   stones: Joi.array().items(stoneItemSchema).optional(),
   related_accessories: Joi.array().items(accessoryItemSchema).optional(),
 });
@@ -90,6 +90,7 @@ const stoneSchema = Joi.object({
   cutting: Joi.string().optional(),
   quality: Joi.string().optional(),
   clarity: Joi.string().optional(),
+  stones: Joi.array().items(stoneItemSchema).optional(),
 });
 
 const semiMountSchema = Joi.object({
@@ -98,13 +99,20 @@ const semiMountSchema = Joi.object({
   item_type: Joi.string().required(),
   product_size: Joi.string().required(),
   metal: Joi.string().required(),
-  metal_color: Joi.string().optional(),
+  metal_color: Joi.string().allow("", null).optional(),
   unit: Joi.string().valid("g", "pcs", "pair", "cts").default("g").optional(),
   gross_weight: Joi.number().required(),
   net_weight: Joi.number().required(),
 
-  stone_name: Joi.string().optional(),
+  stone_name: Joi.string().allow("", null).optional(),
   shape: Joi.string().optional(),
+  size: Joi.string().allow("", null).optional(),
+  color: Joi.string().allow("", null).optional(),
+  cutting: Joi.string().allow("", null).optional(),
+  quality: Joi.string().allow("", null).optional(),
+  clarity: Joi.string().allow("", null).optional(),
+  stones: Joi.array().items(stoneItemSchema).optional(),
+  stone_weight: Joi.number().allow("", null).optional(),
   related_accessories: Joi.array().items(accessoryItemSchema).optional(),
 });
 

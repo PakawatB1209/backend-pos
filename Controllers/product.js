@@ -617,7 +617,8 @@ exports.list = async (req, res) => {
         )
         .populate({
           path: "product_detail_id",
-          select: "masters size unit primary_stone",
+          select:
+            "masters size unit primary_stone weight gross_weight net_weight",
           populate: [
             {
               path: "masters.master_id",
@@ -655,6 +656,10 @@ exports.list = async (req, res) => {
       let size = "";
       let unit = "";
 
+      let weight = 0;
+      let gross_weight = 0;
+      let net_weight = 0;
+
       if (p.product_detail_id) {
         const detail = p.product_detail_id;
 
@@ -662,6 +667,11 @@ exports.list = async (req, res) => {
           size = detail.size;
         }
         unit = detail.unit || "g";
+
+        if (detail.weight) weight = detail.weight;
+        if (detail.gross_weight) gross_weight = detail.gross_weight;
+        if (detail.net_weight) net_weight = detail.net_weight;
+
         if (detail.masters) {
           detail.masters.forEach((m) => {
             if (m.master_id) {
@@ -729,6 +739,10 @@ exports.list = async (req, res) => {
         size: size,
         metal: metal,
         color: color,
+
+        weight: weight,
+        gross_weight: gross_weight,
+        net_weight: net_weight,
 
         accessories: formattedAccessories,
       };

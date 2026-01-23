@@ -724,8 +724,8 @@ exports.list = async (req, res) => {
 
       return {
         _id: p._id,
-        code: p.product_code,
-        name: p.product_name,
+        product_code: p.product_code,
+        product_name: p.product_name,
         image: p.file && p.file.length > 0 ? `${baseUrl}${p.file[0]}` : "",
 
         category: p.product_category,

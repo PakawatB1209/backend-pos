@@ -196,34 +196,29 @@ exports.importPreview = async (req, res) => {
         .status(400)
         .json({ success: false, message: "User has no company" });
 
-    // 1. เตรียมข้อมูล (Warehouse & Products)
     const { warehouseMap, fallbackId, othersWarehouseId } =
       await buildWarehouseMap(user.comp_id);
     const workbook = XLSX.read(req.file.buffer, { type: "buffer" });
     const localBaseUrl = `${req.protocol}://${req.get("host")}/uploads/product/`;
 
-    // 2. ดึงข้อมูล Product ทั้งหมดทีเดียว (Batch Query)
     const allSheetData = getAllSheetData(workbook);
     const productMap = await getProductMap(user.comp_id, allSheetData);
 
     const processedItems = [];
     const errorRows = [];
 
-    // 3. วนลูปตรวจสอบข้อมูล
     for (const { row } of allSheetData) {
       const codeStr =
         row["Code"] || row["code"]
           ? String(row["Code"] || row["code"]).trim()
           : "";
 
-      // 🛑 Validate Row
       const validationError = validateRow(row, codeStr, productMap);
       if (validationError) {
         errorRows.push({ ...row, Error_Reason: validationError });
         continue;
       }
 
-      // ✅ Process Valid Item
       const product = productMap.get(codeStr);
       const validItem = mapValidItem(
         row,
@@ -236,7 +231,6 @@ exports.importPreview = async (req, res) => {
       if (validItem) processedItems.push(validItem);
     }
 
-    // 4. สร้างไฟล์ Error (ถ้ามี)
     const errorFileName = await generateErrorFile(errorRows);
 
     res.json({
@@ -252,7 +246,7 @@ exports.importPreview = async (req, res) => {
     res.status(500).json({ success: false, message: "Import failed" });
   }
 };
-// 1. เตรียม Warehouse Map
+
 async function buildWarehouseMap(comp_id) {
   const warehouses = await Warehouse.find({ comp_id });
   const map = {};
@@ -275,7 +269,6 @@ async function buildWarehouseMap(comp_id) {
   };
 }
 
-// 2. แปลง Sheet เป็น Data Array
 function getAllSheetData(workbook) {
   const allRows = [];
   workbook.SheetNames.forEach((name) => {
@@ -287,7 +280,6 @@ function getAllSheetData(workbook) {
   return allRows;
 }
 
-// 3. ดึง Product จาก DB (Optimized)
 async function getProductMap(comp_id, allSheetData) {
   const codes = allSheetData
     .map(({ row }) => row["Code"] || row["code"])
@@ -305,7 +297,6 @@ async function getProductMap(comp_id, allSheetData) {
   return map;
 }
 
-// 4. ตรวจสอบความถูกต้อง (Validation Logic)
 function validateRow(row, codeStr, productMap) {
   if (!codeStr) return "Missing Product Code";
 
@@ -331,7 +322,6 @@ function validateRow(row, codeStr, productMap) {
   if (excelUnit && norm(excelUnit) !== norm(product.unit))
     return `Unit Mismatch`;
 
-  // Main Stone Checks
   const ps = product.product_detail_id?.primary_stone || {};
   if (row["Main Stone"] && norm(row["Main Stone"]) !== norm(ps.stone_name))
     return `Main Stone Mismatch`;
@@ -354,10 +344,9 @@ function validateRow(row, codeStr, productMap) {
       return `Main Weight Mismatch`;
   }
 
-  return null; // No Error
+  return null;
 }
 
-// 5. แปลงข้อมูลเป็น Item ที่พร้อม Save
 function mapValidItem(
   row,
   product,
@@ -402,7 +391,6 @@ function mapValidItem(
   };
 }
 
-// 6. สร้างไฟล์ Error Excel (ExcelJS)
 async function generateErrorFile(errorRows) {
   if (errorRows.length === 0) return null;
 
@@ -439,20 +427,20 @@ async function generateErrorFile(errorRows) {
         type: "pattern",
         pattern: "solid",
         fgColor: { argb: "FFFF0000" },
-      }; // Red
+      };
       cell.font = { color: { argb: "FFFFFFFF" }, bold: true };
     } else if (cell.value === "Error_Reason") {
       cell.fill = {
         type: "pattern",
         pattern: "solid",
         fgColor: { argb: "FFFFFF00" },
-      }; // Yellow
+      };
     } else {
       cell.fill = {
         type: "pattern",
         pattern: "solid",
         fgColor: { argb: "FFEEEEEE" },
-      }; // Grey
+      };
     }
   });
 
@@ -483,24 +471,17 @@ exports.downloadErrorFile = async (req, res) => {
   try {
     const { filename } = req.params;
 
-    // ระบุ Path ไปยังโฟลเดอร์ลับ
     const filePath = path.join(__dirname, "../storage/exports", filename);
 
-    // เช็คว่ามีไฟล์จริงไหม
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ message: "File not found or expired" });
     }
 
-    // สั่งดาวน์โหลดไฟล์
     res.download(filePath, "Error_Items_List.xlsx", (err) => {
-      // 🟢 ส่วนนี้จะทำงานเมื่อดาวน์โหลดเสร็จ (หรือ User กดยกเลิก)
-
       if (err) {
         console.error("Download warning/error:", err);
-        // ถึงจะ Error (เช่น User ปิดหน้าเว็บหนี) ก็ควรลบทิ้งอยู่ดี ถ้าเราไม่เก็บไว้แล้ว
       }
 
-      // 🗑️ สั่งลบไฟล์ทิ้งทันที
       fs.unlink(filePath, (unlinkErr) => {
         if (unlinkErr) {
           console.error("Error deleting file:", unlinkErr);

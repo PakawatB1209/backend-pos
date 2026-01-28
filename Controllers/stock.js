@@ -220,8 +220,6 @@ exports.getStockTransactions = async (req, res) => {
         .json({ success: false, message: "User has no company" });
     }
 
-    // 🟢 1. สร้าง Filter (รองรับการส่ง query params มาจากหน้าบ้าน)
-    // ตัวอย่าง: /api/stock/transactions?product_id=xxx&warehouse_id=yyy
     let query = { comp_id: user.comp_id };
 
     if (req.query.product_id) {
@@ -235,8 +233,6 @@ exports.getStockTransactions = async (req, res) => {
     if (req.query.type) {
       query.type = req.query.type; // in, out, adjust
     }
-
-    // 🟢 2. ดึงข้อมูล + Populate (แปลง ID เป็นชื่อ)
     const transactions = await StockTransaction.find(query)
       .populate({
         path: "comp_id",
@@ -254,7 +250,7 @@ exports.getStockTransactions = async (req, res) => {
         path: "created_by",
         select: "user_name user_email",
       })
-      .sort({ createdAt: -1 }); // เรียงจาก ล่าสุด -> เก่าสุด
+      .sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,

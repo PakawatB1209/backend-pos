@@ -28,67 +28,78 @@ const createSheet = (workbook, name, data) => {
 const formatProductResponse = (product, req) => {
   if (!product) return null;
 
-  // 1. Base URL สำหรับรูปภาพ
+  // 1. Base URL
   const baseUrl = `${req.protocol}://${req.get("host")}/uploads/product/`;
 
-  // 2. จัดการ File URL
+  // 2. Image URL Formatting
   if (product.file && product.file.length > 0) {
     product.file = product.file.map((fileName) =>
       fileName.startsWith("http") ? fileName : `${baseUrl}${fileName}`,
     );
   }
 
-  // 3. จัดการ Product Detail
+  // 3. Product Detail Formatting
   if (product.product_detail_id) {
     const detail = product.product_detail_id;
-    const extractName = (field) =>
-      field?.master_name ? field.master_name : null;
 
-    // 3.1 Flatten Primary Stone (ดึงชื่อออกมาจาก Object)
+    // ✅ Helper ย่อย: ดึงทั้ง _id และ name (เพื่อให้ Dropdown เลือกค่าถูก)
+    const extractMaster = (field) => {
+      if (field && field.master_name) {
+        return {
+          _id: field._id,
+          name: field.master_name,
+          code: field.code,
+        };
+      }
+      return null;
+    };
+
+    // 3.1 Primary Stone Formatting
     if (detail.primary_stone) {
-      detail.primary_stone.stone_name = extractName(
+      detail.primary_stone.stone_name = extractMaster(
         detail.primary_stone.stone_name,
       );
-      detail.primary_stone.shape = extractName(detail.primary_stone.shape);
-      detail.primary_stone.size = extractName(detail.primary_stone.size);
-      detail.primary_stone.color = extractName(detail.primary_stone.color);
-      detail.primary_stone.cutting = extractName(detail.primary_stone.cutting);
-      detail.primary_stone.quality = extractName(detail.primary_stone.quality);
-      detail.primary_stone.clarity = extractName(detail.primary_stone.clarity);
+      detail.primary_stone.shape = extractMaster(detail.primary_stone.shape);
+      detail.primary_stone.size = extractMaster(detail.primary_stone.size);
+      detail.primary_stone.color = extractMaster(detail.primary_stone.color);
+      detail.primary_stone.cutting = extractMaster(
+        detail.primary_stone.cutting,
+      );
+      detail.primary_stone.quality = extractMaster(
+        detail.primary_stone.quality,
+      );
+      detail.primary_stone.clarity = extractMaster(
+        detail.primary_stone.clarity,
+      );
     }
 
-    // 3.2 Flatten Additional Stones
+    // 3.2 Additional Stones Formatting
     if (detail.additional_stones && Array.isArray(detail.additional_stones)) {
       detail.additional_stones = detail.additional_stones.map((stone) => ({
         ...stone,
-        stone_name: extractName(stone.stone_name),
-        shape: extractName(stone.shape),
-        size: extractName(stone.size),
-        color: extractName(stone.color),
-        cutting: extractName(stone.cutting),
-        quality: extractName(stone.quality),
-        clarity: extractName(stone.clarity),
+        stone_name: extractMaster(stone.stone_name),
+        shape: extractMaster(stone.shape),
+        size: extractMaster(stone.size),
+        color: extractMaster(stone.color),
+        cutting: extractMaster(stone.cutting),
+        quality: extractMaster(stone.quality),
+        clarity: extractMaster(stone.clarity),
       }));
     }
 
-    // 3.3 สร้าง Attributes (แปลง Masters Array -> Object)
-    // *สำคัญ* ส่วนนี้ทำให้ Dropdown Metal/Item Type แสดงผลถูกต้อง
+    // 3.3 Attributes Formatting (แปลง Masters Array -> Object)
     const attributes = {};
     if (detail.masters) {
       detail.masters.forEach((m) => {
         if (m.master_id) {
           const type = m.master_id.master_type;
-
           const itemData = {
             _id: m.master_id._id,
             name: m.master_id.master_name,
             code: m.master_id.code,
+            qty: type === "metal" || type === "stone" ? m.qty : undefined,
+            weight: type === "metal" || type === "stone" ? m.weight : undefined,
           };
-
-          if (type === "metal" || type === "stone") {
-            itemData.qty = m.qty;
-            itemData.weight = m.weight;
-          }
 
           if (attributes[type]) {
             if (Array.isArray(attributes[type])) {
@@ -103,14 +114,19 @@ const formatProductResponse = (product, req) => {
       });
     }
     product.attributes = attributes;
+
+    // ✅ สำคัญ: ดึง Metal / Item Type ออกมาไว้ข้างนอกสุด (Root Level)
+    // เพื่อให้ Frontend Form จับคู่ field "metal", "item_type" ได้ถูกต้อง
+    if (attributes.metal) product.metal = attributes.metal;
+    if (attributes.item_type) product.item_type = attributes.item_type;
+    if (attributes.metal_color) product.metal_color = attributes.metal_color;
   }
 
-  // 4. จัดการ Related Accessories
+  // 4. Accessories Formatting
   const formattedAccessories = (product.related_accessories || [])
     .map((acc) => {
       const master = acc.product_id;
       if (!master) return null;
-
       return {
         _id: master._id,
         code: master.product_code,
@@ -677,12 +693,10 @@ exports.createProduct = async (req, res) => {
 exports.getOneProduct = async (req, res) => {
   try {
     const { id } = req.params;
-
-    if (!mongoose.isValidObjectId(id)) {
+    if (!mongoose.isValidObjectId(id))
       return res
         .status(400)
         .json({ success: false, message: "Invalid ID format." });
-    }
 
     const user = await User.findById(req.user.id).select("comp_id").lean();
     if (!user)
@@ -698,20 +712,20 @@ exports.getOneProduct = async (req, res) => {
             path: "masters.master_id",
             select: "master_name master_type master_color code",
           },
-          { path: "primary_stone.stone_name", select: "master_name" },
-          { path: "primary_stone.shape", select: "master_name" },
-          { path: "primary_stone.size", select: "master_name" },
-          { path: "primary_stone.color", select: "master_name" },
-          { path: "primary_stone.cutting", select: "master_name" },
-          { path: "primary_stone.quality", select: "master_name" },
-          { path: "primary_stone.clarity", select: "master_name" },
-          { path: "additional_stones.stone_name", select: "master_name" },
-          { path: "additional_stones.shape", select: "master_name" },
-          { path: "additional_stones.size", select: "master_name" },
-          { path: "additional_stones.color", select: "master_name" },
-          { path: "additional_stones.cutting", select: "master_name" },
-          { path: "additional_stones.quality", select: "master_name" },
-          { path: "additional_stones.clarity", select: "master_name" },
+          { path: "primary_stone.stone_name", select: "master_name code" },
+          { path: "primary_stone.shape", select: "master_name code" },
+          { path: "primary_stone.size", select: "master_name code" },
+          { path: "primary_stone.color", select: "master_name code" },
+          { path: "primary_stone.cutting", select: "master_name code" },
+          { path: "primary_stone.quality", select: "master_name code" },
+          { path: "primary_stone.clarity", select: "master_name code" },
+          { path: "additional_stones.stone_name", select: "master_name code" },
+          { path: "additional_stones.shape", select: "master_name code" },
+          { path: "additional_stones.size", select: "master_name code" },
+          { path: "additional_stones.color", select: "master_name code" },
+          { path: "additional_stones.cutting", select: "master_name code" },
+          { path: "additional_stones.quality", select: "master_name code" },
+          { path: "additional_stones.clarity", select: "master_name code" },
         ],
       })
       .populate({
@@ -727,13 +741,10 @@ exports.getOneProduct = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Product not found." });
 
-    // 🟢 เรียกใช้ Helper Function
+    // ✅ เรียกใช้ Helper
     const formattedData = formatProductResponse(product, req);
 
-    res.status(200).json({
-      success: true,
-      data: formattedData,
-    });
+    res.status(200).json({ success: true, data: formattedData });
   } catch (error) {
     console.log("Error get product:", error);
     res.status(500).json({ success: false, message: "Server error" });
@@ -1448,25 +1459,16 @@ exports.updateProduct = async (req, res) => {
     ).lean();
     const category = currentProduct.product_category;
 
-    // --- Validation Logic ---
+    // --- Validation ---
     if (category === "stone") {
-      if (data.metal || data.item_type || data.gross_weight) {
+      if (data.metal || data.item_type || data.gross_weight)
         return res
           .status(400)
-          .json({
-            success: false,
-            message:
-              "Category 'stone' cannot have metal, item_type, or gross_weight.",
-          });
-      }
-      if (data.unit && !["g", "cts"].includes(data.unit)) {
+          .json({ success: false, message: "Category 'stone' error." });
+      if (data.unit && !["g", "cts"].includes(data.unit))
         return res
           .status(400)
-          .json({
-            success: false,
-            message: "Invalid unit for Stone (allowed: g, cts)",
-          });
-      }
+          .json({ success: false, message: "Invalid unit for Stone." });
     }
     if (category === "accessory") {
       const forbidden = [
@@ -1480,22 +1482,16 @@ exports.updateProduct = async (req, res) => {
       if (
         forbidden.some((f) => data[f]) ||
         (data.stones && data.stones.length > 0)
-      ) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "Category 'accessory' cannot have stone details.",
-          });
-      }
-      if (data.unit === "cts") {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "Category 'accessory' cannot utilize 'cts' unit.",
-          });
-      }
+      )
+        return res.status(400).json({
+          success: false,
+          message: "Category 'accessory' cannot have stone details.",
+        });
+      if (data.unit === "cts")
+        return res.status(400).json({
+          success: false,
+          message: "Category 'accessory' cannot utilize 'cts' unit.",
+        });
     }
 
     // --- File Upload ---
@@ -1503,7 +1499,6 @@ exports.updateProduct = async (req, res) => {
       const uploadDir = "./uploads/product";
       if (!fs.existsSync(uploadDir))
         fs.mkdirSync(uploadDir, { recursive: true });
-
       await Promise.all(
         req.files.map(async (file, index) => {
           const filename = `product-${Date.now()}-${Math.round(Math.random() * 1e9)}-${index}.jpeg`;
@@ -1518,7 +1513,6 @@ exports.updateProduct = async (req, res) => {
           newFilesArray.push(filename);
         }),
       );
-
       if (currentProduct.file && currentProduct.file.length > 0) {
         currentProduct.file.forEach((oldFile) => {
           const oldPath = path.join(uploadDir, oldFile);
@@ -1527,7 +1521,7 @@ exports.updateProduct = async (req, res) => {
       }
     }
 
-    // --- Helper: Ensure Master ---
+    // --- Ensure Master Helper ---
     const ensureMasterId = async (input, type) => {
       if (!input || (typeof input === "string" && input.trim() === ""))
         return null;
@@ -1543,13 +1537,12 @@ exports.updateProduct = async (req, res) => {
         master_type: type,
         comp_id: user.comp_id,
       });
-      if (!master) {
+      if (!master)
         master = await Masters.create({
           master_name: input,
           master_type: type,
           comp_id: user.comp_id,
         });
-      }
       return master._id;
     };
 
@@ -1616,11 +1609,9 @@ exports.updateProduct = async (req, res) => {
           weight: stone.weight ? Number(stone.weight) : 0,
         });
       }
-    } else if (category === "accessory") {
-      additionalStonesUpdate = [];
-    }
+    } else if (category === "accessory") additionalStonesUpdate = [];
 
-    // Update Detail
+    // Save Detail
     const detailUpdate = {
       unit: data.unit || currentDetail.unit,
       size: data.product_size || data.size || currentDetail.size,
@@ -1647,7 +1638,7 @@ exports.updateProduct = async (req, res) => {
       { new: true },
     );
 
-    // Update Product
+    // Save Product
     const productUpdate = {
       product_code: data.code,
       product_name: data.product_name,
@@ -1660,6 +1651,7 @@ exports.updateProduct = async (req, res) => {
       (key) => productUpdate[key] === undefined && delete productUpdate[key],
     );
 
+    // 🟢 Fetch Updated & Format
     let updatedProduct = await Product.findByIdAndUpdate(
       id,
       { $set: productUpdate },
@@ -1672,20 +1664,20 @@ exports.updateProduct = async (req, res) => {
             path: "masters.master_id",
             select: "master_name master_type master_color code",
           },
-          { path: "primary_stone.stone_name", select: "master_name" },
-          { path: "primary_stone.shape", select: "master_name" },
-          { path: "primary_stone.size", select: "master_name" },
-          { path: "primary_stone.color", select: "master_name" },
-          { path: "primary_stone.cutting", select: "master_name" },
-          { path: "primary_stone.quality", select: "master_name" },
-          { path: "primary_stone.clarity", select: "master_name" },
-          { path: "additional_stones.stone_name", select: "master_name" },
-          { path: "additional_stones.shape", select: "master_name" },
-          { path: "additional_stones.size", select: "master_name" },
-          { path: "additional_stones.color", select: "master_name" },
-          { path: "additional_stones.cutting", select: "master_name" },
-          { path: "additional_stones.quality", select: "master_name" },
-          { path: "additional_stones.clarity", select: "master_name" },
+          { path: "primary_stone.stone_name", select: "master_name code" },
+          { path: "primary_stone.shape", select: "master_name code" },
+          { path: "primary_stone.size", select: "master_name code" },
+          { path: "primary_stone.color", select: "master_name code" },
+          { path: "primary_stone.cutting", select: "master_name code" },
+          { path: "primary_stone.quality", select: "master_name code" },
+          { path: "primary_stone.clarity", select: "master_name code" },
+          { path: "additional_stones.stone_name", select: "master_name code" },
+          { path: "additional_stones.shape", select: "master_name code" },
+          { path: "additional_stones.size", select: "master_name code" },
+          { path: "additional_stones.color", select: "master_name code" },
+          { path: "additional_stones.cutting", select: "master_name code" },
+          { path: "additional_stones.quality", select: "master_name code" },
+          { path: "additional_stones.clarity", select: "master_name code" },
         ],
       })
       .populate({
@@ -1694,7 +1686,7 @@ exports.updateProduct = async (req, res) => {
       })
       .lean();
 
-    // 🟢 เรียกใช้ Helper Function (เหมือน getOneProduct เป๊ะ!)
+    // ✅ เรียก Helper (ข้อมูล Dropdown จะมาครบแล้ว)
     const formattedData = formatProductResponse(updatedProduct, req);
 
     res.status(200).json({

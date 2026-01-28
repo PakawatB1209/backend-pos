@@ -29,12 +29,16 @@ const ProductSchema = new mongoose.Schema(
         size: { type: String, default: null },
         metal: { type: String, default: null },
 
-        // description: { type: String, default: "" },
+        description: { type: String, default: "" },
       },
     ],
     is_active: { type: Boolean, default: true },
   },
-  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  },
 );
 
 ProductSchema.virtual("cover").get(function () {

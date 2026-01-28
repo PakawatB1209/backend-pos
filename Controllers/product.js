@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const fs = require("fs");
 const sharp = require("sharp");
 const xlsx = require("xlsx");
+const ExcelJS = require("exceljs");
 const path = require("path");
 
 const buildColumnWidth = (data) => {
@@ -1327,6 +1328,127 @@ exports.removeAllFiles = async (req, res) => {
   }
 };
 
+// exports.exportProductToExcel = async (req, res) => {
+//   try {
+//     if (!req.user?.id)
+//       return res.status(401).json({ success: false, message: "Unauthorized" });
+
+//     const user = await User.findById(req.user.id).select("comp_id").lean();
+//     if (!user?.comp_id)
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "User has no company" });
+
+//     const { type, value } = req.body;
+//     const query = {
+//       comp_id: user.comp_id,
+//       ...(type === "category" && value && { product_category: value }),
+//       ...(type === "selected" &&
+//         Array.isArray(value) &&
+//         value.length && { _id: { $in: value } }),
+//     };
+
+//     const products = await Product.find(query)
+//       .populate({
+//         path: "product_detail_id",
+//         populate: [
+//           "primary_stone.stone_name",
+//           "primary_stone.shape",
+//           "primary_stone.color",
+//           "primary_stone.clarity",
+//           "additional_stones.stone_name",
+//           "additional_stones.shape",
+//           "additional_stones.color",
+//           "additional_stones.clarity",
+//           "masters.master_id",
+//         ],
+//       })
+//       .lean();
+
+//     const rows = products.map((p) => {
+//       const d = p.product_detail_id || {};
+//       const ps = d.primary_stone || {};
+//       const addText = (d.additional_stones || [])
+//         .map(
+//           (s) =>
+//             `${s.stone_name?.master_name || "-"} ${s.shape?.master_name || ""} (${s.qty || 0}pcs)`,
+//         )
+//         .join(", ");
+
+//       return {
+//         Code: p.product_code,
+//         Name: p.product_name,
+//         Category: p.product_category,
+//         Type: p.product_item_type,
+//         "Gross Weight (g)": d.gross_weight || 0,
+//         "Net Weight (g)": d.net_weight || 0,
+//         "Product Unit": d.unit || p.unit || "",
+//         Size: d.size || "",
+//         "Main Stone": ps.stone_name?.master_name || "",
+//         "Main Shape": ps.shape?.master_name || "",
+//         "Main Color": ps.color?.master_color || ps.color?.master_name || "",
+//         "Main Clarity": ps.clarity?.master_name || "",
+//         "Main Qty": ps.qty || 0,
+//         "Main Weight": ps.weight || 0,
+//         "Additional Stones": addText,
+//         Components: (d.masters || [])
+//           .map((m) => m.master_id?.master_name || "-")
+//           .join(", "),
+//         Status: p.is_active ? "Active" : "Inactive",
+//         "Purchase Unit": "-",
+//         Qty: "-",
+//         Cost: "-",
+//         Price: "-",
+//       };
+//     });
+
+//     const workbook = xlsx.utils.book_new();
+
+//     if (type === "category") {
+//       const grouped = rows.reduce((acc, r) => {
+//         const key = r.Category || "Uncategorized";
+//         acc[key] = acc[key] || [];
+//         acc[key].push(r);
+//         return acc;
+//       }, {});
+
+//       Object.entries(grouped).forEach(([cat, data]) =>
+//         createSheet(
+//           workbook,
+//           cat.substring(0, 30).replace(/[\\/?*[\]]/g, ""),
+//           data,
+//         ),
+//       );
+//     } else {
+//       createSheet(workbook, "Products", rows);
+//     }
+
+//     const buffer = xlsx.write(workbook, {
+//       type: "buffer",
+//       bookType: "xlsx",
+//     });
+
+//     const prefix =
+//       type === "category" ? value : type === "selected" ? "Selected" : "All";
+
+//     res.setHeader(
+//       "Content-Disposition",
+//       `attachment; filename="Purchase_Template_${prefix}_${Date.now()}.xlsx"`,
+//     );
+//     res.setHeader(
+//       "Content-Type",
+//       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+//     );
+
+//     res.send(buffer);
+//   } catch (err) {
+//     console.error(err);
+//     res
+//       .status(500)
+//       .json({ success: false, message: "Export Error", error: err.message });
+//   }
+// };
+
 exports.exportProductToExcel = async (req, res) => {
   try {
     if (!req.user?.id)
@@ -1401,7 +1523,73 @@ exports.exportProductToExcel = async (req, res) => {
       };
     });
 
-    const workbook = xlsx.utils.book_new();
+    const workbook = new ExcelJS.Workbook();
+
+    const createSheetWithStyle = (wb, sheetName, sheetData) => {
+      const safeName = sheetName.substring(0, 30).replace(/[\\/?*[\]]/g, "");
+      const sheet = wb.addWorksheet(safeName);
+
+      if (sheetData.length === 0) return;
+
+      const headers = Object.keys(sheetData[0]);
+      sheet.columns = headers.map((h) => ({
+        header: h,
+        key: h,
+        width: 15,
+      }));
+
+      sheet.addRows(sheetData);
+
+      // 🟢 แก้ไขตรงนี้: เอา Main Stone และ Unit ออกจากรายการสีแดง
+      // เหลือเฉพาะสิ่งที่ User ต้องกรอกจริงๆ ตอนซื้อ
+      const editableFields = [
+        "Gross Weight (g)", // น้ำหนักชั่งจริงอาจเปลี่ยนได้
+        "Net Weight (g)", // น้ำหนักชั่งจริงอาจเปลี่ยนได้
+        "Purchase Unit", // หน่วยนับตอนซื้อ
+        "Qty", // จำนวนที่ซื้อ (สำคัญ)
+        "Cost", // ต้นทุน (สำคัญ)
+        "Price", // ราคาขาย (สำคัญ)
+      ];
+
+      const headerRow = sheet.getRow(1);
+      headerRow.eachCell((cell) => {
+        const headerName = cell.value;
+        cell.font = { bold: true, size: 12 };
+        cell.alignment = { vertical: "middle", horizontal: "center" };
+        cell.border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
+        };
+
+        if (editableFields.includes(headerName)) {
+          // 🔴 สีแดงเฉพาะช่องที่ต้องกรอก
+          cell.fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "FFFF0000" },
+          };
+          cell.font = { color: { argb: "FFFFFFFF" }, bold: true };
+        } else {
+          // ⚪️ สีเทาสำหรับข้อมูล Master Data (Main Stone, Code, Name ฯลฯ)
+          cell.fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "FFEEEEEE" },
+          };
+        }
+      });
+
+      sheet.columns.forEach((column) => {
+        let maxLength = 0;
+        column.eachCell({ includeEmpty: true }, (cell) => {
+          const columnLength = cell.value ? cell.value.toString().length : 10;
+          if (columnLength > maxLength) maxLength = columnLength;
+        });
+        column.width = maxLength < 10 ? 10 : maxLength + 2;
+      });
+    };
 
     if (type === "category") {
       const grouped = rows.reduce((acc, r) => {
@@ -1410,36 +1598,26 @@ exports.exportProductToExcel = async (req, res) => {
         acc[key].push(r);
         return acc;
       }, {});
-
       Object.entries(grouped).forEach(([cat, data]) =>
-        createSheet(
-          workbook,
-          cat.substring(0, 30).replace(/[\\/?*[\]]/g, ""),
-          data,
-        ),
+        createSheetWithStyle(workbook, cat, data),
       );
     } else {
-      createSheet(workbook, "Products", rows);
+      createSheetWithStyle(workbook, "Products", rows);
     }
 
-    const buffer = xlsx.write(workbook, {
-      type: "buffer",
-      bookType: "xlsx",
-    });
-
-    const prefix =
-      type === "category" ? value : type === "selected" ? "Selected" : "All";
-
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="Purchase_Template_${prefix}_${Date.now()}.xlsx"`,
-    );
     res.setHeader(
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     );
+    const prefix =
+      type === "category" ? value : type === "selected" ? "Selected" : "All";
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="Purchase_Template_${prefix}_${Date.now()}.xlsx"`,
+    );
 
-    res.send(buffer);
+    await workbook.xlsx.write(res);
+    res.end();
   } catch (err) {
     console.error(err);
     res

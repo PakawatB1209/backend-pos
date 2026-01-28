@@ -1,9 +1,14 @@
+const mongoose = require("mongoose");
 const Purchase = require("../models/Purchase");
 const Stock = require("../models/Stock");
 const StockTransaction = require("../models/StockTransaction");
 const User = require("../models/User");
 const XLSX = require("xlsx");
+const ExcelJS = require("exceljs");
+const Warehouse = require("../models/Warehouse");
 const Product = require("../models/Product");
+const fs = require("fs");
+const path = require("path");
 
 const generatePurchaseNumber = async () => {
   const date = new Date();
@@ -37,16 +42,37 @@ exports.createPurchase = async (req, res) => {
     const { date, vendor_name, ref1, ref2, note, items } = req.body;
 
     const user = await User.findById(userId).select("comp_id");
-    if (!user || !user.comp_id) {
+    if (!user || !user.comp_id)
       throw new Error("User not associated with company");
+
+    let defaultWarehouse = await Warehouse.findOne({
+      comp_id: user.comp_id,
+      warehouse_name: { $regex: /^others$/i },
+    });
+
+    if (!defaultWarehouse) {
+      defaultWarehouse = await Warehouse.findOne({ comp_id: user.comp_id });
+    }
+
+    if (!defaultWarehouse) {
+      throw new Error(
+        "No Warehouse found. Please create at least one warehouse.",
+      );
     }
 
     const autoPurchaseNumber = await generatePurchaseNumber(user.comp_id);
-
     const totalAmount = items.reduce(
       (sum, item) => sum + (Number(item.amount) || 0),
       0,
     );
+
+    // 2. Map Items
+    const finalItems = items.map((item) => {
+      return {
+        ...item,
+        warehouse_id: item.warehouse_id || defaultWarehouse._id,
+      };
+    });
 
     const newPurchase = new Purchase({
       comp_id: user.comp_id,
@@ -58,20 +84,46 @@ exports.createPurchase = async (req, res) => {
       ref2,
       note,
       total_amount: totalAmount,
-      items: items,
+      items: finalItems,
     });
 
     await newPurchase.save({ session });
 
-    for (const item of items) {
-      if (!item.warehouse_id) {
-        throw new Error(`Product ${item.product_id} missing warehouse_id`);
+    // 🟢 Loop Update Stock (แก้ไขใหม่: คำนวณต้นทุนเฉลี่ย)
+    for (const item of finalItems) {
+      const qty = Number(item.quantity);
+      const incomingCost = Number(item.cost); // ราคาต้นทุนของรอบนี้ (ทุนใหม่)
+
+      const totalGwToAdd = (Number(item.gross_weight) || 0) * qty;
+      const totalNwToAdd = (Number(item.net_weight) || 0) * qty;
+      const totalSwToAdd = (Number(item.stone_weight) || 0) * qty;
+
+      // 🟡 1. ค้นหา Stock เดิมก่อน (เพื่อเอามาคำนวณ)
+      let stock = await Stock.findOne({
+        comp_id: user.comp_id,
+        warehouse_id: item.warehouse_id,
+        product_id: item.product_id,
+      }).session(session);
+
+      // ตั้งค่าเริ่มต้น: ถ้าไม่มีของเดิม ให้ใช้ราคาใหม่เลย
+      let newCost = incomingCost;
+
+      // 🟡 2. ถ้ามีของเดิม -> คำนวณถัวเฉลี่ย (Weighted Average)
+      if (stock) {
+        const currentQty = stock.quantity;
+        const currentCost = stock.cost; // ทุนเดิม
+
+        // สูตร: (มูลค่าเดิม + มูลค่าใหม่) / จำนวนรวม
+        const totalOldValue = currentQty * currentCost;
+        const totalNewValue = qty * incomingCost;
+        const totalQty = currentQty + qty;
+
+        if (totalQty > 0) {
+          newCost = (totalOldValue + totalNewValue) / totalQty;
+        }
       }
 
-      const totalGwToAdd = (Number(item.gross_weight) || 0) * Number(item.qty);
-      const totalNwToAdd = (Number(item.net_weight) || 0) * Number(item.qty);
-      const totalSwToAdd = (Number(item.stone_weight) || 0) * Number(item.qty);
-
+      // 🟡 3. อัปเดตลง Database
       const updatedStock = await Stock.findOneAndUpdate(
         {
           comp_id: user.comp_id,
@@ -80,19 +132,20 @@ exports.createPurchase = async (req, res) => {
         },
         {
           $inc: {
-            quantity: Number(item.qty),
+            quantity: qty,
             total_gross_weight: totalGwToAdd,
             total_net_weight: totalNwToAdd,
             total_stone_weight: totalSwToAdd,
           },
           $set: {
-            cost: Number(item.cost),
+            cost: newCost, // ✅ บันทึกต้นทุนเฉลี่ยใหม่ (ที่คำนวณแล้ว)
             price: Number(item.price),
           },
         },
         { new: true, upsert: true, session },
       );
 
+      // 🟡 4. บันทึก Transaction
       await StockTransaction.create(
         [
           {
@@ -102,11 +155,11 @@ exports.createPurchase = async (req, res) => {
             type: "in",
             action_type: "purchase",
             document_ref: newPurchase._id,
-            qty: Number(item.qty),
-            cost: Number(item.cost),
+            qty: qty,
 
-            balance_qty: updatedStock.quantity,
+            cost: incomingCost, // ✅ ใน Transaction เก็บราคา "ที่ซื้อจริงรอบนี้" (ไม่ใช่ราคาเฉลี่ย)
 
+            balance_after: updatedStock.quantity,
             created_by: userId,
             note: `Purchase Ref: ${autoPurchaseNumber} from ${vendor_name || "Vendor"}`,
           },
@@ -120,7 +173,7 @@ exports.createPurchase = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: "Purchase saved and stock updated successfully",
+      message: "Purchase saved successfully",
       data: newPurchase,
     });
   } catch (error) {
@@ -137,80 +190,327 @@ exports.importPreview = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: "No file uploaded" });
 
-    const workbook = XLSX.read(req.file.buffer, { type: "buffer" });
-    const sheetName = workbook.SheetNames[0];
-    // defval: "" เพื่อกัน error กรณีช่องว่าง
-    const rawData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {
-      defval: "",
-    });
+    const user = await User.findById(req.user.id).select("comp_id");
+    if (!user || !user.comp_id)
+      return res
+        .status(400)
+        .json({ success: false, message: "User has no company" });
 
-    const processedItems = [];
+    // 1. เตรียมข้อมูล (Warehouse & Products)
+    const { warehouseMap, fallbackId, othersWarehouseId } =
+      await buildWarehouseMap(user.comp_id);
+    const workbook = XLSX.read(req.file.buffer, { type: "buffer" });
     const localBaseUrl = `${req.protocol}://${req.get("host")}/uploads/product/`;
 
-    for (const row of rawData) {
-      // 1. อ่าน Code (รองรับทั้ง Code และ code ตัวเล็กตัวใหญ่)
-      const productCode = row["Code"] || row["code"];
+    // 2. ดึงข้อมูล Product ทั้งหมดทีเดียว (Batch Query)
+    const allSheetData = getAllSheetData(workbook);
+    const productMap = await getProductMap(user.comp_id, allSheetData);
 
-      if (!productCode) continue; // ถ้าไม่มี code ข้ามบรรทัดนี้
+    const processedItems = [];
+    const errorRows = [];
 
-      // หา Product ใน DB
-      const product = await Product.findOne({
-        product_code: productCode.toString().trim(),
-        comp_id: req.user.comp_id,
-      })
-        .select("product_name product_code file product_detail_id price unit")
-        .populate("product_detail_id");
+    // 3. วนลูปตรวจสอบข้อมูล
+    for (const { row } of allSheetData) {
+      const codeStr =
+        row["Code"] || row["code"]
+          ? String(row["Code"] || row["code"]).trim()
+          : "";
 
-      if (product) {
-        // จัดการรูปภาพ
-        let finalImage = "";
-        if (product.file && product.file.length > 0) {
-          finalImage = product.file[0].startsWith("http")
-            ? product.file[0]
-            : `${localBaseUrl}${product.file[0]}`;
-        }
-
-        const detail = product.product_detail_id || {};
-
-        // 2. ดึงค่าจาก Excel (ตามชื่อหัวคอลัมน์ในรูปเป๊ะๆ)
-        // ถ้าใน Excel ไม่กรอกมา ให้เป็น 0 หรือค่า Default
-        const excelQty = Number(row["QTY"]) || Number(row["Qty"]) || 1;
-        const excelCost = Number(row["Cost"]) || 0;
-        const excelPrice = Number(row["Price"]) || product.price || 0;
-
-        // น้ำหนัก: ถ้า Excel กรอกมาให้ใช้ Excel, ถ้าไม่กรอกให้ดึงจาก Master
-        const excelGw = Number(row["Gross Weight (g)"]) || 0;
-        const excelNw = Number(row["Net Weight (g)"]) || detail.weight || 0;
-
-        // หมายเหตุ: S.Weight (Swt) ใน Excel รูปนี้ไม่มี ถ้ามีคอลัมน์เพิ่มก็ใส่ row["Stone Weight"] ได้
-
-        processedItems.push({
-          product_id: product._id,
-          code: product.product_code,
-          name: product.product_name,
-          image: finalImage,
-
-          qty: excelQty,
-          cost: excelCost,
-          price: excelPrice,
-
-          // ส่งค่าที่ map ได้กลับไป
-          gross_weight: excelGw,
-          net_weight: excelNw,
-          stone_weight: detail.primary_stone?.weight || 0, // ดึงจาก Master ไปก่อนถ้าใน Excel ไม่มี
-
-          unit: row["Unit"] || product.unit || "pcs",
-        });
+      // 🛑 Validate Row
+      const validationError = validateRow(row, codeStr, productMap);
+      if (validationError) {
+        errorRows.push({ ...row, Error_Reason: validationError });
+        continue;
       }
+
+      // ✅ Process Valid Item
+      const product = productMap.get(codeStr);
+      const validItem = mapValidItem(
+        row,
+        product,
+        warehouseMap,
+        fallbackId,
+        othersWarehouseId,
+        localBaseUrl,
+      );
+      if (validItem) processedItems.push(validItem);
     }
+
+    // 4. สร้างไฟล์ Error (ถ้ามี)
+    const errorFileName = await generateErrorFile(errorRows);
 
     res.json({
       success: true,
       count: processedItems.length,
       data: processedItems,
+      hasError: errorRows.length > 0,
+      errorCount: errorRows.length,
+      errorFileName,
     });
   } catch (error) {
     console.error("Import Error:", error);
     res.status(500).json({ success: false, message: "Import failed" });
+  }
+};
+// 1. เตรียม Warehouse Map
+async function buildWarehouseMap(comp_id) {
+  const warehouses = await Warehouse.find({ comp_id });
+  const map = {};
+  let othersId = null,
+    firstId = warehouses[0]?._id;
+
+  warehouses.forEach((wh) => {
+    const clean = wh.warehouse_name?.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+    if (wh.warehouse_type) map[wh.warehouse_type.trim().toLowerCase()] = wh._id;
+    if (clean) map[clean] = wh._id;
+
+    const nameLower = wh.warehouse_name?.trim().toLowerCase();
+    if (nameLower === "others" || nameLower === "other") othersId = wh._id;
+  });
+
+  return {
+    warehouseMap: map,
+    fallbackId: othersId || firstId,
+    othersWarehouseId: othersId,
+  };
+}
+
+// 2. แปลง Sheet เป็น Data Array
+function getAllSheetData(workbook) {
+  const allRows = [];
+  workbook.SheetNames.forEach((name) => {
+    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[name], {
+      defval: "",
+    });
+    rows.forEach((row) => allRows.push({ sheetName: name, row }));
+  });
+  return allRows;
+}
+
+// 3. ดึง Product จาก DB (Optimized)
+async function getProductMap(comp_id, allSheetData) {
+  const codes = allSheetData
+    .map(({ row }) => row["Code"] || row["code"])
+    .filter((c) => c)
+    .map((c) => String(c).trim());
+
+  const products = await Product.find({ comp_id, product_code: { $in: codes } })
+    .select(
+      "product_name product_code file product_detail_id price unit category type",
+    )
+    .populate("product_detail_id");
+
+  const map = new Map();
+  products.forEach((p) => map.set(p.product_code.trim(), p));
+  return map;
+}
+
+// 4. ตรวจสอบความถูกต้อง (Validation Logic)
+function validateRow(row, codeStr, productMap) {
+  if (!codeStr) return "Missing Product Code";
+
+  const product = productMap.get(codeStr);
+  if (!product) return "Product Not Found in Database";
+
+  const norm = (s) =>
+    String(s || "")
+      .trim()
+      .toLowerCase();
+
+  if (row["Name"] && norm(row["Name"]) !== norm(product.product_name))
+    return `Name Mismatch (Excel: ${row["Name"]}, DB: ${product.product_name})`;
+
+  const dbCat = product.category || product.product_detail_id?.category;
+  if (row["Category"] && norm(row["Category"]) !== norm(dbCat))
+    return `Category Mismatch`;
+
+  const dbType = product.type || product.product_detail_id?.type;
+  if (row["Type"] && norm(row["Type"]) !== norm(dbType)) return `Type Mismatch`;
+
+  const excelUnit = row["Product Unit"] || row["Purchase Unit"];
+  if (excelUnit && norm(excelUnit) !== norm(product.unit))
+    return `Unit Mismatch`;
+
+  // Main Stone Checks
+  const ps = product.product_detail_id?.primary_stone || {};
+  if (row["Main Stone"] && norm(row["Main Stone"]) !== norm(ps.stone_name))
+    return `Main Stone Mismatch`;
+  if (row["Main Shape"] && norm(row["Main Shape"]) !== norm(ps.shape))
+    return `Main Shape Mismatch`;
+  if (row["Main Color"] && norm(row["Main Color"]) !== norm(ps.color))
+    return `Main Color Mismatch`;
+  if (row["Main Clarity"] && norm(row["Main Clarity"]) !== norm(ps.clarity))
+    return `Main Clarity Mismatch`;
+
+  if (row["Main Qty"]) {
+    if (parseNum(row["Main Qty"]) !== (Number(ps.stone_qty) || 0))
+      return `Main Qty Mismatch`;
+  }
+  if (row["Main Weight"]) {
+    if (
+      parseNum(row["Main Weight"]).toFixed(2) !==
+      (Number(ps.weight) || 0).toFixed(2)
+    )
+      return `Main Weight Mismatch`;
+  }
+
+  return null; // No Error
+}
+
+// 5. แปลงข้อมูลเป็น Item ที่พร้อม Save
+function mapValidItem(
+  row,
+  product,
+  warehouseMap,
+  fallbackId,
+  othersId,
+  baseUrl,
+) {
+  const qty = parseNum(row["QTY"] || row["Qty"]);
+  if (qty <= 0) return null;
+
+  let image = "";
+  if (product.file?.length > 0) {
+    image = product.file[0].startsWith("http")
+      ? product.file[0]
+      : `${baseUrl}${product.file[0]}`;
+  }
+
+  const detail = product.product_detail_id || {};
+  const whName = row["Warehouse"] || row["Category"] || "";
+  const whKey = whName
+    .toString()
+    .replace(/[^a-zA-Z0-9]/g, "")
+    .toLowerCase();
+  const whId = warehouseMap[whKey] || fallbackId;
+
+  return {
+    product_id: product._id,
+    code: product.product_code,
+    name: product.product_name,
+    image,
+    warehouse_id: whId,
+    warehouse_name: whId === othersId ? "Others (Auto)" : whName,
+    quantity: qty,
+    cost: parseNum(row["Cost"]),
+    price: parseNum(row["Price"], product.price),
+    amount: qty * parseNum(row["Cost"]),
+    gross_weight: parseNum(row["Gross Weight (g)"]),
+    net_weight: parseNum(row["Net Weight (g)"], detail.net_weight),
+    stone_weight: detail.primary_stone?.weight || 0,
+    unit: row["Purchase Unit"] || product.unit || "pcs",
+  };
+}
+
+// 6. สร้างไฟล์ Error Excel (ExcelJS)
+async function generateErrorFile(errorRows) {
+  if (errorRows.length === 0) return null;
+
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet("Error Rows");
+  const headers = Object.keys(errorRows[0]);
+
+  sheet.columns = headers.map((h) => ({ header: h, key: h, width: 15 }));
+  sheet.addRows(errorRows);
+
+  const editableFields = [
+    "QTY",
+    "Qty",
+    "Cost",
+    "Price",
+    "Gross Weight (g)",
+    "Net Weight (g)",
+    "Purchase Unit",
+    "Product Unit",
+  ];
+
+  sheet.getRow(1).eachCell((cell) => {
+    cell.font = { bold: true, size: 12 };
+    cell.alignment = { vertical: "middle", horizontal: "center" };
+    cell.border = {
+      top: { style: "thin" },
+      left: { style: "thin" },
+      bottom: { style: "thin" },
+      right: { style: "thin" },
+    };
+
+    if (editableFields.includes(cell.value)) {
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFFF0000" },
+      }; // Red
+      cell.font = { color: { argb: "FFFFFFFF" }, bold: true };
+    } else if (cell.value === "Error_Reason") {
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFFFFF00" },
+      }; // Yellow
+    } else {
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFEEEEEE" },
+      }; // Grey
+    }
+  });
+
+  sheet.columns.forEach((col) => {
+    let max = 0;
+    col.eachCell(
+      { includeEmpty: true },
+      (c) => (max = Math.max(max, c.value ? c.value.toString().length : 10)),
+    );
+    col.width = max + 2;
+  });
+
+  const fileName = `Error_${Date.now()}_${Math.round(Math.random() * 1000)}.xlsx`;
+  const dir = path.join(__dirname, "../storage/exports");
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+  await workbook.xlsx.writeFile(path.join(dir, fileName));
+  return fileName;
+}
+
+const parseNum = (v, def = 0) => {
+  if (v == null) return def;
+  const n = Number(String(v).trim().replace(/,/g, ""));
+  return isNaN(n) ? def : n;
+};
+
+exports.downloadErrorFile = async (req, res) => {
+  try {
+    const { filename } = req.params;
+
+    // ระบุ Path ไปยังโฟลเดอร์ลับ
+    const filePath = path.join(__dirname, "../storage/exports", filename);
+
+    // เช็คว่ามีไฟล์จริงไหม
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ message: "File not found or expired" });
+    }
+
+    // สั่งดาวน์โหลดไฟล์
+    res.download(filePath, "Error_Items_List.xlsx", (err) => {
+      // 🟢 ส่วนนี้จะทำงานเมื่อดาวน์โหลดเสร็จ (หรือ User กดยกเลิก)
+
+      if (err) {
+        console.error("Download warning/error:", err);
+        // ถึงจะ Error (เช่น User ปิดหน้าเว็บหนี) ก็ควรลบทิ้งอยู่ดี ถ้าเราไม่เก็บไว้แล้ว
+      }
+
+      // 🗑️ สั่งลบไฟล์ทิ้งทันที
+      fs.unlink(filePath, (unlinkErr) => {
+        if (unlinkErr) {
+          console.error("Error deleting file:", unlinkErr);
+        } else {
+          console.log(`Deleted temporary file: ${filename}`);
+        }
+      });
+    });
+  } catch (error) {
+    console.error("Download Error:", error);
+    res.status(500).json({ message: "Server Error" });
   }
 };

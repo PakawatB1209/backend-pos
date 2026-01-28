@@ -7,6 +7,7 @@ const {
   list,
   removeOneStock,
   removeStockAll,
+  getStockTransactions,
   // stockOut,
 } = require("../Controllers/stock");
 
@@ -15,6 +16,7 @@ const {
 
 // List All (GET)
 router.get("/stock", auth, list);
+router.get("/stock/transactions", auth, getStockTransactions);
 
 // Get One by ID (GET)
 router.get("/stock/:id", auth, getOneStock);

@@ -208,3 +208,61 @@ exports.removeStockAll = async (req, res) => {
     res.status(500).send("Server error: " + err.message);
   }
 };
+
+exports.getStockTransactions = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId).select("comp_id");
+
+    if (!user || !user.comp_id) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User has no company" });
+    }
+
+    // 🟢 1. สร้าง Filter (รองรับการส่ง query params มาจากหน้าบ้าน)
+    // ตัวอย่าง: /api/stock/transactions?product_id=xxx&warehouse_id=yyy
+    let query = { comp_id: user.comp_id };
+
+    if (req.query.product_id) {
+      query.product_id = req.query.product_id;
+    }
+
+    if (req.query.warehouse_id) {
+      query.warehouse_id = req.query.warehouse_id;
+    }
+
+    if (req.query.type) {
+      query.type = req.query.type; // in, out, adjust
+    }
+
+    // 🟢 2. ดึงข้อมูล + Populate (แปลง ID เป็นชื่อ)
+    const transactions = await StockTransaction.find(query)
+      .populate({
+        path: "comp_id",
+        select: "comp_name",
+      })
+      .populate({
+        path: "product_id",
+        select: "product_code product_name image unit",
+      })
+      .populate({
+        path: "warehouse_id",
+        select: "warehouse_name",
+      })
+      .populate({
+        path: "created_by",
+        select: "user_name user_email",
+      })
+      .sort({ createdAt: -1 }); // เรียงจาก ล่าสุด -> เก่าสุด
+
+    res.status(200).json({
+      success: true,
+      count: transactions.length,
+      data: transactions,
+    });
+  } catch (error) {
+    console.error("Get Transaction Error:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};

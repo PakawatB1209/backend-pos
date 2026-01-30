@@ -12,6 +12,7 @@ router.get("/masters", auth, list);
 
 router.get("/masters/:id", getOnemasters);
 
-router.post("/create-masters", createmasters);
+// router.post("/create-masters", createmasters);
+router.post("/create-masters", auth, createmasters);
 
 module.exports = router;

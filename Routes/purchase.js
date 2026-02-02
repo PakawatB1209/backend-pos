@@ -17,6 +17,4 @@ router.post(
   uploadExcel.single("file"),
   importPreview,
 );
-
-router.get("/purchase/download-error/:filename", auth, downloadErrorFile);
 module.exports = router;

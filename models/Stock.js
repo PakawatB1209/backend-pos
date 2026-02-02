@@ -31,8 +31,16 @@ const StockSchema = new mongoose.Schema(
     total_net_weight: { type: Number, default: 0, set: setTwoDecimals },
     total_gross_weight: { type: Number, default: 0, set: setTwoDecimals },
   },
-  { timestamps: true },
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  },
 );
+
+StockSchema.virtual("amount").get(function () {
+  return (this.quantity || 0) * (this.cost || 0);
+});
 
 StockSchema.index(
   { warehouse_id: 1, product_id: 1, comp_id: 1 },

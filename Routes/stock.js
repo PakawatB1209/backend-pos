@@ -8,6 +8,7 @@ const {
   removeOneStock,
   removeStockAll,
   getStockTransactions,
+  getStockDetail,
   // stockOut,
 } = require("../Controllers/stock");
 
@@ -20,6 +21,9 @@ router.get("/stock/transactions", auth, getStockTransactions);
 
 // Get One by ID (GET)
 router.get("/stock/:id", auth, getOneStock);
+
+// Get One Detail by ID (GET)
+router.get("/stock/detail/:id", auth, getStockDetail);
 
 // Create Manual (POST)
 router.post("/stock", auth, createStock);

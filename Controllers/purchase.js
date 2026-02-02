@@ -64,9 +64,8 @@ exports.createPurchase = async (req, res) => {
     const totalAmount = items.reduce(
       (sum, item) => sum + (Number(item.amount) || 0),
       0,
-    );
+    ); // 2. Map Items
 
-    // 2. Map Items
     const finalItems = items.map((item) => {
       return {
         ...item,
@@ -87,33 +86,29 @@ exports.createPurchase = async (req, res) => {
       items: finalItems,
     });
 
-    await newPurchase.save({ session });
+    await newPurchase.save({ session }); // 🟢 Loop Update Stock (แก้ไขใหม่: คำนวณต้นทุนเฉลี่ย)
 
-    // 🟢 Loop Update Stock (แก้ไขใหม่: คำนวณต้นทุนเฉลี่ย)
     for (const item of finalItems) {
       const qty = Number(item.quantity);
       const incomingCost = Number(item.cost); // ราคาต้นทุนของรอบนี้ (ทุนใหม่)
 
       const totalGwToAdd = (Number(item.gross_weight) || 0) * qty;
       const totalNwToAdd = (Number(item.net_weight) || 0) * qty;
-      const totalSwToAdd = (Number(item.stone_weight) || 0) * qty;
+      const totalSwToAdd = (Number(item.stone_weight) || 0) * qty; // 🟡 1. ค้นหา Stock เดิมก่อน (เพื่อเอามาคำนวณ)
 
-      // 🟡 1. ค้นหา Stock เดิมก่อน (เพื่อเอามาคำนวณ)
       let stock = await Stock.findOne({
         comp_id: user.comp_id,
         warehouse_id: item.warehouse_id,
         product_id: item.product_id,
-      }).session(session);
+      }).session(session); // ตั้งค่าเริ่มต้น: ถ้าไม่มีของเดิม ให้ใช้ราคาใหม่เลย
 
-      // ตั้งค่าเริ่มต้น: ถ้าไม่มีของเดิม ให้ใช้ราคาใหม่เลย
-      let newCost = incomingCost;
+      let newCost = incomingCost; // 🟡 2. ถ้ามีของเดิม -> คำนวณถัวเฉลี่ย (Weighted Average)
 
-      // 🟡 2. ถ้ามีของเดิม -> คำนวณถัวเฉลี่ย (Weighted Average)
       if (stock) {
         const currentQty = stock.quantity;
         const currentCost = stock.cost; // ทุนเดิม
-
         // สูตร: (มูลค่าเดิม + มูลค่าใหม่) / จำนวนรวม
+
         const totalOldValue = currentQty * currentCost;
         const totalNewValue = qty * incomingCost;
         const totalQty = currentQty + qty;
@@ -121,9 +116,8 @@ exports.createPurchase = async (req, res) => {
         if (totalQty > 0) {
           newCost = (totalOldValue + totalNewValue) / totalQty;
         }
-      }
+      } // 🟡 3. อัปเดตลง Database
 
-      // 🟡 3. อัปเดตลง Database
       const updatedStock = await Stock.findOneAndUpdate(
         {
           comp_id: user.comp_id,
@@ -143,9 +137,8 @@ exports.createPurchase = async (req, res) => {
           },
         },
         { new: true, upsert: true, session },
-      );
+      ); // 🟡 4. บันทึก Transaction
 
-      // 🟡 4. บันทึก Transaction
       await StockTransaction.create(
         [
           {
@@ -158,6 +151,7 @@ exports.createPurchase = async (req, res) => {
             qty: qty,
 
             cost: incomingCost, // ✅ ใน Transaction เก็บราคา "ที่ซื้อจริงรอบนี้" (ไม่ใช่ราคาเฉลี่ย)
+            amount: qty * incomingCost,
 
             balance_after: updatedStock.quantity,
             created_by: userId,
@@ -186,65 +180,10 @@ exports.createPurchase = async (req, res) => {
   }
 };
 
-exports.importPreview = async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
-
-    const user = await User.findById(req.user.id).select("comp_id");
-    if (!user || !user.comp_id)
-      return res
-        .status(400)
-        .json({ success: false, message: "User has no company" });
-
-    const { warehouseMap, fallbackId, othersWarehouseId } =
-      await buildWarehouseMap(user.comp_id);
-    const workbook = XLSX.read(req.file.buffer, { type: "buffer" });
-    const localBaseUrl = `${req.protocol}://${req.get("host")}/uploads/product/`;
-
-    const allSheetData = getAllSheetData(workbook);
-    const productMap = await getProductMap(user.comp_id, allSheetData);
-
-    const processedItems = [];
-    const errorRows = [];
-
-    for (const { row } of allSheetData) {
-      const codeStr =
-        row["Code"] || row["code"]
-          ? String(row["Code"] || row["code"]).trim()
-          : "";
-
-      const validationError = validateRow(row, codeStr, productMap);
-      if (validationError) {
-        errorRows.push({ ...row, Error_Reason: validationError });
-        continue;
-      }
-
-      const product = productMap.get(codeStr);
-      const validItem = mapValidItem(
-        row,
-        product,
-        warehouseMap,
-        fallbackId,
-        othersWarehouseId,
-        localBaseUrl,
-      );
-      if (validItem) processedItems.push(validItem);
-    }
-
-    const errorFileName = await generateErrorFile(errorRows);
-
-    res.json({
-      success: true,
-      count: processedItems.length,
-      data: processedItems,
-      hasError: errorRows.length > 0,
-      errorCount: errorRows.length,
-      errorFileName,
-    });
-  } catch (error) {
-    console.error("Import Error:", error);
-    res.status(500).json({ success: false, message: "Import failed" });
-  }
+const parseNum = (v, def = 0) => {
+  if (v == null) return def;
+  const n = Number(String(v).trim().replace(/,/g, ""));
+  return isNaN(n) ? def : n;
 };
 
 async function buildWarehouseMap(comp_id) {
@@ -390,108 +329,73 @@ function mapValidItem(
     unit: row["Purchase Unit"] || product.unit || "pcs",
   };
 }
-
-async function generateErrorFile(errorRows) {
-  if (errorRows.length === 0) return null;
-
-  const workbook = new ExcelJS.Workbook();
-  const sheet = workbook.addWorksheet("Error Rows");
-  const headers = Object.keys(errorRows[0]);
-
-  sheet.columns = headers.map((h) => ({ header: h, key: h, width: 15 }));
-  sheet.addRows(errorRows);
-
-  const editableFields = [
-    "QTY",
-    "Qty",
-    "Cost",
-    "Price",
-    "Gross Weight (g)",
-    "Net Weight (g)",
-    "Purchase Unit",
-    "Product Unit",
-  ];
-
-  sheet.getRow(1).eachCell((cell) => {
-    cell.font = { bold: true, size: 12 };
-    cell.alignment = { vertical: "middle", horizontal: "center" };
-    cell.border = {
-      top: { style: "thin" },
-      left: { style: "thin" },
-      bottom: { style: "thin" },
-      right: { style: "thin" },
-    };
-
-    if (editableFields.includes(cell.value)) {
-      cell.fill = {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: "FFFF0000" },
-      };
-      cell.font = { color: { argb: "FFFFFFFF" }, bold: true };
-    } else if (cell.value === "Error_Reason") {
-      cell.fill = {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: "FFFFFF00" },
-      };
-    } else {
-      cell.fill = {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: "FFEEEEEE" },
-      };
-    }
-  });
-
-  sheet.columns.forEach((col) => {
-    let max = 0;
-    col.eachCell(
-      { includeEmpty: true },
-      (c) => (max = Math.max(max, c.value ? c.value.toString().length : 10)),
-    );
-    col.width = max + 2;
-  });
-
-  const fileName = `Error_${Date.now()}_${Math.round(Math.random() * 1000)}.xlsx`;
-  const dir = path.join(__dirname, "../storage/exports");
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-
-  await workbook.xlsx.writeFile(path.join(dir, fileName));
-  return fileName;
-}
-
-const parseNum = (v, def = 0) => {
-  if (v == null) return def;
-  const n = Number(String(v).trim().replace(/,/g, ""));
-  return isNaN(n) ? def : n;
-};
-
-exports.downloadErrorFile = async (req, res) => {
+exports.importPreview = async (req, res) => {
   try {
-    const { filename } = req.params;
+    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
 
-    const filePath = path.join(__dirname, "../storage/exports", filename);
+    const user = await User.findById(req.user.id).select("comp_id");
+    if (!user || !user.comp_id)
+      return res
+        .status(400)
+        .json({ success: false, message: "User has no company" });
 
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ message: "File not found or expired" });
-    }
+    const { warehouseMap, fallbackId, othersWarehouseId } =
+      await buildWarehouseMap(user.comp_id);
+    const workbook = XLSX.read(req.file.buffer, { type: "buffer" });
+    const localBaseUrl = `${req.protocol}://${req.get("host")}/uploads/product/`;
 
-    res.download(filePath, "Error_Items_List.xlsx", (err) => {
-      if (err) {
-        console.error("Download warning/error:", err);
+    const allSheetData = getAllSheetData(workbook);
+    const productMap = await getProductMap(user.comp_id, allSheetData);
+
+    const processedItems = [];
+    const errorRows = [];
+
+    for (const { row } of allSheetData) {
+      const codeStr =
+        row["Code"] || row["code"]
+          ? String(row["Code"] || row["code"]).trim()
+          : "";
+
+      // 🛑 ตรวจสอบ Error
+      const validationError = validateRow(row, codeStr, productMap);
+
+      if (validationError) {
+        // ถ้าผิด เก็บข้อมูลลง errorRows เพื่อส่งกลับไป Frontend
+        errorRows.push({
+          ...row,
+          Error_Reason: validationError, // สาเหตุที่ผิด
+          isError: true, // Flag บอกหน้าบ้านว่าเป็นแถวแดง
+        });
+        continue;
       }
 
-      fs.unlink(filePath, (unlinkErr) => {
-        if (unlinkErr) {
-          console.error("Error deleting file:", unlinkErr);
-        } else {
-          console.log(`Deleted temporary file: ${filename}`);
-        }
-      });
+      // ✅ ถ้าผ่าน นำไป map ข้อมูล
+      const product = productMap.get(codeStr);
+      const validItem = mapValidItem(
+        row,
+        product,
+        warehouseMap,
+        fallbackId,
+        othersWarehouseId,
+        localBaseUrl,
+      );
+      if (validItem) processedItems.push(validItem);
+    }
+
+    // ไม่มีการสร้างไฟล์ Excel (generateErrorFile) แล้ว
+
+    // ส่งข้อมูลกลับไปทั้ง 2 ส่วน (ผ่าน และ ไม่ผ่าน)
+    res.json({
+      success: true,
+      count: processedItems.length,
+      data: processedItems, // ข้อมูลที่ถูกต้อง (สีเขียว/ปกติ)
+
+      hasError: errorRows.length > 0,
+      errorCount: errorRows.length,
+      errorData: errorRows, // ข้อมูลที่ผิดพลาด (Frontend เอาไปวนลูปแสดงสีแดง)
     });
   } catch (error) {
-    console.error("Download Error:", error);
-    res.status(500).json({ message: "Server Error" });
+    console.error("Import Error:", error);
+    res.status(500).json({ success: false, message: "Import failed" });
   }
 };

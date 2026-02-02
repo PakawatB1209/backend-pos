@@ -1487,11 +1487,11 @@ exports.updateProduct = async (req, res) => {
           success: false,
           message: "Category 'accessory' cannot have stone details.",
         });
-      if (data.unit === "cts")
-        return res.status(400).json({
-          success: false,
-          message: "Category 'accessory' cannot utilize 'cts' unit.",
-        });
+      // if (data.unit === "cts")
+      //   return res.status(400).json({
+      //     success: false,
+      //     message: "Category 'accessory' cannot utilize 'cts' unit.",
+      //   });
     }
 
     // --- File Upload ---

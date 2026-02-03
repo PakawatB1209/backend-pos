@@ -80,12 +80,7 @@ const stoneSchema = Joi.object({
   stone_name: Joi.string().required(),
   shape: Joi.string().required(),
   size: Joi.string().required(),
-
-  net_weight: Joi.number()
-    .required()
-    .messages({ "any.required": "Carat Weight (Nwt) is required" }),
-  gross_weight: Joi.forbidden(),
-
+  weight: Joi.number().required(),
   color: Joi.string().optional(),
   cutting: Joi.string().optional(),
   quality: Joi.string().optional(),

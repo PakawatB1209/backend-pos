@@ -279,6 +279,7 @@ exports.createUsersendEmail = async (req, res) => {
       from: `"Jewelry System Admin" <${process.env.ADMIN_EMAIL}>`,
       to: user_email,
       subject: `Welcome! Your Account Credentials for ${user_name}`,
+      // Text Version (สำหรับ Client แบบเก่า)
       text: `
 Hello ${user_name},
 
@@ -299,6 +300,89 @@ Please verify your information and change your password after the first login.
 
 Best regards,
 System Admin
+      `,
+      html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+</head>
+
+<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
+    <tr>
+      <td align="center">
+
+        <table width="600" cellpadding="0" cellspacing="0"
+          style="background:#FFFFFF;border-radius:20px;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,0.25);">
+
+          <tr>
+            <td style="background:linear-gradient(135deg,#1E3A8A,#2563EB);padding:28px 36px;color:#FFFFFF;font-size:18px;font-weight:bold;">
+              JEWELRY SYSTEM
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center" style="padding:36px 0;">
+              <img
+                src="https://www.svgrepo.com/show/492704/a-student-doing-a-guts-pose.svg"
+                width="160px"
+                alt="New Account"
+              />
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:0 40px 40px 40px;color:#1F2937;">
+              <h2>Welcome !</h2>
+
+              <p>
+                Hello <strong>${user_name}</strong>,<br /><br />
+                Welcome to the Jewelry Management System. Your account has been successfully created.
+                Here are your login credentials:
+              </p>
+
+              <table width="100%" cellpadding="10" cellspacing="0"
+                style="background:#F1F5F9;border-radius:14px;margin:24px 0;">
+                <tr>
+                  <td>
+                    <strong style="color:#2563EB;">User Account Information:</strong><br/>
+                    <hr style="border:0;border-top:1px solid #CBD5E1;margin:10px 0;" />
+                    
+                    <strong>Username:</strong> ${newUser.user_name}<br />
+                    <strong>Email:</strong> ${newUser.user_email}<br />
+                    <strong>Password:</strong> ${user_password}</span><br />
+                    <strong>Role:</strong> ${roleToBeCreated}<br />
+                    <strong>Status:</strong> ${newUser.status ? '<span style="color:#16A34A;font-weight:bold;">Active</span>' : '<span style="color:#DC2626;font-weight:bold;">Inactive</span>'}
+                  </td>
+                </tr>
+              </table>
+
+              <p style="font-size:14px;color:#DC2626;">
+                *Important: Please verify your information and change your password immediately after the first login.
+              </p>
+
+              <p style="text-align:center;margin-top:32px;">
+                <a href="${process.env.LOGIN_URL || "http://localhost:5173/"}"
+                  style="background:#2563EB;color:#FFFFFF;padding:14px 40px;border-radius:999px;text-decoration:none;font-weight:bold;">
+                  Login Now
+                </a>
+              </p>
+
+              <p style="margin-top:40px;font-size:14px;color:#6B7280;">
+                Best regards,<br />
+                <strong>System Admin</strong>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
       `,
     };
 
@@ -694,23 +778,99 @@ exports.userRequestResetPassword = async (req, res) => {
       from: `"System Notification" <${process.env.ADMIN_EMAIL}>`,
       to: admin.user_email,
       subject: `[Request] Password Reset Request from ${user.user_name}`,
+      // Text version (สำหรับ Email Client ที่ไม่รองรับ HTML)
       text: `
 Admin,
-
 User has requested a password reset.
 
 User Details:
--------------
 Username : ${user.user_name}
 Email    : ${user.user_email}
 Company  : ${companyInfo}
 Role     : ${user.user_role}
 
 Please login to the system and reset the password for this user manually.
-
 Login URL: http://localhost:5173/
+`,
+      // HTML version (Style ใหม่ + ข้อมูลเดิม)
+      html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+</head>
 
-System Auto-Message
+<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
+    <tr>
+      <td align="center">
+
+        <table width="600" cellpadding="0" cellspacing="0"
+          style="background:#FFFFFF;border-radius:20px;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,0.25);">
+
+          <tr>
+            <td style="background:linear-gradient(135deg,#1E3A8A,#2563EB);padding:28px 36px;color:#FFFFFF;font-size:18px;font-weight:bold;">
+              YOUR COMPANY
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center" style="padding:36px 0;">
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/1000/1000997.png"
+                width="48"
+                alt="User Request"
+              />
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:0 40px 40px 40px;color:#1F2937;">
+              <h2>Password Reset Request</h2>
+
+              <p>
+                Hello <strong>Admin</strong>,<br /><br />
+                User has requested a password reset. Please review the details below:
+              </p>
+
+              <table width="100%" cellpadding="10" cellspacing="0"
+                style="background:#F1F5F9;border-radius:14px;margin:24px 0;">
+                <tr>
+                  <td>
+                    <strong style="color:#2563EB;">User Details:</strong><br/>
+                    <hr style="border:0;border-top:1px solid #CBD5E1;margin:10px 0;" />
+                    <strong>Username:</strong> ${user.user_name}<br />
+                    <strong>Email:</strong> ${user.user_email}<br />
+                    <strong>Company:</strong> ${companyInfo}<br />
+                    <strong>Role:</strong> ${user.user_role}
+                  </td>
+                </tr>
+              </table>
+
+              <p>
+                Please login to the system and reset the password for this user manually.
+              </p>
+
+              <p style="text-align:center;margin-top:32px;">
+                <a href="http://localhost:5173/"
+                  style="background:#2563EB;color:#FFFFFF;padding:14px 40px;border-radius:999px;text-decoration:none;font-weight:bold;">
+                  Login to System
+                </a>
+              </p>
+
+              <p style="margin-top:40px;font-size:14px;color:#6B7280;">
+                System Auto-Message<br />
+              </p>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
       `,
     };
 
@@ -855,6 +1015,7 @@ exports.resetPassUserbyAdmin_send = async (req, res) => {
       from: `"System Admin" <${process.env.ADMIN_EMAIL}>`,
       to: userToReset.user_email,
       subject: `[Notification] Your password has been reset by Admin`,
+
       text: `
 Hello ${userToReset.user_name},
 
@@ -871,7 +1032,88 @@ Please login and change your password immediately if this was not requested by y
 
 Best regards,
 IT Support Team
-      `,
+  `,
+
+      // HTML email
+      html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+</head>
+
+<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
+    <tr>
+      <td align="center">
+
+        <table width="600" cellpadding="0" cellspacing="0"
+          style="background:#FFFFFF;border-radius:20px;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,0.25);">
+
+          <tr>
+            <td style="background:linear-gradient(135deg,#1E3A8A,#2563EB);padding:28px 36px;color:#FFFFFF;font-size:18px;font-weight:bold;">
+              YOUR COMPANY
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center" style="padding:36px 0;">
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/747/747376.png"
+                width="48"
+                alt="Security"
+              />
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:0 40px 40px 40px;color:#1F2937;">
+              <h2>Password Reset Notification</h2>
+
+              <p>
+                Hello <strong>${userToReset.user_name}</strong>,<br /><br />
+                This is to inform you that your password has been reset
+                by the system administrator.
+              </p>
+
+              <table width="100%" cellpadding="10" cellspacing="0"
+                style="background:#F1F5F9;border-radius:14px;margin:24px 0;">
+                <tr>
+                  <td>
+                    <strong>Username:</strong> ${userToReset.user_name}<br />
+                    <strong>Password:</strong> ${user_password}<br />
+                    <strong>Date:</strong> ${new Date().toLocaleString("th-TH")}
+                  </td>
+                </tr>
+              </table>
+
+              <p>
+                Please log in and change your password immediately
+                if you did not request this action.
+              </p>
+
+              <p style="text-align:center;margin-top:32px;">
+                <a href="${process.env.LOGIN_URL || "#"}"
+                  style="background:#2563EB;color:#FFFFFF;padding:14px 40px;border-radius:999px;text-decoration:none;font-weight:bold;">
+                  Login to System
+                </a>
+              </p>
+
+              <p style="margin-top:40px;font-size:14px;color:#6B7280;">
+                Best regards,<br />
+                <strong>IT Support Team</strong>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `,
     };
 
     await transporter.sendMail(mailOptions);

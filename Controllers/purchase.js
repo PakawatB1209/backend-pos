@@ -10,6 +10,8 @@ const Product = require("../models/Product");
 const fs = require("fs");
 const path = require("path");
 
+const { getCurrentRate } = require("../Controllers/exchangeRate");
+
 const generatePurchaseNumber = async () => {
   const date = new Date();
   const year = date.getFullYear();
@@ -39,7 +41,16 @@ exports.createPurchase = async (req, res) => {
 
   try {
     const userId = req.user.id;
-    const { date, vendor_name, ref1, ref2, note, items } = req.body;
+    const {
+      date,
+      vendor_name,
+      ref1,
+      ref2,
+      note,
+      items,
+      currency,
+      exchange_rate,
+    } = req.body;
 
     const user = await User.findById(userId).select("comp_id");
     if (!user || !user.comp_id)
@@ -60,11 +71,23 @@ exports.createPurchase = async (req, res) => {
       );
     }
 
+    let finalRate = 1;
+    const selectedCurrency = currency || "THB";
+
+    if (selectedCurrency !== "THB") {
+      if (exchange_rate && Number(exchange_rate) > 0) {
+        finalRate = Number(exchange_rate);
+      } else {
+        finalRate = await getCurrentRate(selectedCurrency, date);
+      }
+    }
+    console.log(`Purchase Currency: ${selectedCurrency}, Rate: ${finalRate}`);
+
     const autoPurchaseNumber = await generatePurchaseNumber(user.comp_id);
-    const totalAmount = items.reduce(
+    const totalAmountOriginal = items.reduce(
       (sum, item) => sum + (Number(item.amount) || 0),
       0,
-    ); // 2. Map Items
+    );
 
     const finalItems = items.map((item) => {
       return {
@@ -82,7 +105,9 @@ exports.createPurchase = async (req, res) => {
       ref1,
       ref2,
       note,
-      total_amount: totalAmount,
+      currency: selectedCurrency,
+      exchange_rate: finalRate,
+      total_amount: totalAmountOriginal,
       items: finalItems,
     });
 
@@ -90,7 +115,9 @@ exports.createPurchase = async (req, res) => {
 
     for (const item of finalItems) {
       const qty = Number(item.quantity);
-      const incomingCost = Number(item.cost); // ราคาต้นทุนของรอบนี้ (ทุนใหม่)
+
+      const costOriginal = Number(item.cost);
+      const costTHB = costOriginal * finalRate;
 
       const totalGwToAdd = (Number(item.gross_weight) || 0) * qty;
       const totalNwToAdd = (Number(item.net_weight) || 0) * qty;
@@ -102,15 +129,14 @@ exports.createPurchase = async (req, res) => {
         product_id: item.product_id,
       }).session(session); // ตั้งค่าเริ่มต้น: ถ้าไม่มีของเดิม ให้ใช้ราคาใหม่เลย
 
-      let newCost = incomingCost; // 🟡 2. ถ้ามีของเดิม -> คำนวณถัวเฉลี่ย (Weighted Average)
+      let newCost = costTHB;
 
       if (stock) {
         const currentQty = stock.quantity;
         const currentCost = stock.cost; // ทุนเดิม
-        // สูตร: (มูลค่าเดิม + มูลค่าใหม่) / จำนวนรวม
 
         const totalOldValue = currentQty * currentCost;
-        const totalNewValue = qty * incomingCost;
+        const totalNewValue = qty * costTHB;
         const totalQty = currentQty + qty;
 
         if (totalQty > 0) {
@@ -150,8 +176,8 @@ exports.createPurchase = async (req, res) => {
             document_ref: newPurchase._id,
             qty: qty,
 
-            cost: incomingCost, // ✅ ใน Transaction เก็บราคา "ที่ซื้อจริงรอบนี้" (ไม่ใช่ราคาเฉลี่ย)
-            amount: qty * incomingCost,
+            cost: costTHB, // ✅ ใน Transaction เก็บราคา "ที่ซื้อจริงรอบนี้" (ไม่ใช่ราคาเฉลี่ย)
+            amount: qty * costTHB,
 
             balance_after: updatedStock.quantity,
             created_by: userId,
@@ -329,6 +355,7 @@ function mapValidItem(
     unit: row["Purchase Unit"] || product.unit || "pcs",
   };
 }
+
 exports.importPreview = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: "No file uploaded" });

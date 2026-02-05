@@ -5,24 +5,8 @@ const Masters = require("../models/masters");
 const mongoose = require("mongoose");
 const fs = require("fs");
 const sharp = require("sharp");
-const xlsx = require("xlsx");
 const ExcelJS = require("exceljs");
 const path = require("path");
-
-const buildColumnWidth = (data) => {
-  if (!data.length) return [];
-  const headers = Object.keys(data[0]);
-
-  return headers.map((h) => ({
-    wch: Math.max(h.length, ...data.map((r) => String(r[h] ?? "").length)) + 2,
-  }));
-};
-
-const createSheet = (workbook, name, data) => {
-  const ws = xlsx.utils.json_to_sheet(data);
-  ws["!cols"] = buildColumnWidth(data);
-  xlsx.utils.book_append_sheet(workbook, ws, name);
-};
 
 //helper
 const formatProductResponse = (product, req) => {

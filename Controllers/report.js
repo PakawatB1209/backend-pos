@@ -1,21 +1,16 @@
 const Purchase = require("../models/Purchase");
-// 👇 เพิ่มบรรทัดนี้เข้าไปครับ (สำคัญมาก)
 const User = require("../models/User");
+const ExchangeRate = require("../models/ExchangeRate");
 
 exports.getDayBookList = async (req, res) => {
   try {
-    // 1. ตรวจสอบ User
     const user = await User.findById(req.user.id).select("comp_id");
-
-    if (!user || !user.comp_id) {
+    if (!user || !user.comp_id)
       return res
-        .status(400)
-        .json({ success: false, message: "User not associated with company" });
-    }
-
+        .status(401)
+        .json({ success: false, message: "User not found" });
     const comp_id = user.comp_id;
 
-    // 2. สร้าง Query
     const { search, startDate, endDate } = req.query;
     let query = { comp_id };
 
@@ -36,7 +31,7 @@ exports.getDayBookList = async (req, res) => {
 
     const purchases = await Purchase.find(query)
       .select(
-        "purchase_number date vendor_name total_amount note items created_by",
+        "purchase_number date vendor_name total_amount currency note items",
       )
       .populate("created_by", "username")
       .sort({ date: -1, createdAt: -1 });
@@ -47,7 +42,7 @@ exports.getDayBookList = async (req, res) => {
         purchase_number: item.purchase_number,
         date: item.date,
         vendor: item.vendor_name || "-",
-        currency: "THB", // Fix เป็น THB ตามโจทย์
+        currency: item.currency || "THB",
         amount: item.total_amount || 0,
         note: item.note || "-",
         items_count: item.items ? item.items.length : 0,

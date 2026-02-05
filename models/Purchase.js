@@ -11,7 +11,7 @@ const PurchaseSchema = new mongoose.Schema(
     note: { type: String },
 
     currency: { type: String, default: "THB" },
-    // exchange_rate: { type: Number, default: 1 },
+    exchange_rate: { type: Number, default: 1 },
     total_amount: { type: Number, default: 0 },
     items: [
       {

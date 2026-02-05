@@ -325,7 +325,7 @@ System Admin
           <tr>
             <td align="center" style="padding:36px 0;">
               <img
-                src="https://www.svgrepo.com/show/492704/a-student-doing-a-guts-pose.svg"
+                src="https://www.svgrepo.com/show/492701/supporting-business-person.svg"
                 width="160px"
                 alt="New Account"
               />

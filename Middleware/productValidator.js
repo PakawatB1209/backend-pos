@@ -13,10 +13,7 @@ const baseSchema = {
     .required()
     .messages({ "any.required": "Product Code is required" }),
   description: Joi.string().allow("").optional(),
-  category: Joi.string()
-    .required()
-    .valid("productmaster", "stone", "semimount", "accessory", "others"),
-
+  category: Joi.string().required(),
   // cost: Joi.number()
   //   .min(0)
   //   .required()
@@ -138,18 +135,18 @@ const updateProductSchema = Joi.object({
   stones: Joi.array().items(stoneItemSchema).optional(),
 
   item_type: Joi.string().optional(),
-  metal: Joi.string().optional(),
-  stone_name: Joi.string().optional(),
-  shape: Joi.string().optional(),
-  cutting: Joi.string().optional(),
-  quality: Joi.string().optional(),
-  clarity: Joi.string().optional(),
+  metal: Joi.string().allow("", null).optional(),
+  stone_name: Joi.string().allow("", null).optional(),
+  shape: Joi.string().allow("", null).optional(),
+  cutting: Joi.string().allow("", null).optional(),
+  quality: Joi.string().allow("", null).optional(),
+  clarity: Joi.string().allow("", null).optional(),
 
-  metal_color: Joi.string().optional(),
-  color: Joi.string().optional(),
+  metal_color: Joi.string().allow("", null).optional(),
+  color: Joi.string().allow("", null).optional(),
 
-  product_size: Joi.string().optional(),
-  size: Joi.string().optional(),
+  product_size: Joi.string().allow("", null).optional(),
+  size: Joi.string().allow("", null).optional(),
   unit: Joi.string().valid("g", "pcs", "pair", "cts").default("pcs").optional(),
   gross_weight: Joi.number().optional(),
   net_weight: Joi.number().optional(),

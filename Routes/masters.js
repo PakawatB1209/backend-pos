@@ -6,9 +6,13 @@ const {
   createmasters,
   getOnemasters,
   list,
+  getGroupedMasters,
 } = require("../Controllers/masters");
 
 router.get("/masters", auth, list);
+
+// for dropdown
+router.get("/grouped", auth, getGroupedMasters);
 
 router.get("/masters/:id", getOnemasters);
 

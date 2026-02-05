@@ -8,12 +8,14 @@ const ProductSchema = new mongoose.Schema(
     comp_id: { type: mongoose.Schema.ObjectId, ref: "comp" },
     file: { type: [String], default: [] },
     product_category: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "masters",
       index: true,
       enum: ["productmaster", "stone", "semimount", "accessory", "others"],
     },
     product_item_type: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "masters",
       index: true,
     },
     related_accessories: [

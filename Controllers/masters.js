@@ -67,9 +67,19 @@ exports.getOnemasters = async (req, res) => {
       });
     }
 
-    const masters = await Masters.findById(id).lean();
+    const user = await User.findById(req.user.id).select("comp_id").lean();
+    if (!user || !user.comp_id) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Unauthorized / No Company" });
+    }
 
-    if (!masters) {
+    const master = await Masters.findOne({
+      _id: id,
+      comp_id: user.comp_id,
+    }).lean();
+
+    if (!master) {
       return res.status(404).json({
         success: false,
         message: "Master Data not found.",
@@ -78,7 +88,7 @@ exports.getOnemasters = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      data: masters,
+      data: master,
     });
   } catch (error) {
     console.log("Error get master:", error);
@@ -128,6 +138,47 @@ exports.list = async (req, res) => {
       success: false,
       message: "Server error",
     });
+  }
+};
+
+exports.getGroupedMasters = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+    const user = await User.findById(req.user.id).select("comp_id").lean();
+    if (!user || !user.comp_id) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User has no company" });
+    }
+    const allMasters = await Masters.find({ comp_id: user.comp_id })
+      .select("master_name master_type master_color")
+      .sort({ master_name: 1 })
+      .lean();
+    const groupedData = allMasters.reduce((acc, item) => {
+      const type = item.master_type;
+
+      if (!acc[type]) {
+        acc[type] = [];
+      }
+
+      acc[type].push({
+        _id: item._id,
+        name: item.master_name,
+        color: item.master_color || null,
+      });
+
+      return acc;
+    }, {});
+
+    res.status(200).json({
+      success: true,
+      data: groupedData,
+    });
+  } catch (error) {
+    console.log("Error fetching grouped masters:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 

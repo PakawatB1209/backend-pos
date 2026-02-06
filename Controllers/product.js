@@ -9,155 +9,108 @@ const ExcelJS = require("exceljs");
 const path = require("path");
 
 //helper
+// Helper Function: จัดรูปแบบข้อมูลให้หน้าบ้านใช้งานง่าย (Clean Version)
 const formatProductResponse = (product, req) => {
   if (!product) return null;
 
-  const baseUrl = `${req.protocol}://${req.get("host")}/uploads/product/`;
+  const detail = product.product_detail_id || {};
+  const categoryName =
+    product.product_category?.master_name?.toLowerCase() || "";
 
-  if (product.file && product.file.length > 0) {
-    product.file = product.file.map((fileName) =>
-      fileName.startsWith("http") ? fileName : `${baseUrl}${fileName}`,
-    );
-  }
+  // 1. โครงสร้างพื้นฐาน (Common Fields)
+  let formatted = {
+    _id: product._id,
+    code: product.product_code,
+    product_name: product.product_name,
+    description: detail.description || product.description || "",
 
-  // ✅ Helper 1: ดึงเฉพาะ "ชื่อ" (String) สำหรับแสดงผล
-  const getMasterName = (field) => {
-    if (!field) return "";
-    // ถ้าเป็น Object (Populate มา) ให้เอา master_name
-    if (typeof field === "object" && field.master_name)
-      return field.master_name;
-    // ถ้าเป็น String (ข้อมูลเก่า หรือ Populate ไม่เจอ) ให้ส่งคืนค่าเดิม
-    return field;
-  };
+    // จัดการรูปภาพ (Image URLs)
+    file:
+      product.file && product.file.length > 0
+        ? product.file.map((f) =>
+            f.startsWith("http")
+              ? f
+              : `${req.protocol}://${req.get("host")}/uploads/product/${f}`,
+          )
+        : [],
 
-  // ✅ Helper 2: ดึงข้อมูลครบเซ็ต { _id, name, code } สำหรับ Dropdown/Form
-  // (ย้ายออกมาข้างนอกเพื่อให้ใช้ได้ทั้ง Product และ Detail)
-  const extractMaster = (field) => {
-    if (field && typeof field === "object" && field.master_name) {
-      return {
-        _id: field._id,
-        name: field.master_name,
-        code: field.code,
-      };
-    }
-    return field;
-  };
-
-  product.category = getMasterName(product.product_category);
-
-  const rootItemType = getMasterName(product.product_item_type);
-  if (rootItemType) {
-    product.item_type = rootItemType;
-  }
-
-  // (Optional) ถ้าหน้าบ้านต้องใช้ ID หรือ Object สำหรับแก้ไข ให้ส่ง field นี้ไปด้วย
-  product.category_obj = extractMaster(product.product_category);
-  product.item_type_obj = extractMaster(product.product_item_type);
-  // ---------------------------------------------------------
-
-  // 3. Product Detail Formatting
-  if (product.product_detail_id) {
-    const detail = product.product_detail_id;
-
-    // 3.1 Primary Stone Formatting (ใช้ extractMaster ตัวบน)
-    if (detail.primary_stone) {
-      detail.primary_stone.stone_name = extractMaster(
-        detail.primary_stone.stone_name,
-      );
-      detail.primary_stone.shape = extractMaster(detail.primary_stone.shape);
-      detail.primary_stone.size = extractMaster(detail.primary_stone.size);
-      detail.primary_stone.color = extractMaster(detail.primary_stone.color);
-      detail.primary_stone.cutting = extractMaster(
-        detail.primary_stone.cutting,
-      );
-      detail.primary_stone.quality = extractMaster(
-        detail.primary_stone.quality,
-      );
-      detail.primary_stone.clarity = extractMaster(
-        detail.primary_stone.clarity,
-      );
-    }
-
-    // 3.2 Additional Stones Formatting
-    if (detail.additional_stones && Array.isArray(detail.additional_stones)) {
-      detail.additional_stones = detail.additional_stones.map((stone) => ({
-        ...stone,
-        stone_name: extractMaster(stone.stone_name),
-        shape: extractMaster(stone.shape),
-        size: extractMaster(stone.size),
-        color: extractMaster(stone.color),
-        cutting: extractMaster(stone.cutting),
-        quality: extractMaster(stone.quality),
-        clarity: extractMaster(stone.clarity),
-      }));
-    }
-
-    // 3.3 Attributes Formatting (Masters Array)
-    const attributes = {};
-    if (detail.masters) {
-      detail.masters.forEach((m) => {
-        if (m.master_id) {
-          const type = m.master_id.master_type;
-
-          // ตรงนี้คุณ extract เองอยู่แล้ว ใช้ได้เลย
-          const itemData = {
-            _id: m.master_id._id,
-            name: m.master_id.master_name,
-            code: m.master_id.code,
-            qty: type === "metal" || type === "stone" ? m.qty : undefined,
-            weight: type === "metal" || type === "stone" ? m.weight : undefined,
-          };
-
-          if (attributes[type]) {
-            if (Array.isArray(attributes[type])) {
-              attributes[type].push(itemData);
-            } else {
-              attributes[type] = [attributes[type], itemData];
-            }
-          } else {
-            attributes[type] = itemData;
-          }
+    // Category ยังคงเป็น Object เพราะเป็น Dropdown ที่ต้องเลือกจาก Master
+    category: product.product_category
+      ? {
+          _id: product.product_category._id,
+          name: product.product_category.master_name,
         }
-      });
-    }
-    product.attributes = attributes;
+      : null,
 
-    // ดึง Metal ออกมา (เหมือนเดิม)
-    if (attributes.metal) product.metal = attributes.metal;
-    if (attributes.metal_color) product.metal_color = attributes.metal_color;
+    unit: detail.unit || "g",
+    weight: detail.weight || 0,
+  };
 
-    if (!product.item_type && attributes.item_type) {
-      product.item_type = attributes.item_type;
-    }
+  // --- 2. Logic แยกตามประเภทสินค้า (Clean Up) ---
+
+  // กรณี A: Stone (หิน/พลอยร่วง)
+  if (categoryName === "stone" || categoryName === "diamond") {
+    formatted.unit = detail.unit || "cts";
+
+    // ✅ Size: ส่งเป็น String ตรงๆ (เช่น "10*10")
+    formatted.size = detail.size || "";
+
+    // ✅ Primary Stone: ส่งไปทั้งก้อน (Color, Size ในนี้เป็น String แล้วจาก Create)
+    formatted.primary_stone = detail.primary_stone || null;
+
+    return formatted;
   }
 
-  const formattedAccessories = (product.related_accessories || [])
-    .map((acc) => {
-      const master = acc.product_id;
-      if (!master) return null;
-      return {
-        _id: master._id,
-        code: master.product_code,
-        name: master.product_name,
-        image:
-          master.file && master.file.length > 0
-            ? master.file[0].startsWith("http")
-              ? master.file[0]
-              : `${baseUrl}${master.file[0]}`
-            : "",
-        weight: acc.weight || 0,
-        size: acc.size || "",
-        metal: acc.metal || "",
-        color: acc.color || "",
-        description: acc.description || "",
-        unit: acc.unit || "pcs",
-      };
-    })
-    .filter((item) => item !== null);
+  // กรณี B: Others (สินค้าอื่นๆ)
+  if (categoryName === "others") {
+    // ✅ Product Size: ส่งเป็น String ตรงๆ (เช่น "M", "L")
+    formatted.product_size = detail.size || "";
 
-  product.related_accessories = formattedAccessories;
+    return formatted;
+  }
 
-  return product;
+  // กรณี C: Jewelry / Accessory (สินค้าสำเร็จรูป)
+
+  // ✅ Product Size: ส่งเป็น String ตรงๆ (เช่น "54", "18cm")
+  formatted.product_size = detail.size || "";
+
+  formatted.gross_weight = detail.gross_weight || 0;
+  formatted.net_weight = detail.net_weight || 0;
+
+  formatted.primary_stone = detail.primary_stone || null;
+  formatted.additional_stones = detail.additional_stones || [];
+  formatted.related_accessories = product.related_accessories || [];
+
+  // จัดการ Masters Array (ดึง Metal, Item Type ออกมาจาก Array)
+  if (detail.masters && Array.isArray(detail.masters)) {
+    detail.masters.forEach((item) => {
+      // เช็คว่าเป็น Object ที่ populate มาแล้ว
+      if (item.master_id && typeof item.master_id === "object") {
+        const type = item.master_id.master_type;
+        const valueObj = {
+          _id: item.master_id._id,
+          name: item.master_id.master_name,
+          qty: item.qty,
+          weight: item.weight,
+        };
+
+        // Map เข้าตัวแปรตามประเภท
+        if (type === "item_type") formatted.item_type = valueObj;
+        if (type === "metal") formatted.metal = valueObj;
+        if (type === "metal_color") formatted.metal_color = valueObj;
+      }
+    });
+  }
+
+  // Fallback: ถ้า Item Type ไม่เจอใน Masters ให้ดูที่ Product Root
+  if (!formatted.item_type && product.product_item_type) {
+    formatted.item_type = {
+      _id: product.product_item_type._id,
+      name: product.product_item_type.master_name,
+    };
+  }
+
+  return formatted;
 };
 
 exports.createProduct = async (req, res) => {
@@ -328,12 +281,12 @@ exports.createProduct = async (req, res) => {
       if (masterId) mastersArray.push({ master_id: masterId, qty, weight });
     };
 
-    // ✅ 1. แปลง Category, ItemType, และ Size (เป็น ObjectId)
+    //  1. แปลง Category, ItemType, และ Size (เป็น ObjectId)
     const categoryId = await ensureMasterId(data.category, "product_category");
     const itemTypeId = await ensureMasterId(data.item_type, "item_type");
-    const sizeId = await ensureMasterId(data.product_size || data.size, "size"); // ✅ Size แปลง
+    const sizeString = data.product_size || data.size || "";
 
-    // ❌ 2. Unit ไม่แปลง (ใช้ค่า String เดิม)
+    // 2. Unit ไม่แปลง (ใช้ค่า String เดิม)
     // const unitId = await ensureMasterId(data.unit, "unit");
 
     pushMaster(itemTypeId, 1);
@@ -353,8 +306,8 @@ exports.createProduct = async (req, res) => {
       return {
         stone_name: await ensureMasterId(stoneData.stone_name, "stone_name"),
         shape: await ensureMasterId(stoneData.shape, "shape"),
-        size: await ensureMasterId(stoneData.size, "size"),
-        color: await ensureMasterId(stoneData.color, "color"),
+        size: stoneData.size || "",
+        color: stoneData.color || "",
         cutting: await ensureMasterId(stoneData.cutting, "cutting"),
         quality: await ensureMasterId(stoneData.quality, "quality"),
         clarity: await ensureMasterId(stoneData.clarity, "clarity"),
@@ -397,11 +350,10 @@ exports.createProduct = async (req, res) => {
 
     // Create Detail
     const newDetail = await ProductDetail.create({
-      // ✅ Unit: ใช้ String ตรงๆ
+      // Unit: ใช้ String ตรงๆ
       unit: data.unit || "g",
 
-      // ✅ Size: ใช้ ID (Master)
-      size: sizeId,
+      size: sizeString,
 
       gross_weight: data.gross_weight || 0,
       net_weight: data.net_weight || 0,
@@ -422,7 +374,7 @@ exports.createProduct = async (req, res) => {
         comp_id: user.comp_id,
         file: filesArray,
 
-        // ✅ Category & ItemType: ใช้ ID (Master)
+        // Category & ItemType: ใช้ ID (Master)
         product_category: categoryId,
         product_item_type: itemTypeId,
 
@@ -437,17 +389,10 @@ exports.createProduct = async (req, res) => {
         .populate({
           path: "product_detail_id",
           populate: [
-            // ✅ Size: ต้อง Populate (เพราะเป็น ID)
-            { path: "size", select: "master_name" },
-
-            // ❌ Unit: ไม่ต้อง Populate (เพราะเป็น String)
-            // { path: "unit", select: "master_name" },
-
             { path: "masters.master_id", select: "master_name master_type" },
             { path: "primary_stone.stone_name", select: "master_name code" },
             { path: "primary_stone.shape", select: "master_name code" },
             { path: "primary_stone.size", select: "master_name code" },
-            { path: "primary_stone.color", select: "master_name code" },
             { path: "primary_stone.cutting", select: "master_name code" },
             { path: "primary_stone.quality", select: "master_name code" },
             { path: "primary_stone.clarity", select: "master_name code" },
@@ -528,15 +473,11 @@ exports.getOneProduct = async (req, res) => {
           },
           { path: "primary_stone.stone_name", select: "master_name code" },
           { path: "primary_stone.shape", select: "master_name code" },
-          { path: "primary_stone.size", select: "master_name code" },
-          { path: "primary_stone.color", select: "master_name code" },
           { path: "primary_stone.cutting", select: "master_name code" },
           { path: "primary_stone.quality", select: "master_name code" },
           { path: "primary_stone.clarity", select: "master_name code" },
           { path: "additional_stones.stone_name", select: "master_name code" },
           { path: "additional_stones.shape", select: "master_name code" },
-          { path: "additional_stones.size", select: "master_name code" },
-          { path: "additional_stones.color", select: "master_name code" },
           { path: "additional_stones.cutting", select: "master_name code" },
           { path: "additional_stones.quality", select: "master_name code" },
           { path: "additional_stones.clarity", select: "master_name code" },
@@ -678,7 +619,10 @@ exports.list = async (req, res) => {
       let foundItemType = "";
       let foundStone = "";
       let metal = "";
-      let color = "";
+      let metal_color = "";
+      let stone_color = "";
+      let stone_size = "";
+
       let size = "";
       let unit = "";
 
@@ -689,9 +633,7 @@ exports.list = async (req, res) => {
       if (p.product_detail_id) {
         const detail = p.product_detail_id;
 
-        if (detail.size) {
-          size = detail.size;
-        }
+        size = detail.size || "";
         unit = detail.unit || "g";
 
         if (detail.weight) weight = detail.weight;
@@ -705,7 +647,7 @@ exports.list = async (req, res) => {
               const type = m.master_id.master_type;
 
               if (type === "metal") metal = name;
-              else if (type === "metal_color" || type === "color") color = name;
+              else if (type === "metal_color") metal_color = name;
               else if (type === "item_type") foundItemType = name;
             }
           });
@@ -714,6 +656,12 @@ exports.list = async (req, res) => {
         if (detail.primary_stone && detail.primary_stone.stone_name) {
           if (detail.primary_stone.stone_name.master_name) {
             foundStone = detail.primary_stone.stone_name.master_name;
+          }
+          if (detail.primary_stone.color) {
+            stone_color = detail.primary_stone.color;
+          }
+          if (detail.primary_stone.size) {
+            stone_size = detail.primary_stone.size;
           }
         }
       }
@@ -733,17 +681,12 @@ exports.list = async (req, res) => {
             _id: master._id,
             code: master.product_code,
             name: master.product_name,
-
             image:
               master.file && master.file.length > 0
                 ? `${baseUrl}${master.file[0]}`
                 : "",
-            weight:
-              acc.weight ||
-              (master.product_detail_id ? master.product_detail_id.weight : 0),
-            unit:
-              acc.unit ||
-              (master.product_detail_id ? master.product_detail_id.unit : "g"),
+            weight: acc.weight || master.product_detail_id?.weight || 0,
+            unit: acc.unit || master.product_detail_id?.unit || "g",
           };
         })
         .filter((item) => item !== null);
@@ -764,7 +707,7 @@ exports.list = async (req, res) => {
         unit: unit,
         size: size,
         metal: metal,
-        color: color,
+        color: metal_color,
 
         weight: weight,
         gross_weight: gross_weight,
@@ -821,288 +764,6 @@ exports.changeStatus = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
-
-// exports.updateProduct = async (req, res) => {
-//   let newFilesArray = [];
-
-//   try {
-//     const { id } = req.params;
-//     const userId = req.user.id;
-//     const data = req.body;
-
-//     if (!mongoose.isValidObjectId(id))
-//       return res.status(400).json({ success: false, message: "Invalid ID" });
-
-//     const user = await User.findById(userId).select("comp_id");
-//     if (!user || !user.comp_id)
-//       return res
-//         .status(400)
-//         .json({ success: false, message: "User not associated with company" });
-
-//     const currentProduct = await Product.findOne({
-//       _id: id,
-//       comp_id: user.comp_id,
-//     });
-//     if (!currentProduct)
-//       return res
-//         .status(404)
-//         .json({ success: false, message: "Product not found" });
-
-//     const currentDetail = await ProductDetail.findById(
-//       currentProduct.product_detail_id,
-//     ).lean();
-
-//     // ✅ เพิ่ม Helper: Escape Regex (จัดการตัวอักษรพิเศษ เช่น * ใน 10*10)
-//     const escapeRegex = (string) => {
-//       return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-//     };
-
-//     // --- Auto-create Master Logic (พร้อม Try-Catch Duplicate) ---
-//     const ensureMasterId = async (input, type) => {
-//       if (!input || (typeof input === "string" && input.trim() === ""))
-//         return null;
-//       if (mongoose.isValidObjectId(input)) {
-//         const exists = await Masters.exists({
-//           _id: input,
-//           comp_id: user.comp_id,
-//         });
-//         if (exists) return input;
-//       }
-//       const trimmedInput = input.toString().trim();
-
-//       // ค้นหาโดยใช้ Escape Regex
-//       let master = await Masters.findOne({
-//         master_name: {
-//           $regex: new RegExp(`^${escapeRegex(trimmedInput)}$`, "i"),
-//         },
-//         master_type: type,
-//         comp_id: user.comp_id,
-//       });
-//       if (master) return master._id;
-
-//       try {
-//         master = await Masters.create({
-//           master_name: trimmedInput,
-//           master_type: type,
-//           comp_id: user.comp_id,
-//           master_color: null,
-//         });
-//       } catch (error) {
-//         if (error.code === 11000) {
-//           master = await Masters.findOne({
-//             master_name: {
-//               $regex: new RegExp(`^${escapeRegex(trimmedInput)}$`, "i"),
-//             },
-//             master_type: type,
-//             comp_id: user.comp_id,
-//           });
-//         } else {
-//           throw error;
-//         }
-//       }
-//       return master ? master._id : null;
-//     };
-
-//     // --- File Upload Logic ---
-//     if (req.files && req.files.length > 0) {
-//       const uploadDir = "./uploads/product";
-//       if (!fs.existsSync(uploadDir))
-//         fs.mkdirSync(uploadDir, { recursive: true });
-//       await Promise.all(
-//         req.files.map(async (file, index) => {
-//           const filename = `product-${Date.now()}-${Math.round(Math.random() * 1e9)}-${index}.jpeg`;
-//           const outputPath = path.join(uploadDir, filename);
-//           await sharp(file.buffer)
-//             .resize(1200, 1200, {
-//               fit: sharp.fit.inside,
-//               withoutEnlargement: true,
-//             })
-//             .toFormat("jpeg", { quality: 80 })
-//             .toFile(outputPath);
-//           newFilesArray.push(filename);
-//         }),
-//       );
-//       if (currentProduct.file && currentProduct.file.length > 0) {
-//         currentProduct.file.forEach((oldFile) => {
-//           const oldPath = path.join(uploadDir, oldFile);
-//           if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-//         });
-//       }
-//     }
-
-//     // ✅ 1. แปลง Category, Item Type และ Size (เป็น ObjectId)
-//     const categoryIdUpdate = data.category
-//       ? await ensureMasterId(data.category, "product_category")
-//       : undefined;
-//     const itemTypeIdUpdate = data.item_type
-//       ? await ensureMasterId(data.item_type, "item_type")
-//       : undefined;
-//     const sizeIdUpdate =
-//       data.product_size || data.size
-//         ? await ensureMasterId(data.product_size || data.size, "size")
-//         : undefined;
-
-//     // --- Prepare Update Masters Array (Metal/ItemType) ---
-//     let updatedMasters = currentDetail.masters || [];
-//     if (data.item_type || data.metal || data.metal_color) {
-//       const tempMasters = [];
-//       if (data.item_type) {
-//         const id = await ensureMasterId(data.item_type, "item_type");
-//         if (id) tempMasters.push({ master_id: id, qty: 1 });
-//       }
-//       if (data.metal) {
-//         const id = await ensureMasterId(data.metal, "metal");
-//         if (id)
-//           tempMasters.push({
-//             master_id: id,
-//             qty: 1,
-//             weight: data.net_weight || data.weight || 0,
-//           });
-//       }
-//       if (data.metal_color) {
-//         const id = await ensureMasterId(data.metal_color, "metal_color");
-//         if (id) tempMasters.push({ master_id: id, qty: 1 });
-//       }
-//       if (tempMasters.length > 0) updatedMasters = tempMasters;
-//     }
-
-//     // --- Stone Logic ---
-//     let primaryStoneObj = currentDetail.primary_stone || {};
-//     const stoneFields = [
-//       "stone_name",
-//       "shape",
-//       "size",
-//       "color",
-//       "cutting",
-//       "quality",
-//       "clarity",
-//     ];
-//     for (const f of stoneFields) {
-//       if (data[f])
-//         primaryStoneObj[f] = await ensureMasterId(
-//           data[f],
-//           f === "stone_name" ? "stone_name" : f,
-//         );
-//     }
-//     if (data.stone_qty) primaryStoneObj.qty = Number(data.stone_qty);
-//     if (data.stone_weight) primaryStoneObj.weight = Number(data.stone_weight);
-
-//     let additionalStonesUpdate = currentDetail.additional_stones || [];
-//     if (data.stones && Array.isArray(data.stones)) {
-//       additionalStonesUpdate = [];
-//       for (const s of data.stones) {
-//         additionalStonesUpdate.push({
-//           stone_name: await ensureMasterId(s.stone_name, "stone_name"),
-//           shape: await ensureMasterId(s.shape, "shape"),
-//           size: await ensureMasterId(s.size, "size"),
-//           color: await ensureMasterId(s.color, "color"),
-//           cutting: await ensureMasterId(s.cutting, "cutting"),
-//           quality: await ensureMasterId(s.quality, "quality"),
-//           clarity: await ensureMasterId(s.clarity, "clarity"),
-//           qty: s.qty ? Number(s.qty) : 1,
-//           weight: s.weight ? Number(s.weight) : 0,
-//         });
-//       }
-//     }
-
-//     // ✅ บันทึก Detail
-//     const detailUpdate = {
-//       // ❌ Unit: ไม่แตะ (ใช้ String เหมือนเดิม)
-//       unit: data.unit || currentDetail.unit,
-
-//       // ✅ Size: ใช้ ID ที่แปลงแล้ว
-//       ...(sizeIdUpdate && { size: sizeIdUpdate }),
-
-//       gross_weight:
-//         data.gross_weight !== undefined
-//           ? data.gross_weight
-//           : currentDetail.gross_weight,
-//       net_weight:
-//         data.net_weight !== undefined
-//           ? data.net_weight
-//           : currentDetail.net_weight,
-//       weight: data.weight !== undefined ? data.weight : currentDetail.weight,
-//       description:
-//         data.description !== undefined
-//           ? data.description
-//           : currentDetail.description,
-//       masters: updatedMasters,
-//       primary_stone: primaryStoneObj,
-//       additional_stones: additionalStonesUpdate,
-//     };
-//     await ProductDetail.findByIdAndUpdate(currentProduct.product_detail_id, {
-//       $set: detailUpdate,
-//     });
-
-//     // ✅ บันทึก Product
-//     const productUpdate = {
-//       product_name: data.product_name,
-//       product_code: data.code,
-//       ...(categoryIdUpdate && { product_category: categoryIdUpdate }),
-//       ...(itemTypeIdUpdate && { product_item_type: itemTypeIdUpdate }),
-//     };
-//     if (newFilesArray.length > 0) productUpdate.file = newFilesArray;
-//     if (data.related_accessories && Array.isArray(data.related_accessories))
-//       productUpdate.related_accessories = data.related_accessories;
-
-//     Object.keys(productUpdate).forEach(
-//       (key) => productUpdate[key] === undefined && delete productUpdate[key],
-//     );
-
-//     // 🟢 Fetch & Format Response
-//     let updatedProduct = await Product.findByIdAndUpdate(
-//       id,
-//       { $set: productUpdate },
-//       { new: true },
-//     )
-//       .populate("product_category", "master_name")
-//       .populate("product_item_type", "master_name")
-//       .populate({
-//         path: "product_detail_id",
-//         populate: [
-//           { path: "size", select: "master_name" }, // ✅ Populate Size (เพราะเป็น ID)
-//           { path: "masters.master_id", select: "master_name master_type" },
-//           { path: "primary_stone.stone_name", select: "master_name" },
-//           { path: "primary_stone.shape", select: "master_name" },
-//           { path: "primary_stone.size", select: "master_name" },
-//           { path: "primary_stone.color", select: "master_name" },
-//           { path: "primary_stone.cutting", select: "master_name" },
-//           { path: "primary_stone.quality", select: "master_name" },
-//           { path: "primary_stone.clarity", select: "master_name" },
-//           { path: "additional_stones.stone_name", select: "master_name" },
-//           { path: "additional_stones.shape", select: "master_name" },
-//           { path: "additional_stones.size", select: "master_name" },
-//           { path: "additional_stones.color", select: "master_name" },
-//           { path: "additional_stones.cutting", select: "master_name" },
-//           { path: "additional_stones.quality", select: "master_name" },
-//           { path: "additional_stones.clarity", select: "master_name" },
-//         ],
-//       })
-//       .populate({
-//         path: "related_accessories.product_id",
-//         select: "product_name product_code file",
-//       })
-//       .lean();
-
-//     const formattedData = formatProductResponse(updatedProduct, req);
-//     res
-//       .status(200)
-//       .json({
-//         success: true,
-//         message: "Product updated successfully",
-//         data: formattedData,
-//       });
-//   } catch (err) {
-//     console.log("Error update product:", err);
-//     if (newFilesArray.length > 0) {
-//       newFilesArray.forEach((f) => {
-//         const tempPath = path.join("./uploads/product", f);
-//         if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
-//       });
-//     }
-//     res.status(500).json({ success: false, message: "Server error" });
-//   }
-// };
 
 exports.updateProduct = async (req, res) => {
   let newFilesArray = [];
@@ -1227,10 +888,6 @@ exports.updateProduct = async (req, res) => {
 
     const sizeInput =
       data.product_size !== undefined ? data.product_size : data.size;
-    const sizeIdUpdate =
-      sizeInput !== undefined
-        ? await ensureMasterId(sizeInput, "size")
-        : undefined;
 
     // --- Prepare Update Masters Array (Metal/ItemType) ---
     // Logic: ถ้ามีการส่ง item_type หรือ metal มาใหม่ เราจะสร้าง Array masters ใหม่เลย
@@ -1252,15 +909,7 @@ exports.updateProduct = async (req, res) => {
         const oldItemType = currentDetail.masters.find(
           (m) => m.master_id?.master_type === "item_type", // ต้องเช็คดีๆ ว่า populate หรือยัง ถ้ายังอาจจะต้องใช้วิธีอื่น แต่ปกติตรงนี้ยากเพราะ DB เก็บแค่ ID
         );
-        // *เพื่อความง่ายและถูกต้อง: ถ้ามีการแก้ไขส่วนนี้ แนะนำให้ส่งมาให้ครบชุด*
-        // แต่ถ้าจะเอาแบบเซฟๆ คือถ้า user ส่งมาแค่ metal แต่ไม่ส่ง item_type เราควรเก็บ item_type เดิมไว้
-        // ซึ่ง Logic นี้ซับซ้อนเพราะเราเก็บรวมใน Array
-        // ✅ Solution: ใช้ itemTypeIdUpdate ที่หาไว้ข้างบน (ซึ่งถ้าไม่ได้ส่งมาจะเป็น undefined)
-        // ถ้า undefined แปลว่าไม่ได้เแตะต้อง -> ใช้ Logic เดิมไม่ได้เพราะเรากำลังสร้าง array ใหม่
 
-        // ดังนั้น Logic ที่ดีที่สุดสำหรับการ update array ย่อยคือ:
-        // "ถ้าส่งมา ให้ใช้ค่าใหม่ ถ้าไม่ส่งมา ให้เว้นว่างไว้ (User ต้องส่งมาให้ครบถ้าจะแก้)"
-        // หรือดึงจาก currentProduct.product_item_type มาใส่
         if (currentProduct.product_item_type) {
           // เช็คว่า User ตั้งใจลบ item_type ไหม? (ถ้า data.item_type === "")
           if (data.item_type !== "") {
@@ -1271,10 +920,6 @@ exports.updateProduct = async (req, res) => {
           }
         }
       }
-
-      // *หมายเหตุ: Logic ข้างบนซับซ้อน ผมขอใช้แบบเดิมที่ Simple คือ*
-      // "ถ้ามีการส่ง metal หรือ item_type มาใหม่ จะ Re-build masters array ใหม่จาก Input"
-
       const newMastersList = [];
 
       // 1. Item Type
@@ -1341,6 +986,8 @@ exports.updateProduct = async (req, res) => {
         );
       }
     }
+    if (data.size !== undefined) primaryStoneObj.size = data.size;
+    if (data.color !== undefined) primaryStoneObj.color = data.color;
     if (data.stone_qty !== undefined)
       primaryStoneObj.qty = Number(data.stone_qty);
     if (data.stone_weight !== undefined)
@@ -1353,8 +1000,8 @@ exports.updateProduct = async (req, res) => {
         additionalStonesUpdate.push({
           stone_name: await ensureMasterId(s.stone_name, "stone_name"),
           shape: await ensureMasterId(s.shape, "shape"),
-          size: await ensureMasterId(s.size, "size"),
-          color: await ensureMasterId(s.color, "color"),
+          size: s.size || "",
+          color: s.color || "",
           cutting: await ensureMasterId(s.cutting, "cutting"),
           quality: await ensureMasterId(s.quality, "quality"),
           clarity: await ensureMasterId(s.clarity, "clarity"),
@@ -1370,7 +1017,7 @@ exports.updateProduct = async (req, res) => {
       unit: data.unit !== undefined ? data.unit : currentDetail.unit,
 
       // ✅ แก้ไข Size: ถ้า sizeIdUpdate มีค่า (รวมถึง null) ให้ update
-      ...(sizeIdUpdate !== undefined && { size: sizeIdUpdate }),
+      ...(sizeInput !== undefined && { size: sizeInput }),
 
       gross_weight:
         data.gross_weight !== undefined
@@ -1428,12 +1075,9 @@ exports.updateProduct = async (req, res) => {
       .populate({
         path: "product_detail_id",
         populate: [
-          { path: "size", select: "master_name" },
           { path: "masters.master_id", select: "master_name master_type" },
           { path: "primary_stone.stone_name", select: "master_name" },
           { path: "primary_stone.shape", select: "master_name" },
-          { path: "primary_stone.size", select: "master_name" },
-          { path: "primary_stone.color", select: "master_name" },
           { path: "primary_stone.cutting", select: "master_name" },
           { path: "primary_stone.quality", select: "master_name" },
           { path: "primary_stone.clarity", select: "master_name" },
@@ -1677,6 +1321,181 @@ exports.removeAllFiles = async (req, res) => {
   }
 };
 
+// exports.exportProductToExcel = async (req, res) => {
+//   try {
+//     if (!req.user?.id)
+//       return res.status(401).json({ success: false, message: "Unauthorized" });
+
+//     const user = await User.findById(req.user.id).select("comp_id").lean();
+//     if (!user?.comp_id)
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "User has no company" });
+
+//     const { type, value } = req.body;
+//     const query = {
+//       comp_id: user.comp_id,
+//       ...(type === "category" && value && { product_category: value }),
+//       ...(type === "selected" &&
+//         Array.isArray(value) &&
+//         value.length && { _id: { $in: value } }),
+//     };
+
+//     const products = await Product.find(query)
+//       .populate("product_category", "master_name")
+//       .populate("product_item_type", "master_name")
+//       .populate({
+//         path: "product_detail_id",
+//         populate: [
+//           "primary_stone.stone_name",
+//           "primary_stone.shape",
+//           "primary_stone.color",
+//           "primary_stone.clarity",
+//           "additional_stones.stone_name",
+//           "additional_stones.shape",
+//           "additional_stones.color",
+//           "additional_stones.clarity",
+//           "masters.master_id",
+//         ],
+//       })
+//       .lean();
+
+//     const rows = products.map((p) => {
+//       const d = p.product_detail_id || {};
+//       const ps = d.primary_stone || {};
+//       const addText = (d.additional_stones || [])
+//         .map(
+//           (s) =>
+//             `${s.stone_name?.master_name || "-"} ${s.shape?.master_name || ""} (${s.qty || 0}pcs)`,
+//         )
+//         .join(", ");
+
+//       return {
+//         Code: p.product_code,
+//         Name: p.product_name,
+//         Category: p.product_category?.master_name || p.product_category || "-",
+//         Type: p.product_item_type?.master_name || p.product_item_type || "-",
+//         "Gross Weight (g)": d.gross_weight || 0,
+//         "Net Weight (g)": d.net_weight || 0,
+//         "Product Unit": d.unit || p.unit || "",
+//         Size: d.size || "",
+//         "Main Stone": ps.stone_name?.master_name || "",
+//         "Main Shape": ps.shape?.master_name || "",
+//         "Main Color": ps.color?.master_color || ps.color?.master_name || "",
+//         "Main Clarity": ps.clarity?.master_name || "",
+//         "Main Qty": ps.qty || 0,
+//         "Main Weight": ps.weight || 0,
+//         "Additional Stones": addText,
+//         Components: (d.masters || [])
+//           .map((m) => m.master_id?.master_name || "-")
+//           .join(", "),
+//         Status: p.is_active ? "Active" : "Inactive",
+//         "Purchase Unit": "-",
+//         Qty: "-",
+//         Cost: "-",
+//         Price: "-",
+//       };
+//     });
+
+//     const workbook = new ExcelJS.Workbook();
+
+//     const createSheetWithStyle = (wb, sheetName, sheetData) => {
+//       const safeName = sheetName.substring(0, 30).replace(/[\\/?*[\]]/g, "");
+//       const sheet = wb.addWorksheet(safeName);
+
+//       if (sheetData.length === 0) return;
+
+//       const headers = Object.keys(sheetData[0]);
+//       sheet.columns = headers.map((h) => ({
+//         header: h,
+//         key: h,
+//         width: 15,
+//       }));
+
+//       sheet.addRows(sheetData);
+
+//       const editableFields = [
+//         "Gross Weight (g)",
+//         "Net Weight (g)",
+//         "Purchase Unit",
+//         "Qty",
+//         "Cost",
+//         "Price",
+//       ];
+
+//       const headerRow = sheet.getRow(1);
+//       headerRow.eachCell((cell) => {
+//         const headerName = cell.value;
+//         cell.font = { bold: true, size: 12 };
+//         cell.alignment = { vertical: "middle", horizontal: "center" };
+//         cell.border = {
+//           top: { style: "thin" },
+//           left: { style: "thin" },
+//           bottom: { style: "thin" },
+//           right: { style: "thin" },
+//         };
+
+//         if (editableFields.includes(headerName)) {
+//           cell.fill = {
+//             type: "pattern",
+//             pattern: "solid",
+//             fgColor: { argb: "FFFF0000" },
+//           };
+//           cell.font = { color: { argb: "FFFFFFFF" }, bold: true };
+//         } else {
+//           cell.fill = {
+//             type: "pattern",
+//             pattern: "solid",
+//             fgColor: { argb: "FFEEEEEE" },
+//           };
+//         }
+//       });
+
+//       sheet.columns.forEach((column) => {
+//         let maxLength = 0;
+//         column.eachCell({ includeEmpty: true }, (cell) => {
+//           const columnLength = cell.value ? cell.value.toString().length : 10;
+//           if (columnLength > maxLength) maxLength = columnLength;
+//         });
+//         column.width = maxLength < 10 ? 10 : maxLength + 2;
+//       });
+//     };
+
+//     if (type === "category") {
+//       const grouped = rows.reduce((acc, r) => {
+//         const key = r.Category || "Uncategorized";
+//         acc[key] = acc[key] || [];
+//         acc[key].push(r);
+//         return acc;
+//       }, {});
+//       Object.entries(grouped).forEach(([cat, data]) =>
+//         createSheetWithStyle(workbook, cat, data),
+//       );
+//     } else {
+//       createSheetWithStyle(workbook, "Products", rows);
+//     }
+
+//     res.setHeader(
+//       "Content-Type",
+//       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+//     );
+//     const prefix =
+//       type === "category" ? value : type === "selected" ? "Selected" : "All";
+//     res.setHeader(
+//       "Content-Disposition",
+//       `attachment; filename="Purchase_Template_${prefix}_${Date.now()}.xlsx"`,
+//     );
+
+//     await workbook.xlsx.write(res);
+//     res.end();
+//   } catch (err) {
+//     console.error(err);
+//     res
+//       .status(500)
+//       .json({ success: false, message: "Export Error", error: err.message });
+//   }
+// };
+
 exports.exportProductToExcel = async (req, res) => {
   try {
     if (!req.user?.id)
@@ -1705,12 +1524,14 @@ exports.exportProductToExcel = async (req, res) => {
         populate: [
           "primary_stone.stone_name",
           "primary_stone.shape",
-          "primary_stone.color",
           "primary_stone.clarity",
+          "primary_stone.cutting",
+          "primary_stone.quality",
+
           "additional_stones.stone_name",
           "additional_stones.shape",
-          "additional_stones.color",
           "additional_stones.clarity",
+
           "masters.master_id",
         ],
       })
@@ -1719,10 +1540,11 @@ exports.exportProductToExcel = async (req, res) => {
     const rows = products.map((p) => {
       const d = p.product_detail_id || {};
       const ps = d.primary_stone || {};
+
       const addText = (d.additional_stones || [])
         .map(
           (s) =>
-            `${s.stone_name?.master_name || "-"} ${s.shape?.master_name || ""} (${s.qty || 0}pcs)`,
+            `${s.stone_name?.master_name || "-"} ${s.shape?.master_name || ""} ${s.color ? `(${s.color})` : ""} (${s.qty || 0}pcs)`,
         )
         .join(", ");
 
@@ -1734,17 +1556,24 @@ exports.exportProductToExcel = async (req, res) => {
         "Gross Weight (g)": d.gross_weight || 0,
         "Net Weight (g)": d.net_weight || 0,
         "Product Unit": d.unit || p.unit || "",
+
         Size: d.size || "",
+
         "Main Stone": ps.stone_name?.master_name || "",
         "Main Shape": ps.shape?.master_name || "",
-        "Main Color": ps.color?.master_color || ps.color?.master_name || "",
+
+        "Main Color": ps.color || "",
+
         "Main Clarity": ps.clarity?.master_name || "",
         "Main Qty": ps.qty || 0,
         "Main Weight": ps.weight || 0,
+
         "Additional Stones": addText,
+
         Components: (d.masters || [])
           .map((m) => m.master_id?.master_name || "-")
           .join(", "),
+
         Status: p.is_active ? "Active" : "Inactive",
         "Purchase Unit": "-",
         Qty: "-",

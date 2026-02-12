@@ -34,11 +34,13 @@ const stoneItemSchema = Joi.object({
   clarity: Joi.string().allow("", null).optional(),
   qty: Joi.number().allow("", null).optional(),
   weight: Joi.number().allow("", null).optional(),
+  unit: Joi.string().valid("g", "cts").default("g").optional(),
 });
 
 const accessoryItemSchema = Joi.object({
   product_id: objectId.required(),
   weight: Joi.number().required(),
+  unit: Joi.string().valid("g", "cts").default("g").optional(),
 
   size: Joi.string().allow("", null).optional(),
   metal: Joi.string().allow("", null).optional(),
@@ -54,7 +56,7 @@ const productMasterSchema = Joi.object({
   metal_color: Joi.string().allow("", null).optional(),
   gross_weight: Joi.number().required(),
   net_weight: Joi.number().required(),
-  unit: Joi.string().valid("g", "pcs", "pair", "cts").default("g").optional(),
+  unit: Joi.string().valid("g", "cts").default("g").optional(),
   stone_name: Joi.string().allow("", null).optional(),
   shape: Joi.string().allow("", null).optional(),
   size: Joi.string().required(),
@@ -72,7 +74,7 @@ const stoneSchema = Joi.object({
 
   metal: Joi.forbidden(),
   item_type: Joi.forbidden(),
-  unit: Joi.string().valid("g", "cts").default("cts").optional(),
+  unit: Joi.string().valid("g", "cts").default("g").optional(),
   stone_name: Joi.string().required(),
   shape: Joi.string().required(),
   size: Joi.string().required(),
@@ -90,7 +92,7 @@ const semiMountSchema = Joi.object({
   item_type: Joi.string().required(),
   metal: Joi.string().required(),
   metal_color: Joi.string().allow("", null).optional(),
-  unit: Joi.string().valid("g", "pcs", "pair", "cts").default("g").optional(),
+  unit: Joi.string().valid("g", "cts").default("g").optional(),
   gross_weight: Joi.number().required(),
   net_weight: Joi.number().required(),
 
@@ -112,7 +114,7 @@ const accessorySchema = Joi.object({
   metal: objectId.required(),
   size: Joi.string().required(),
   weight: Joi.number().required(),
-  unit: Joi.string().valid("g", "pcs", "pair", "cts").default("g").optional(),
+  unit: Joi.string().valid("g", "cts").default("g").optional(),
 });
 
 const othersSchema = Joi.object({
@@ -120,7 +122,7 @@ const othersSchema = Joi.object({
 
   size: Joi.string().required(),
   weight: Joi.number().required(),
-  unit: Joi.string().valid("g", "pcs", "pair", "cts").default("g").optional(),
+  unit: Joi.string().valid("g", "cts").default("g").optional(),
 });
 
 const updateProductSchema = Joi.object({
@@ -128,8 +130,6 @@ const updateProductSchema = Joi.object({
   code: Joi.string().optional(),
   description: Joi.string().allow("").optional(),
   image: Joi.string().allow("").optional(),
-
-  related_accessories: Joi.array().items(accessoryItemSchema).optional(),
   stones: Joi.array().items(stoneItemSchema).optional(),
 
   item_type: Joi.string().optional(),
@@ -143,12 +143,29 @@ const updateProductSchema = Joi.object({
   metal_color: Joi.string().allow("", null).optional(),
   color: Joi.string().allow("", null).optional(),
   size: Joi.string().optional(),
-  unit: Joi.string().valid("g", "pcs", "pair", "cts").default("pcs").optional(),
+  unit: Joi.string().valid("g", "cts").optional(),
   gross_weight: Joi.number().optional(),
   net_weight: Joi.number().optional(),
   weight: Joi.number().optional(),
 
   product_type: Joi.string().optional(),
+
+  primary_stone: Joi.object({
+    stone_name: Joi.string().allow("", null).optional(),
+    shape: Joi.string().allow("", null).optional(),
+    size: Joi.string().allow("", null).optional(),
+    weight: Joi.number().allow("", null).optional(),
+    unit: Joi.string().valid("g", "cts").optional(),
+    color: Joi.string().allow("", null).optional(),
+    cutting: Joi.string().allow("", null).optional(),
+    quality: Joi.string().allow("", null).optional(),
+    clarity: Joi.string().allow("", null).optional(),
+  })
+    .optional()
+    .allow(null),
+
+  additional_stones: Joi.array().items(stoneItemSchema).optional(),
+  related_accessories: Joi.array().items(accessoryItemSchema).optional(),
 });
 
 exports.validateSchema = (schemaName) => {
@@ -178,7 +195,10 @@ exports.validateSchema = (schemaName) => {
         return res.status(500).json({ message: "Schema not found" });
     }
 
-    const { error, value } = schema.validate(req.body, { abortEarly: false });
+    const { error, value } = schema.validate(req.body, {
+      abortEarly: false,
+      convert: true, // convert: true = "2.5" → 2.5
+    });
 
     if (error) {
       const errorMessage = error.details

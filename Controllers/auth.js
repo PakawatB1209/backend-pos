@@ -1,4 +1,5 @@
 const User = require("../models/User");
+require("dotenv").config();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { token } = require("morgan");
@@ -17,7 +18,7 @@ exports.login = async (req, res) => {
     const isEmail = identifier.includes("@");
 
     const user = await User.findOne(
-      isEmail ? { user_email: identifier } : { user_name: identifier }
+      isEmail ? { user_email: identifier } : { user_name: identifier },
     );
 
     if (!user) {
@@ -75,17 +76,22 @@ exports.userForgotPassword = async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: "Email not found" });
     }
+    console.log("Email User:", process.env.EMAIL);
+    console.log(
+      "Email Pass:",
+      process.env.PASSWORD ? "Loaded (Hidden)" : "Not Loaded!",
+    );
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.EMAIL,
-        pass: process.env.PASSWORD, // Must verify identity
+        user: process.env.ADMIN_EMAIL,
+        pass: process.env.ADMIN_PASS, // Must verify identity
       },
     });
 
     const mailOptions = {
-      from: process.env.EMAIL,
-      to: process.env.ADMIN_EMAIL,
+      from: process.env.ADMIN_EMAIL,
+      to: user_email,
       subject: `Forgot Password Request: ${user.user_name}`,
       text: `
 Admin,

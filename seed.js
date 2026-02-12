@@ -18,73 +18,81 @@ const menus = [
   "Others",
   "Product List",
   "Customer",
+  "Purchase",
+  "Inventory",
+  "Inventory-P", //Inventory-P(product)
+  "Inventory-SM", //Inventory-SM(semi-mount)
+  "Inventory-SD", //Inventory-SD(stone-diamond)
+  "Inventory-A", //Inventory-A(accessories)
+  "Inventory-O", //Inventory-O(otherss)
+  "Report",
 ];
-const actions = ["view", "add", "update", "delete", "print"];
+const actions = ["view", "add", "update", "delete", "print", "export"];
 
-const seedData = async () => {
-  try {
-    console.log("🔥 Connecting to Database (POS-jewely)...");
-    await mongoose.connect(
-      "mongodb+srv://SA:$ystem64@poscooperativeeducation.jwqfqk0.mongodb.net/POS-jewely?retryWrites=true&w=majority&appName=poscooperativeeducation"
-    );
-    console.log("✅ Database Connected!");
+// const seedData = async () => {
+//   try {
+//     console.log("🔥 Connecting to Database (POS-jewely)...");
+//     await mongoose.connect(
+//       "mongodb+srv://SA:$ystem64@poscooperativeeducation.jwqfqk0.mongodb.net/POS-jewely?retryWrites=true&w=majority&appName=poscooperativeeducation",
+//     );
+//     console.log("✅ Database Connected!");
 
-    // // ==========================================
-    // // 1. สร้าง Permissions
-    // // ==========================================
-    // console.log("Seeding Permissions...");
-    // let permCount = 0;
-    // for (const menu of menus) {
-    //   for (const action of actions) {
-    //     const exists = await Permission.findOne({
-    //       permission_menu: menu,
-    //       permission_action: action,
-    //     });
-    //     if (!exists) {
-    //       await Permission.create({
-    //         permission_name: `${action.toUpperCase()} ${menu}`,
-    //         permission_menu: menu,
-    //         permission_action: action,
-    //       });
-    //       permCount++;
-    //     }
-    //   }
-    // }
-    // console.log(`-> Added ${permCount} new permissions.`);
-    // // ==========================================
-    // // 3. สร้าง Admin User
-    // // ==========================================
-    console.log("Seeding Admin User...");
-    const adminEmail = "testsemail@gmail.com";
-    const userExists = await User.findOne({ user_email: adminEmail });
+//     // ==========================================
+//     // 1. สร้าง Permissions
+//     // ==========================================
+//     console.log("Seeding Permissions...");
+//     let permCount = 0;
+//     for (const menu of menus) {
+//       for (const action of actions) {
+//         const exists = await Permission.findOne({
+//           permission_menu: menu,
+//           permission_action: action,
+//         });
+//         if (!exists) {
+//           await Permission.create({
+//             permission_name: `${action.toUpperCase()} ${menu}`,
+//             permission_menu: menu,
+//             permission_action: action,
+//           });
+//           permCount++;
+//         }
+//       }
+//     }
+//     console.log(`-> Added ${permCount} new permissions.`);
+//     // ==========================================
+//     // 3. สร้าง Admin User
+//     // ==========================================
+//     console.log("Seeding Admin User...");
+//     const adminEmail = "testsemail@gmail.com";
+//     const userExists = await User.findOne({ user_email: adminEmail });
 
-    if (!userExists) {
-      const allPermissions = await Permission.find({});
-      const permissionIds = allPermissions.map((p) => p._id);
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash("123456", salt);
+//     if (!userExists) {
+//       const allPermissions = await Permission.find({});
+//       const permissionIds = allPermissions.map((p) => p._id);
+//       const salt = await bcrypt.genSalt(10);
+//       const hashedPassword = await bcrypt.hash("123456", salt);
 
-      await User.create({
-        user_name: "Admin10",
-        user_email: adminEmail,
-        user_password: hashedPassword,
-        user_role: "Admin",
-        user_phone: "0810000000",
-        comp_id: null,
-        permissions: permissionIds,
-        status: true,
-      });
-      console.log(`   -> Created Admin: ${adminEmail} (Pass: 123456)`);
-    } else {
-      console.log(`   -> Admin user already exists.`);
-    }
+//       await User.create({
+//         user_name: "Admin10",
+//         user_email: adminEmail,
+//         user_password: hashedPassword,
+//         user_role: "Admin",
+//         user_phone: "0810000000",
+//         comp_id: null,
+//         permissions: permissionIds,
+//         status: true,
+//       });
+//       console.log(`   -> Created Admin: ${adminEmail} (Pass: 123456)`);
+//     } else {
+//       console.log(`   -> Admin user already exists.`);
+//     }
 
-    console.log("\n🎉 ALL DONE! System is ready with Full Data.");
-    process.exit();
-  } catch (error) {
-    console.error("❌ Error:", error);
-    process.exit(1);
-  }
-};
+//     console.log("\n🎉 ALL DONE! System is ready with Full Data.");
+//     process.exit();
+//   } catch (error) {
+//     console.error("❌ Error:", error);
+//     process.exit(1);
+//   }
+// };
 
 seedData();

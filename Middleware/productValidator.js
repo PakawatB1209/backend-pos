@@ -65,7 +65,22 @@ const productMasterSchema = Joi.object({
   cutting: Joi.string().allow("", null).optional(),
   quality: Joi.string().allow("", null).optional(),
   clarity: Joi.string().allow("", null).optional(),
-  stones: Joi.array().items(stoneItemSchema).optional(),
+
+  primary_stone: Joi.object({
+    stone_name: Joi.string().allow("", null).optional(),
+    shape: Joi.string().allow("", null).optional(),
+    size: Joi.string().allow("", null).optional(),
+    weight: Joi.number().allow("", null).optional(),
+    unit: Joi.string().valid("g", "cts").optional(),
+    color: Joi.string().allow("", null).optional(),
+    cutting: Joi.string().allow("", null).optional(),
+    quality: Joi.string().allow("", null).optional(),
+    clarity: Joi.string().allow("", null).optional(),
+  })
+    .optional()
+    .allow(null),
+
+  additional_stones: Joi.array().items(stoneItemSchema).optional(),
   related_accessories: Joi.array().items(accessoryItemSchema).optional(),
 });
 
@@ -83,7 +98,6 @@ const stoneSchema = Joi.object({
   cutting: Joi.string().optional(),
   quality: Joi.string().optional(),
   clarity: Joi.string().optional(),
-  stones: Joi.array().items(stoneItemSchema).optional(),
 });
 
 const semiMountSchema = Joi.object({
@@ -103,8 +117,22 @@ const semiMountSchema = Joi.object({
   cutting: Joi.string().allow("", null).optional(),
   quality: Joi.string().allow("", null).optional(),
   clarity: Joi.string().allow("", null).optional(),
-  stones: Joi.array().items(stoneItemSchema).optional(),
   weight: Joi.number().allow("", null).optional(),
+  primary_stone: Joi.object({
+    stone_name: Joi.string().allow("", null).optional(),
+    shape: Joi.string().allow("", null).optional(),
+    size: Joi.string().allow("", null).optional(),
+    weight: Joi.number().allow("", null).optional(),
+    unit: Joi.string().valid("g", "cts").optional(),
+    color: Joi.string().allow("", null).optional(),
+    cutting: Joi.string().allow("", null).optional(),
+    quality: Joi.string().allow("", null).optional(),
+    clarity: Joi.string().allow("", null).optional(),
+  })
+    .optional()
+    .allow(null),
+
+  additional_stones: Joi.array().items(stoneItemSchema).optional(),
   related_accessories: Joi.array().items(accessoryItemSchema).optional(),
 });
 
@@ -130,7 +158,6 @@ const updateProductSchema = Joi.object({
   code: Joi.string().optional(),
   description: Joi.string().allow("").optional(),
   image: Joi.string().allow("").optional(),
-  stones: Joi.array().items(stoneItemSchema).optional(),
 
   item_type: Joi.string().optional(),
   metal: Joi.string().optional(),

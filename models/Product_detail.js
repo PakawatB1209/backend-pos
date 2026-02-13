@@ -12,12 +12,13 @@ const StoneDetailSchema = new Schema({
   clarity: { type: mongoose.Schema.ObjectId, ref: "masters" },
   qty: { type: Number, default: 0 },
   weight: { type: Number, default: 0 },
+  unit: { type: String, enum: ["g", "cts"], default: "g" },
 });
 
 const ProductDetailSchema = new Schema(
   {
     product_detail_id: { type: Schema.Types.ObjectId, auto: true },
-    unit: { type: String, enum: ["pcs", "g", "cts", "pair"], default: "g" },
+    unit: { type: String, enum: ["g", "cts"], default: "g" },
     color: { type: String },
     size: { type: String },
     masters: [

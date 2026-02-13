@@ -28,6 +28,7 @@ const ProductSchema = new mongoose.Schema(
         },
 
         weight: { type: Number, default: 0 },
+        unit: { type: String, enum: ["g", "cts"], default: "g" },
         size: { type: String, default: null },
         metal: { type: String, default: null },
 

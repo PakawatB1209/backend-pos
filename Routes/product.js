@@ -87,6 +87,7 @@ router.put(
   auth,
   checkPermission("Product List", "update"),
   upload,
+  parseBodyData,
   validateSchema("update"),
   updateProduct,
 );

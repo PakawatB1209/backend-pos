@@ -1677,14 +1677,38 @@ exports.exportProductToExcel = async (req, res) => {
         .json({ success: false, message: "User has no company" });
 
     const { type, value } = req.body;
-    const query = {
-      comp_id: user.comp_id,
-      ...(type === "category" && value && { product_category: value }),
-      ...(type === "selected" &&
-        Array.isArray(value) &&
-        value.length && { _id: { $in: value } }),
-    };
+    let query = { comp_id: user.comp_id };
 
+    if (type === "category" && value) {
+      const inputValues = Array.isArray(value) ? value : [value];
+      let targetIds = [];
+      let namesToFind = [];
+
+      inputValues.forEach((v) => {
+        if (mongoose.Types.ObjectId.isValid(v)) targetIds.push(v);
+        else namesToFind.push(v);
+      });
+
+      if (namesToFind.length > 0) {
+        const foundMasters = await Masters.find({
+          master_name: { $in: namesToFind },
+          comp_id: user.comp_id,
+        }).select("_id");
+        targetIds = [...targetIds, ...foundMasters.map((m) => m._id)];
+      }
+
+      if (targetIds.length === 0) {
+        query.product_category = { $in: [] };
+      } else {
+        query.product_category = { $in: targetIds };
+      }
+    } else if (type === "selected" && Array.isArray(value) && value.length) {
+      query._id = { $in: value };
+    }
+
+    // -------------------------------------------------------------
+    // data
+    // -------------------------------------------------------------
     const products = await Product.find(query)
       .populate("product_category", "master_name")
       .populate("product_item_type", "master_name")
@@ -1696,59 +1720,64 @@ exports.exportProductToExcel = async (req, res) => {
           "primary_stone.clarity",
           "primary_stone.cutting",
           "primary_stone.quality",
-
           "additional_stones.stone_name",
           "additional_stones.shape",
           "additional_stones.clarity",
-
           "masters.master_id",
         ],
       })
       .lean();
 
+    // -------------------------------------------------------------
+    // Map Data
+    // -------------------------------------------------------------
     const rows = products.map((p) => {
       const d = p.product_detail_id || {};
       const ps = d.primary_stone || {};
-
       const addText = (d.additional_stones || [])
         .map(
           (s) =>
-            `${s.stone_name?.master_name || "-"} ${s.shape?.master_name || ""} ${s.color ? `(${s.color})` : ""} (${s.qty || 0}pcs)`,
+            `${s.stone_name?.master_name || "-"} ${s.shape?.master_name || ""} ${
+              s.color ? `(${s.color})` : ""
+            } (${s.qty || 0}pcs)`,
         )
         .join(", ");
 
       return {
         Code: p.product_code,
         Name: p.product_name,
-        Category: p.product_category?.master_name || p.product_category || "-",
+        Category: p.product_category?.master_name || p.product_category || "-", // ใช้ค่านี้จัดเรียง
         Type: p.product_item_type?.master_name || p.product_item_type || "-",
         "Gross Weight (g)": d.gross_weight || 0,
         "Net Weight (g)": d.net_weight || 0,
         "Product Unit": d.unit || p.unit || "",
-
         Size: d.size || "",
-
         "Main Stone": ps.stone_name?.master_name || "",
         "Main Shape": ps.shape?.master_name || "",
-
         "Main Color": ps.color || "",
-
         "Main Clarity": ps.clarity?.master_name || "",
         "Main Qty": ps.qty || 0,
         "Main Weight": ps.weight || 0,
-
         "Additional Stones": addText,
-
         Components: (d.masters || [])
           .map((m) => m.master_id?.master_name || "-")
           .join(", "),
-
         Status: p.is_active ? "Active" : "Inactive",
         "Purchase Unit": "-",
         Qty: "-",
         Cost: "-",
         Price: "-",
       };
+    });
+
+    rows.sort((a, b) => {
+      const catA = (a.Category || "").toString().toLowerCase();
+      const catB = (b.Category || "").toString().toLowerCase();
+
+      if (catA === catB) {
+        return (a.Name || "").localeCompare(b.Name || "");
+      }
+      return catA.localeCompare(catB);
     });
 
     const workbook = new ExcelJS.Workbook();
@@ -1760,12 +1789,7 @@ exports.exportProductToExcel = async (req, res) => {
       if (sheetData.length === 0) return;
 
       const headers = Object.keys(sheetData[0]);
-      sheet.columns = headers.map((h) => ({
-        header: h,
-        key: h,
-        width: 15,
-      }));
-
+      sheet.columns = headers.map((h) => ({ header: h, key: h, width: 15 }));
       sheet.addRows(sheetData);
 
       const editableFields = [
@@ -1815,26 +1839,21 @@ exports.exportProductToExcel = async (req, res) => {
       });
     };
 
-    if (type === "category") {
-      const grouped = rows.reduce((acc, r) => {
-        const key = r.Category || "Uncategorized";
-        acc[key] = acc[key] || [];
-        acc[key].push(r);
-        return acc;
-      }, {});
-      Object.entries(grouped).forEach(([cat, data]) =>
-        createSheetWithStyle(workbook, cat, data),
-      );
-    } else {
-      createSheetWithStyle(workbook, "Products", rows);
-    }
+    createSheetWithStyle(workbook, "Products", rows);
 
     res.setHeader(
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     );
-    const prefix =
-      type === "category" ? value : type === "selected" ? "Selected" : "All";
+
+    let prefix = "All";
+    if (type === "category") {
+      const valStr = Array.isArray(value) ? value.join("_") : value;
+      prefix = valStr.length > 30 ? "Categories_Mix" : valStr;
+    } else if (type === "selected") {
+      prefix = "Selected";
+    }
+
     res.setHeader(
       "Content-Disposition",
       `attachment; filename="Purchase_Template_${prefix}_${Date.now()}.xlsx"`,

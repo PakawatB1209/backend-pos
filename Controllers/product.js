@@ -2,6 +2,10 @@ const Product = require("../models/Product");
 const ProductDetail = require("../models/Product_detail");
 const User = require("../models/User");
 const Masters = require("../models/masters");
+const Order = require("../models/Order");
+const Purchase = require("../models/Purchase");
+const StockTransaction = require("../models/StockTransaction");
+const Stock = require("../models/Stock");
 const mongoose = require("mongoose");
 const fs = require("fs");
 const sharp = require("sharp");
@@ -1269,6 +1273,9 @@ exports.updateProduct = async (req, res) => {
 
 exports.removeOneProduct = async (req, res) => {
   try {
+    // -----------------------------------------------------
+    // 1. Validate & Find User
+    // -----------------------------------------------------
     if (!req.user || !req.user.id) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
@@ -1281,47 +1288,91 @@ exports.removeOneProduct = async (req, res) => {
     }
 
     const user = await User.findById(req.user.id).select("comp_id");
-
     const product = await Product.findOne({ _id: id, comp_id: user.comp_id });
+
     if (!product) {
-      return res.status(404).json({ success: false, message: "ไม่พบสินค้า" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
     }
 
-    const usedAsAccessory = await Product.findOne({
+    // -----------------------------------------------------
+    // 2. 🔍 Check References (ตรวจสอบว่าสินค้าถูกใช้งานไปหรือยัง)
+    // -----------------------------------------------------
+
+    // 2.1 เช็คว่าอยู่ใน Order (ขายไปหรือยัง)
+    const isUsedInOrder = await Order.exists({ "items.product_id": id });
+
+    // 2.2 เช็คว่าอยู่ใน Purchase (เคยสั่งซื้อเข้ามาหรือยัง)
+    const isUsedInPurchase = await Purchase.exists({ "items.product_id": id });
+
+    // 2.3 เช็คว่ามี Transaction การเคลื่อนไหวสต็อกไหม
+    const isUsedInTrans = await StockTransaction.exists({ product_id: id });
+
+    // 2.4 เช็คว่าเป็นส่วนประกอบ (Accessory) ของสินค้าอื่นไหม
+    const isUsedAsAccessory = await Product.exists({
       "related_accessories.product_id": id,
       comp_id: user.comp_id,
-    }).select("product_code product_name");
+    });
 
-    if (usedAsAccessory) {
-      return res.status(400).json({
-        success: false,
-        message: `Cannot delete! This product is used as a component in: ${usedAsAccessory.product_name} (${usedAsAccessory.product_code})`,
+    // -----------------------------------------------------
+    // 3. 🟡 CASE: ถูกใช้งานแล้ว -> เปลี่ยนเป็น Inactive (Soft Delete)
+    // -----------------------------------------------------
+    if (
+      isUsedInOrder ||
+      isUsedInPurchase ||
+      isUsedInTrans ||
+      isUsedAsAccessory
+    ) {
+      // อัปเดตสถานะเป็น Inactive
+      product.is_active = false;
+      await product.save();
+
+      return res.status(200).json({
+        success: true,
+        message:
+          "Product is in use. Status changed to Inactive instead of deleting.",
+        action: "soft_delete", // บอกหน้าบ้านว่าแค่นี้ปิดการใช้งานนะ ไม่ได้ลบหาย
+        data: { _id: product._id, is_active: false },
       });
     }
 
+    // -----------------------------------------------------
+    // 4. 🔴 CASE: ยังไม่เคยถูกใช้ -> ลบถาวร (Hard Delete)
+    // -----------------------------------------------------
+
+    // 4.1 ลบรูปภาพ
     if (product.file && product.file.length > 0) {
       product.file.forEach((fileName) => {
-        const imagePath = path.join("./uploads/product", fileName);
-
-        if (fs.existsSync(imagePath)) {
-          try {
-            fs.unlinkSync(imagePath);
-          } catch (err) {
-            console.log(`Delete Img Error: ${err.message}`);
+        // เช็คว่าเป็นรูป Local ไม่ใช่ Link ภายนอก
+        if (!fileName.startsWith("http")) {
+          const imagePath = path.join("./uploads/product", fileName);
+          if (fs.existsSync(imagePath)) {
+            try {
+              fs.unlinkSync(imagePath);
+            } catch (err) {
+              console.log(`Delete Img Error: ${err.message}`);
+            }
           }
         }
       });
     }
 
+    // 4.2 ลบ Stock (Inventory) ที่ผูกกับสินค้านี้ทิ้งด้วย (ไม่งั้นจะเป็น Data ขยะ)
+    await Stock.deleteMany({ product_id: id });
+
+    // 4.3 ลบ Product Detail
     if (product.product_detail_id) {
       await ProductDetail.findByIdAndDelete(product.product_detail_id);
     }
 
+    // 4.4 ลบ Product หลัก
     await Product.findByIdAndDelete(id);
 
     res.status(200).json({
       success: true,
-      message: "Product deleted successfully.",
+      message: "Product permanently deleted.",
+      action: "hard_delete",
       deletedId: id,
     });
   } catch (error) {
@@ -1490,225 +1541,215 @@ exports.removeAllFiles = async (req, res) => {
   }
 };
 
-// exports.exportProductToExcel = async (req, res) => {
-//   try {
-//     if (!req.user?.id)
-//       return res.status(401).json({ success: false, message: "Unauthorized" });
+const buildQuery = async (user, type, value) => {
+  let query = { comp_id: user.comp_id };
 
-//     const user = await User.findById(req.user.id).select("comp_id").lean();
-//     if (!user?.comp_id)
-//       return res
-//         .status(400)
-//         .json({ success: false, message: "User has no company" });
+  if (type === "category" && value) {
+    const values = Array.isArray(value) ? value : [value];
+    const targetIds = values.filter((v) => mongoose.Types.ObjectId.isValid(v));
+    const names = values.filter((v) => !mongoose.Types.ObjectId.isValid(v));
 
-//     const { type, value } = req.body;
-//     const query = {
-//       comp_id: user.comp_id,
-//       ...(type === "category" && value && { product_category: value }),
-//       ...(type === "selected" &&
-//         Array.isArray(value) &&
-//         value.length && { _id: { $in: value } }),
-//     };
+    if (names.length > 0) {
+      const masters = await Masters.find({
+        master_name: { $in: names },
+        comp_id: user.comp_id,
+      }).select("_id");
+      targetIds.push(...masters.map((m) => m._id));
+    }
+    query.product_category = { $in: targetIds }; // $in: [] ไม่ error ใน mongo ยุคใหม่
+  } else if (type === "selected" && Array.isArray(value) && value.length) {
+    query._id = { $in: value };
+  }
 
-//     const products = await Product.find(query)
-//       .populate("product_category", "master_name")
-//       .populate("product_item_type", "master_name")
-//       .populate({
-//         path: "product_detail_id",
-//         populate: [
-//           "primary_stone.stone_name",
-//           "primary_stone.shape",
-//           "primary_stone.color",
-//           "primary_stone.clarity",
-//           "additional_stones.stone_name",
-//           "additional_stones.shape",
-//           "additional_stones.color",
-//           "additional_stones.clarity",
-//           "masters.master_id",
-//         ],
-//       })
-//       .lean();
+  return query;
+};
 
-//     const rows = products.map((p) => {
-//       const d = p.product_detail_id || {};
-//       const ps = d.primary_stone || {};
-//       const addText = (d.additional_stones || [])
-//         .map(
-//           (s) =>
-//             `${s.stone_name?.master_name || "-"} ${s.shape?.master_name || ""} (${s.qty || 0}pcs)`,
-//         )
-//         .join(", ");
+// 2. จัดรูปแบบข้อมูล (Formatting)
+const formatRows = (products) => {
+  const formatted = products.map((p) => {
+    const d = p.product_detail_id || {};
+    const ps = d.primary_stone || {};
 
-//       return {
-//         Code: p.product_code,
-//         Name: p.product_name,
-//         Category: p.product_category?.master_name || p.product_category || "-",
-//         Type: p.product_item_type?.master_name || p.product_item_type || "-",
-//         "Gross Weight (g)": d.gross_weight || 0,
-//         "Net Weight (g)": d.net_weight || 0,
-//         "Product Unit": d.unit || p.unit || "",
-//         Size: d.size || "",
-//         "Main Stone": ps.stone_name?.master_name || "",
-//         "Main Shape": ps.shape?.master_name || "",
-//         "Main Color": ps.color?.master_color || ps.color?.master_name || "",
-//         "Main Clarity": ps.clarity?.master_name || "",
-//         "Main Qty": ps.qty || 0,
-//         "Main Weight": ps.weight || 0,
-//         "Additional Stones": addText,
-//         Components: (d.masters || [])
-//           .map((m) => m.master_id?.master_name || "-")
-//           .join(", "),
-//         Status: p.is_active ? "Active" : "Inactive",
-//         "Purchase Unit": "-",
-//         Qty: "-",
-//         Cost: "-",
-//         Price: "-",
-//       };
-//     });
+    const addText = (d.additional_stones || [])
+      .map(
+        (s) =>
+          `${s.stone_name?.master_name || "-"} ${s.shape?.master_name || ""} ${s.color ? `(${s.color})` : ""} (${s.qty || 0}pcs)`,
+      )
+      .join("\r\n");
 
-//     const workbook = new ExcelJS.Workbook();
+    const accText = (p.related_accessories || [])
+      .map(
+        (acc) =>
+          acc.product_id?.product_name ||
+          acc.product_id?.product_code ||
+          "Unknown",
+      )
+      .join("\r\n");
 
-//     const createSheetWithStyle = (wb, sheetName, sheetData) => {
-//       const safeName = sheetName.substring(0, 30).replace(/[\\/?*[\]]/g, "");
-//       const sheet = wb.addWorksheet(safeName);
+    const val = (v) => (v !== undefined && v !== null && v !== "" ? v : "-");
+    const redVal = (v) => (v !== undefined && v !== null && v !== "" ? v : "");
 
-//       if (sheetData.length === 0) return;
+    return {
+      Code: val(p.product_code),
+      Name: val(p.product_name),
+      Category: p.product_category?.master_name || p.product_category || "-",
+      Type: p.product_item_type?.master_name || p.product_item_type || "-",
+      "Gross Weight": redVal(d.gross_weight),
+      "Net Weight": redVal(d.net_weight),
+      "Product Unit": val(d.unit || p.unit),
+      Size: val(d.size),
+      Stone: val(ps.stone_name?.master_name),
+      Shape: val(ps.shape?.master_name),
+      Color: val(ps.color),
+      Clarity: val(ps.clarity?.master_name),
+      "Stone Qty": ps.qty || "-",
+      "Stone Weight": ps.weight || "-",
+      "Additional Stones": val(addText),
+      Components: val(
+        (d.masters || [])
+          .map((m) => m.master_id?.master_name || "-")
+          .join(", "),
+      ),
+      Accessories: val(accText),
+      Status: p.is_active ? "Active" : "Inactive",
+      "Purchase Unit": redVal(),
+      Qty: redVal(),
+      Cost: redVal(),
+      Price: redVal(),
+    };
+  });
 
-//       const headers = Object.keys(sheetData[0]);
-//       sheet.columns = headers.map((h) => ({
-//         header: h,
-//         key: h,
-//         width: 15,
-//       }));
+  return formatted.sort((a, b) => {
+    const catA = (a.Category || "").toLowerCase();
+    const catB = (b.Category || "").toLowerCase();
+    return catA === catB
+      ? (a.Name || "").localeCompare(b.Name || "")
+      : catA.localeCompare(catB);
+  });
+};
 
-//       sheet.addRows(sheetData);
+// 3. ตกแต่ง Header (Style) - แยกออกมาเพื่อลด Nesting
+const styleSheetHeader = (sheet) => {
+  const editableFields = [
+    "Gross Weight",
+    "Net Weight",
+    "Purchase Unit",
+    "Qty",
+    "Cost",
+    "Price",
+  ];
+  const headerRow = sheet.getRow(1);
 
-//       const editableFields = [
-//         "Gross Weight (g)",
-//         "Net Weight (g)",
-//         "Purchase Unit",
-//         "Qty",
-//         "Cost",
-//         "Price",
-//       ];
+  headerRow.eachCell((cell) => {
+    cell.font = { bold: true, size: 12 };
+    cell.alignment = { vertical: "middle", horizontal: "center" };
+    cell.border = {
+      top: { style: "thin" },
+      left: { style: "thin" },
+      bottom: { style: "thin" },
+      right: { style: "thin" },
+    };
 
-//       const headerRow = sheet.getRow(1);
-//       headerRow.eachCell((cell) => {
-//         const headerName = cell.value;
-//         cell.font = { bold: true, size: 12 };
-//         cell.alignment = { vertical: "middle", horizontal: "center" };
-//         cell.border = {
-//           top: { style: "thin" },
-//           left: { style: "thin" },
-//           bottom: { style: "thin" },
-//           right: { style: "thin" },
-//         };
+    if (editableFields.includes(cell.value)) {
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFFF0000" },
+      };
+      cell.font = { color: { argb: "FFFFFFFF" }, bold: true };
+    } else {
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFEEEEEE" },
+      };
+    }
+  });
+};
 
-//         if (editableFields.includes(headerName)) {
-//           cell.fill = {
-//             type: "pattern",
-//             pattern: "solid",
-//             fgColor: { argb: "FFFF0000" },
-//           };
-//           cell.font = { color: { argb: "FFFFFFFF" }, bold: true };
-//         } else {
-//           cell.fill = {
-//             type: "pattern",
-//             pattern: "solid",
-//             fgColor: { argb: "FFEEEEEE" },
-//           };
-//         }
-//       });
+// 4. ฝังสูตร Excel (Formula) - แยกออกมาลดความซับซ้อน
+const injectExcelFormulas = (sheet) => {
+  const grossCol = sheet.getColumn("Gross Weight");
+  const netCol = sheet.getColumn("Net Weight");
 
-//       sheet.columns.forEach((column) => {
-//         let maxLength = 0;
-//         column.eachCell({ includeEmpty: true }, (cell) => {
-//           const columnLength = cell.value ? cell.value.toString().length : 10;
-//           if (columnLength > maxLength) maxLength = columnLength;
-//         });
-//         column.width = maxLength < 10 ? 10 : maxLength + 2;
-//       });
-//     };
+  if (!grossCol || !netCol) return;
 
-//     if (type === "category") {
-//       const grouped = rows.reduce((acc, r) => {
-//         const key = r.Category || "Uncategorized";
-//         acc[key] = acc[key] || [];
-//         acc[key].push(r);
-//         return acc;
-//       }, {});
-//       Object.entries(grouped).forEach(([cat, data]) =>
-//         createSheetWithStyle(workbook, cat, data),
-//       );
-//     } else {
-//       createSheetWithStyle(workbook, "Products", rows);
-//     }
+  const gLetter = grossCol.letter;
+  // ใช้ Loop แบบธรรมดาเพื่อลด Nesting ของ Callback
+  sheet.eachRow((row, rowNumber) => {
+    if (rowNumber === 1) return;
+    const netCell = row.getCell("Net Weight");
+    if (!netCell.value) {
+      netCell.value = {
+        formula: `IF(${gLetter}${rowNumber}="","",${gLetter}${rowNumber})`,
+      };
+    }
+  });
+};
 
-//     res.setHeader(
-//       "Content-Type",
-//       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-//     );
-//     const prefix =
-//       type === "category" ? value : type === "selected" ? "Selected" : "All";
-//     res.setHeader(
-//       "Content-Disposition",
-//       `attachment; filename="Purchase_Template_${prefix}_${Date.now()}.xlsx"`,
-//     );
+// 5. จัดขนาด Column (Auto Width) - แยกออกมา
+const autoSizeColumns = (sheet) => {
+  sheet.columns.forEach((column) => {
+    let maxLength = 0;
+    column.eachCell({ includeEmpty: true }, (cell, rowNumber) => {
+      if (rowNumber > 1)
+        cell.alignment = {
+          vertical: "top",
+          horizontal: "left",
+          wrapText: true,
+        };
 
-//     await workbook.xlsx.write(res);
-//     res.end();
-//   } catch (err) {
-//     console.error(err);
-//     res
-//       .status(500)
-//       .json({ success: false, message: "Export Error", error: err.message });
-//   }
-// };
+      const valStr =
+        cell.value && cell.value.formula
+          ? ""
+          : cell.value
+            ? cell.value.toString()
+            : "";
+      const lines = valStr.split("\r\n");
+      const maxLine = Math.max(...lines.map((l) => l.length));
+      if (maxLine > maxLength) maxLength = maxLine;
+    });
+    column.width = maxLength < 15 ? 15 : maxLength > 50 ? 50 : maxLength + 2;
+  });
+};
+
+// 6. รวมร่าง Excel Generator
+const createExcelWorkbook = (rows) => {
+  const workbook = new ExcelJS.Workbook();
+  const safeName = "Products";
+  const sheet = workbook.addWorksheet(safeName);
+
+  if (rows.length > 0) {
+    sheet.columns = Object.keys(rows[0]).map((h) => ({
+      header: h,
+      key: h,
+      width: 15,
+    }));
+    sheet.addRows(rows);
+
+    // เรียกใช้ฟังก์ชันย่อย (Method Calls are Free!) 🚀
+    styleSheetHeader(sheet);
+    injectExcelFormulas(sheet);
+    autoSizeColumns(sheet);
+  }
+  return workbook;
+};
 
 exports.exportProductToExcel = async (req, res) => {
   try {
+    // 1. Security Check (Guard Clauses ลด Nesting)
     if (!req.user?.id)
       return res.status(401).json({ success: false, message: "Unauthorized" });
-
     const user = await User.findById(req.user.id).select("comp_id").lean();
     if (!user?.comp_id)
       return res
         .status(400)
         .json({ success: false, message: "User has no company" });
 
-    const { type, value } = req.body;
-    let query = { comp_id: user.comp_id };
+    // 2. Prepare Data
+    const query = await buildQuery(user, req.body.type, req.body.value);
 
-    if (type === "category" && value) {
-      const inputValues = Array.isArray(value) ? value : [value];
-      let targetIds = [];
-      let namesToFind = [];
-
-      inputValues.forEach((v) => {
-        if (mongoose.Types.ObjectId.isValid(v)) targetIds.push(v);
-        else namesToFind.push(v);
-      });
-
-      if (namesToFind.length > 0) {
-        const foundMasters = await Masters.find({
-          master_name: { $in: namesToFind },
-          comp_id: user.comp_id,
-        }).select("_id");
-        targetIds = [...targetIds, ...foundMasters.map((m) => m._id)];
-      }
-
-      if (targetIds.length === 0) {
-        query.product_category = { $in: [] };
-      } else {
-        query.product_category = { $in: targetIds };
-      }
-    } else if (type === "selected" && Array.isArray(value) && value.length) {
-      query._id = { $in: value };
-    }
-
-    // -------------------------------------------------------------
-    // data
-    // -------------------------------------------------------------
+    // 3. Fetch from DB
     const products = await Product.find(query)
       .populate("product_category", "master_name")
       .populate("product_item_type", "master_name")
@@ -1726,134 +1767,27 @@ exports.exportProductToExcel = async (req, res) => {
           "masters.master_id",
         ],
       })
+      .populate({
+        path: "related_accessories.product_id",
+        select: "product_name product_code",
+      })
       .lean();
 
-    // -------------------------------------------------------------
-    // Map Data
-    // -------------------------------------------------------------
-    const rows = products.map((p) => {
-      const d = p.product_detail_id || {};
-      const ps = d.primary_stone || {};
-      const addText = (d.additional_stones || [])
-        .map(
-          (s) =>
-            `${s.stone_name?.master_name || "-"} ${s.shape?.master_name || ""} ${
-              s.color ? `(${s.color})` : ""
-            } (${s.qty || 0}pcs)`,
-        )
-        .join(", ");
+    // 4. Transform & Generate
+    const rows = formatRows(products);
+    const workbook = createExcelWorkbook(rows);
 
-      return {
-        Code: p.product_code,
-        Name: p.product_name,
-        Category: p.product_category?.master_name || p.product_category || "-", // ใช้ค่านี้จัดเรียง
-        Type: p.product_item_type?.master_name || p.product_item_type || "-",
-        "Gross Weight (g)": d.gross_weight || 0,
-        "Net Weight (g)": d.net_weight || 0,
-        "Product Unit": d.unit || p.unit || "",
-        Size: d.size || "",
-        "Main Stone": ps.stone_name?.master_name || "",
-        "Main Shape": ps.shape?.master_name || "",
-        "Main Color": ps.color || "",
-        "Main Clarity": ps.clarity?.master_name || "",
-        "Main Qty": ps.qty || 0,
-        "Main Weight": ps.weight || 0,
-        "Additional Stones": addText,
-        Components: (d.masters || [])
-          .map((m) => m.master_id?.master_name || "-")
-          .join(", "),
-        Status: p.is_active ? "Active" : "Inactive",
-        "Purchase Unit": "-",
-        Qty: "-",
-        Cost: "-",
-        Price: "-",
-      };
-    });
-
-    rows.sort((a, b) => {
-      const catA = (a.Category || "").toString().toLowerCase();
-      const catB = (b.Category || "").toString().toLowerCase();
-
-      if (catA === catB) {
-        return (a.Name || "").localeCompare(b.Name || "");
-      }
-      return catA.localeCompare(catB);
-    });
-
-    const workbook = new ExcelJS.Workbook();
-
-    const createSheetWithStyle = (wb, sheetName, sheetData) => {
-      const safeName = sheetName.substring(0, 30).replace(/[\\/?*[\]]/g, "");
-      const sheet = wb.addWorksheet(safeName);
-
-      if (sheetData.length === 0) return;
-
-      const headers = Object.keys(sheetData[0]);
-      sheet.columns = headers.map((h) => ({ header: h, key: h, width: 15 }));
-      sheet.addRows(sheetData);
-
-      const editableFields = [
-        "Gross Weight (g)",
-        "Net Weight (g)",
-        "Purchase Unit",
-        "Qty",
-        "Cost",
-        "Price",
-      ];
-
-      const headerRow = sheet.getRow(1);
-      headerRow.eachCell((cell) => {
-        const headerName = cell.value;
-        cell.font = { bold: true, size: 12 };
-        cell.alignment = { vertical: "middle", horizontal: "center" };
-        cell.border = {
-          top: { style: "thin" },
-          left: { style: "thin" },
-          bottom: { style: "thin" },
-          right: { style: "thin" },
-        };
-
-        if (editableFields.includes(headerName)) {
-          cell.fill = {
-            type: "pattern",
-            pattern: "solid",
-            fgColor: { argb: "FFFF0000" },
-          };
-          cell.font = { color: { argb: "FFFFFFFF" }, bold: true };
-        } else {
-          cell.fill = {
-            type: "pattern",
-            pattern: "solid",
-            fgColor: { argb: "FFEEEEEE" },
-          };
-        }
-      });
-
-      sheet.columns.forEach((column) => {
-        let maxLength = 0;
-        column.eachCell({ includeEmpty: true }, (cell) => {
-          const columnLength = cell.value ? cell.value.toString().length : 10;
-          if (columnLength > maxLength) maxLength = columnLength;
-        });
-        column.width = maxLength < 10 ? 10 : maxLength + 2;
-      });
-    };
-
-    createSheetWithStyle(workbook, "Products", rows);
-
+    // 5. Send Response
     res.setHeader(
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     );
-
-    let prefix = "All";
-    if (type === "category") {
-      const valStr = Array.isArray(value) ? value.join("_") : value;
-      prefix = valStr.length > 30 ? "Categories_Mix" : valStr;
-    } else if (type === "selected") {
-      prefix = "Selected";
-    }
-
+    const prefix =
+      req.body.type === "category"
+        ? "Categories_Mix"
+        : req.body.type === "selected"
+          ? "Selected"
+          : "All";
     res.setHeader(
       "Content-Disposition",
       `attachment; filename="Purchase_Template_${prefix}_${Date.now()}.xlsx"`,

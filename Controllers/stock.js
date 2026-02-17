@@ -120,7 +120,6 @@ exports.list = async (req, res) => {
     const userId = req.user.id;
     const user = await User.findById(userId).select("comp_id").lean();
 
-    // ถ้าไม่มี User หรือ User ไม่ได้สังกัดบริษัทใดๆ ให้ Error
     if (!user || !user.comp_id) {
       return res
         .status(400)
@@ -128,31 +127,28 @@ exports.list = async (req, res) => {
     }
 
     // -------------------------------------------------------
-    // 2. ตั้งค่า Pagination (หน้า, จำนวนต่อหน้า)
+    // 2. ตั้งค่า Pagination
     // -------------------------------------------------------
     const page = Number.parseInt(req.query.page) || 1;
     const limit = Number.parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    // รับค่า Filter ต่างๆ จาก Query String
+    // รับค่า Filter
     const { search, category, warehouse, start_date, end_date, status } =
       req.query;
 
-    // เริ่มต้น Query โดยบังคับเลือกเฉพาะ comp_id ของ User เท่านั้น (เพื่อความปลอดภัย)
     let stockQuery = { comp_id: user.comp_id };
 
     // -------------------------------------------------------
-    // 3. กรองตาม Search หรือ Category (ต้องหา Product ID ก่อน)
+    // 3. กรองตาม Search หรือ Category
     // -------------------------------------------------------
     if (search || category) {
       const productQuery = { comp_id: user.comp_id };
 
-      // ถ้ามีการเลือก Category (และไม่ใช่ All)
       if (category && category !== "All") {
         productQuery.product_category = category;
       }
 
-      // ถ้ามีการพิมพ์ Search (ค้นหาจากชื่อ หรือ รหัสสินค้า)
       if (search) {
         productQuery.$or = [
           { product_name: { $regex: search, $options: "i" } },
@@ -160,11 +156,8 @@ exports.list = async (req, res) => {
         ];
       }
 
-      // หา Product ที่ตรงเงื่อนไข แล้วดึงเฉพาะ _id ออกมา
       const matchingProducts = await Product.find(productQuery).select("_id");
       const productIds = matchingProducts.map((p) => p._id);
-
-      // เอา ID สินค้าที่ได้ ไปกรองในตาราง Stock
       stockQuery.product_id = { $in: productIds };
     }
 
@@ -178,59 +171,55 @@ exports.list = async (req, res) => {
     if (start_date && end_date) {
       stockQuery.updatedAt = {
         $gte: new Date(start_date),
-        $lte: new Date(new Date(end_date).setHours(23, 59, 59)), // สิ้นสุดวัน
+        $lte: new Date(new Date(end_date).setHours(23, 59, 59)),
       };
     }
 
     // -------------------------------------------------------
-    // 5. กรองตามสถานะ (In Stock / Out of Stock)
+    // 5. กรองตามสถานะ
     // -------------------------------------------------------
     if (status) {
       if (status === "In Stock") {
-        stockQuery.quantity = { $gt: 0 }; // มากกว่า 0
+        stockQuery.quantity = { $gt: 0 };
       } else if (status === "Out of Stock") {
-        stockQuery.quantity = { $lte: 0 }; // น้อยกว่าหรือเท่ากับ 0
+        stockQuery.quantity = { $lte: 0 };
       }
     }
 
     // -------------------------------------------------------
-    // 6. ดึงข้อมูลจาก Database (Query & Populate)
+    // 6. ดึงข้อมูล (Query & Populate)
     // -------------------------------------------------------
-    // ใช้ Promise.all เพื่อดึงข้อมูลสินค้า (find) และนับจำนวนทั้งหมด (count) พร้อมกัน
     const [stocks, total] = await Promise.all([
       Stock.find(stockQuery)
         .populate({
           path: "product_id",
-          select:
-            "product_code product_name file price unit cost product_category",
-          // 🟢 Nested Populate: เจาะเข้าไปใน product_category เพื่อเอา "ชื่อหมวดหมู่ (master_name)" ออกมา
+          select: "product_code product_name file unit product_category", // ตัด price ออก ใช้จาก Stock แทน
           populate: {
             path: "product_category",
-            select: "master_name", // ถ้าไม่ทำตรงนี้จะได้เป็น ID ยาวๆ
+            select: "master_name",
           },
         })
         .populate({
           path: "warehouse_id",
           select: "warehouse_name",
         })
-        .sort({ updatedAt: -1 }) // เรียงจากอัปเดตล่าสุด
+        .sort({ updatedAt: -1 })
         .skip(skip)
         .limit(limit)
-        .lean(), // แปลงเป็น JSON Object ธรรมดา (เพื่อความเร็ว)
+        .lean({ virtuals: true }),
       Stock.countDocuments(stockQuery),
     ]);
 
     const baseUrl = `${req.protocol}://${req.get("host")}/uploads/product/`;
 
     // -------------------------------------------------------
-    // 7. จัดรูปแบบข้อมูล (Format Data) ก่อนส่งกลับหน้าบ้าน
+    // 7. จัดรูปแบบข้อมูล (Format Data)
     // -------------------------------------------------------
     const formattedData = stocks.map((item) => {
       const product = item.product_id || {};
       const warehouse = item.warehouse_id || {};
-      const catObj = product.product_category || {}; // รับค่าเป็น Object จากการ Populate ซ้อน
+      const catObj = product.product_category || {};
 
-      // จัดการ URL รูปภาพ
       let imageUrl = "";
       if (product.file && product.file.length > 0) {
         imageUrl = product.file[0].startsWith("http")
@@ -239,33 +228,38 @@ exports.list = async (req, res) => {
       }
 
       const qty = item.quantity || 0;
+
+      // ฝั่งต้นทุน
       const cost = item.cost || 0;
       const amount = qty * cost;
+
+      // 🟢 ฝั่งราคาขาย (Update: ดึงจาก Stock ราคาเฉลี่ย)
+      const sale_price = item.price || 0;
 
       return {
         _id: item._id,
         image: imageUrl,
         code: product.product_code || "-",
         product_name: product.product_name || "-",
-
-        // ดึงชื่อหมวดหมู่จาก Object (master_name)
         category: catObj.master_name || "-",
-
         warehouse: warehouse.warehouse_name || "Unknown",
         date: item.updatedAt,
         unit: product.unit || "Pcs",
         qty: qty,
+
+        // Cost Information
         cost: cost,
         amount: amount,
-        sale_price: product.price || 0,
 
-        // Status: ถ้ามีของ > 0 คือ In Stock, ถ้า <= 0 คือ Out of Stock
+        // Sale Information (ราคาต่อชิ้น)
+        sale_price: sale_price,
+
         status: qty > 0 ? "In Stock" : "Out of Stock",
       };
     });
 
     // -------------------------------------------------------
-    // 8. ส่ง Response กลับ
+    // 8. ส่ง Response
     // -------------------------------------------------------
     res.status(200).json({
       success: true,

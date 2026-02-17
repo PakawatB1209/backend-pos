@@ -51,100 +51,101 @@ const generatePurchaseNumber = async (compId) => {
 //       note,
 //       items,
 //       currency,
-//       exchange_rate,
+//       manual_rate,
 //     } = req.body;
 
+//     // 1. ตรวจสอบ User & Company
 //     const user = await User.findById(userId).select("comp_id");
 //     if (!user || !user.comp_id)
 //       throw new Error("User not associated with company");
 
+//     const company = await Company.findById(user.comp_id)
+//       .select("main_currency")
+//       .lean();
+//     const mainCurrency = company?.main_currency || "THB";
+
+//     // 2. ค้นหา Warehouse (Default Logic)
 //     let defaultWarehouse = await Warehouse.findOne({
 //       comp_id: user.comp_id,
 //       warehouse_name: { $regex: /^others$/i },
 //     });
-
-//     if (!defaultWarehouse) {
+//     if (!defaultWarehouse)
 //       defaultWarehouse = await Warehouse.findOne({ comp_id: user.comp_id });
-//     }
 
-//     if (!defaultWarehouse) {
-//       throw new Error(
-//         "No Warehouse found. Please create at least one warehouse.",
-//       );
-//     }
-
+//     // 3. คำนวณ Universal Rate (Cross Rate Logic)
 //     let finalRate = 1;
-//     const selectedCurrency = currency || "THB";
+//     const selectedCurrency = currency || mainCurrency;
 
-//     if (selectedCurrency !== "THB") {
-//       if (exchange_rate && Number(exchange_rate) > 0) {
-//         finalRate = Number(exchange_rate);
-//       } else {
-//         finalRate = await getCurrentRate(selectedCurrency, date);
-//       }
+//     if (manual_rate && Number(manual_rate) > 0) {
+//       finalRate = Number(manual_rate); // ใช้เรทที่ User กรอกเอง
+//     } else if (selectedCurrency !== mainCurrency) {
+//       // ดึงเรทของสกุลเงินที่ซื้อ และสกุลเงินของบริษัท มาเทียบกัน (หารกัน)
+//       const ratePurchaseToTHB = await getCurrentRate(selectedCurrency, date);
+//       const rateBaseToTHB = await getCurrentRate(mainCurrency, date);
+
+//       finalRate = ratePurchaseToTHB / rateBaseToTHB;
 //     }
-//     console.log(`Purchase Currency: ${selectedCurrency}, Rate: ${finalRate}`);
 
-//     const autoPurchaseNumber = await generatePurchaseNumber(user.comp_id);
-//     const totalAmountOriginal = items.reduce(
-//       (sum, item) => sum + (Number(item.amount) || 0),
-//       0,
-//     );
+//     // 4. แปลงราคา Item ทั้งหมดเป็นหน่วยเงินหลัก (costMain)
+//     const processedItems = items.map((item) => {
+//       const qty = Number(item.quantity);
+//       const costForeign = Number(item.cost); // ราคาหน้าบิล (เช่น USD)
+//       const costMain = costForeign * finalRate; // แปลงเป็นหน่วยเงินบริษัท (เช่น THB หรือ USD)
 
-//     const finalItems = items.map((item) => {
 //       return {
 //         ...item,
-//         warehouse_id: item.warehouse_id || defaultWarehouse._id,
+//         warehouse_id: item.warehouse_id || defaultWarehouse?._id,
+//         quantity: qty,
+//         cost_foreign: costForeign,
+//         amount_foreign: costForeign * qty,
+//         cost: Number(costMain.toFixed(4)), // บันทึกลง field 'cost' ใน DB
+//         amount: Number((costMain * qty).toFixed(4)), // บันทึกลง field 'amount' ใน DB
 //       };
 //     });
 
+//     const totalAmountMain = processedItems.reduce(
+//       (sum, item) => sum + item.amount,
+//       0,
+//     );
+//     const autoPurchaseNumber = await generatePurchaseNumber(user.comp_id);
+
+//     // 5. บันทึกใบ Purchase
 //     const newPurchase = new Purchase({
 //       comp_id: user.comp_id,
 //       created_by: userId,
 //       purchase_number: autoPurchaseNumber,
-//       date,
+//       date: date || new Date(),
 //       vendor_name,
 //       ref1,
 //       ref2,
 //       note,
 //       currency: selectedCurrency,
 //       exchange_rate: finalRate,
-//       total_amount: totalAmountOriginal,
-//       items: finalItems,
+//       total_amount: totalAmountMain,
+//       items: processedItems,
 //     });
 
-//     await newPurchase.save({ session }); // 🟢 Loop Update Stock (แก้ไขใหม่: คำนวณต้นทุนเฉลี่ย)
+//     await newPurchase.save({ session });
 
-//     for (const item of finalItems) {
-//       const qty = Number(item.quantity);
-
-//       const costOriginal = Number(item.cost);
-//       const costTHB = costOriginal * finalRate;
-
-//       const totalGwToAdd = (Number(item.gross_weight) || 0) * qty;
-//       const totalNwToAdd = (Number(item.net_weight) || 0) * qty;
-//       const totalSwToAdd = (Number(item.stone_weight) || 0) * qty; // 🟡 1. ค้นหา Stock เดิมก่อน (เพื่อเอามาคำนวณ)
+//     // 🟢 6. วนลูปอัปเดต Stock (ใช้ต้นทุน costMain ในการเฉลี่ย)
+//     for (const item of processedItems) {
+//       const qty = item.quantity;
+//       const costMain = item.cost; // ต้นทุนในหน่วยเงินหลักบริษัท
 
 //       let stock = await Stock.findOne({
 //         comp_id: user.comp_id,
 //         warehouse_id: item.warehouse_id,
 //         product_id: item.product_id,
-//       }).session(session); // ตั้งค่าเริ่มต้น: ถ้าไม่มีของเดิม ให้ใช้ราคาใหม่เลย
+//       }).session(session);
 
-//       let newCost = costTHB;
-
+//       let newAverageCost = costMain;
 //       if (stock) {
-//         const currentQty = stock.quantity;
-//         const currentCost = stock.cost; // ทุนเดิม
-
-//         const totalOldValue = currentQty * currentCost;
-//         const totalNewValue = qty * costTHB;
-//         const totalQty = currentQty + qty;
-
-//         if (totalQty > 0) {
-//           newCost = (totalOldValue + totalNewValue) / totalQty;
-//         }
-//       } // 🟡 3. อัปเดตลง Database
+//         const totalOldValue = stock.quantity * stock.cost;
+//         const totalNewValue = qty * costMain;
+//         const totalQty = stock.quantity + qty;
+//         if (totalQty > 0)
+//           newAverageCost = (totalOldValue + totalNewValue) / totalQty;
+//       }
 
 //       const updatedStock = await Stock.findOneAndUpdate(
 //         {
@@ -155,18 +156,16 @@ const generatePurchaseNumber = async (compId) => {
 //         {
 //           $inc: {
 //             quantity: qty,
-//             total_gross_weight: totalGwToAdd,
-//             total_net_weight: totalNwToAdd,
-//             total_stone_weight: totalSwToAdd,
+//             total_gross_weight: Number(item.gross_weight) || 0,
+//             total_net_weight: Number(item.net_weight) || 0,
+//             total_stone_weight: Number(item.stone_weight) || 0,
 //           },
-//           $set: {
-//             cost: newCost, // ✅ บันทึกต้นทุนเฉลี่ยใหม่ (ที่คำนวณแล้ว)
-//             price: Number(item.price),
-//           },
+//           $set: { cost: newAverageCost }, // บันทึกทุนเฉลี่ยใหม่
 //         },
 //         { new: true, upsert: true, session },
-//       ); // 🟡 4. บันทึก Transaction
+//       );
 
+//       // 7. สร้าง Stock Transaction
 //       await StockTransaction.create(
 //         [
 //           {
@@ -177,13 +176,11 @@ const generatePurchaseNumber = async (compId) => {
 //             action_type: "purchase",
 //             document_ref: newPurchase._id,
 //             qty: qty,
-
-//             cost: costTHB, // ✅ ใน Transaction เก็บราคา "ที่ซื้อจริงรอบนี้" (ไม่ใช่ราคาเฉลี่ย)
-//             amount: qty * costTHB,
-
+//             cost: costMain, // ทุนล็อตที่ซื้อมา (ก่อนเฉลี่ย)
+//             amount: qty * costMain,
 //             balance_after: updatedStock.quantity,
 //             created_by: userId,
-//             note: `Purchase Ref: ${autoPurchaseNumber} from ${vendor_name || "Vendor"}`,
+//             note: `Purchase Ref: ${autoPurchaseNumber} (Original: ${item.cost_foreign} ${selectedCurrency})`,
 //           },
 //         ],
 //         { session },
@@ -199,8 +196,8 @@ const generatePurchaseNumber = async (compId) => {
 //       data: newPurchase,
 //     });
 //   } catch (error) {
-//     await session.abortTransaction();
-//     session.endSession();
+//     if (session) await session.abortTransaction();
+//     if (session) session.endSession();
 //     console.error("Purchase Error:", error);
 //     res
 //       .status(500)
@@ -235,7 +232,7 @@ exports.createPurchase = async (req, res) => {
       .lean();
     const mainCurrency = company?.main_currency || "THB";
 
-    // 2. ค้นหา Warehouse (Default Logic)
+    // 2. ค้นหา Warehouse (คลังสินค้า)
     let defaultWarehouse = await Warehouse.findOne({
       comp_id: user.comp_id,
       warehouse_name: { $regex: /^others$/i },
@@ -243,44 +240,67 @@ exports.createPurchase = async (req, res) => {
     if (!defaultWarehouse)
       defaultWarehouse = await Warehouse.findOne({ comp_id: user.comp_id });
 
-    // 3. คำนวณ Universal Rate (Cross Rate Logic)
+    // -------------------------------------------------------------
+    // 3. คำนวณอัตราแลกเปลี่ยน (Exchange Rate Logic)
+    // -------------------------------------------------------------
     let finalRate = 1;
     const selectedCurrency = currency || mainCurrency;
 
     if (manual_rate && Number(manual_rate) > 0) {
-      finalRate = Number(manual_rate); // ใช้เรทที่ User กรอกเอง
+      // ใช้เรทที่ผู้ใช้กรอกเองโดยตรง
+      finalRate = Number(manual_rate);
     } else if (selectedCurrency !== mainCurrency) {
-      // ดึงเรทของสกุลเงินที่ซื้อ และสกุลเงินของบริษัท มาเทียบกัน (หารกัน)
+      // 🧮 สูตร: เรทสกุลเงินที่ซื้อ หารด้วย เรทสกุลเงินหลักของบริษัท
       const ratePurchaseToTHB = await getCurrentRate(selectedCurrency, date);
       const rateBaseToTHB = await getCurrentRate(mainCurrency, date);
-
       finalRate = ratePurchaseToTHB / rateBaseToTHB;
     }
 
-    // 4. แปลงราคา Item ทั้งหมดเป็นหน่วยเงินหลัก (costMain)
+    // -------------------------------------------------------------
+    // 4. เตรียมข้อมูล Item และคำนวณค่าเงินรายชิ้น (Unit Conversion)
+    // -------------------------------------------------------------
     const processedItems = items.map((item) => {
       const qty = Number(item.quantity);
-      const costForeign = Number(item.cost); // ราคาหน้าบิล (เช่น USD)
-      const costMain = costForeign * finalRate; // แปลงเป็นหน่วยเงินบริษัท (เช่น THB หรือ USD)
+      const costForeign = Number(item.cost); // ทุนหน้าบิล (เช่น USD)
+
+      // 🧮 สูตร: ทุนเงินต่างประเทศ x อัตราแลกเปลี่ยน = ทุนเงินหลัก (Base Currency)
+      const costMain = costForeign * finalRate;
 
       return {
         ...item,
         warehouse_id: item.warehouse_id || defaultWarehouse?._id,
         quantity: qty,
         cost_foreign: costForeign,
-        amount_foreign: costForeign * qty,
-        cost: Number(costMain.toFixed(4)), // บันทึกลง field 'cost' ใน DB
-        amount: Number((costMain * qty).toFixed(4)), // บันทึกลง field 'amount' ใน DB
+        amount_foreign: costForeign * qty, // ยอดรวมเงินต่างประเทศของรายการนี้
+
+        // บันทึกต้นทุนและยอดรวมเป็นสกุลเงินหลัก (ทศนิยม 4 ตำแหน่ง)
+        cost: Number(costMain.toFixed(4)),
+        amount: Number((costMain * qty).toFixed(4)),
+
+        price: Number(item.price) || 0, // ราคาขายที่รับมา
+        stone_weight: Number(item.stone_weight) || 0,
+        gross_weight: Number(item.gross_weight) || 0,
+        net_weight: Number(item.net_weight) || 0,
       };
     });
 
-    const totalAmountMain = processedItems.reduce(
-      (sum, item) => sum + item.amount,
-      0,
+    // -------------------------------------------------------------
+    // 🟢 คำนวณยอดรวมหัวบิล (Header Totals Calculation)
+    // 🧮 ใช้ reduce เพื่อรวมยอด เงิน, จำนวน และ น้ำหนัก จากทุกรายการ
+    // -------------------------------------------------------------
+    const totals = processedItems.reduce(
+      (acc, item) => {
+        acc.amount += item.amount; // รวมยอดเงินทั้งหมด
+        acc.qty += item.quantity; // รวมจำนวนชิ้นทั้งหมด
+        acc.gross += item.gross_weight * item.quantity; // รวมน้ำหนัก (น้ำหนักต่อชิ้น x จำนวน)
+        return acc;
+      },
+      { amount: 0, qty: 0, gross: 0 }, // ค่าเริ่มต้น
     );
+
     const autoPurchaseNumber = await generatePurchaseNumber(user.comp_id);
 
-    // 5. บันทึกใบ Purchase
+    // 5. บันทึกใบ Purchase (Header)
     const newPurchase = new Purchase({
       comp_id: user.comp_id,
       created_by: userId,
@@ -292,32 +312,58 @@ exports.createPurchase = async (req, res) => {
       note,
       currency: selectedCurrency,
       exchange_rate: finalRate,
-      total_amount: totalAmountMain,
+
+      // บันทึกค่าที่คำนวณได้ลงหัวบิล
+      total_amount: totals.amount,
+      total_quantity: totals.qty,
+      total_gross_weight: totals.gross,
+
       items: processedItems,
     });
 
     await newPurchase.save({ session });
 
-    // 🟢 6. วนลูปอัปเดต Stock (ใช้ต้นทุน costMain ในการเฉลี่ย)
+    // -------------------------------------------------------------
+    // 6. วนลูปอัปเดต Stock และคำนวณค่าเฉลี่ย (Weighted Average Calculation)
+    // -------------------------------------------------------------
     for (const item of processedItems) {
       const qty = item.quantity;
-      const costMain = item.cost; // ต้นทุนในหน่วยเงินหลักบริษัท
+      const newCostPerUnit = item.cost;
+      const newPricePerUnit = item.price;
 
+      // ค้นหาสต็อกเดิม
       let stock = await Stock.findOne({
         comp_id: user.comp_id,
         warehouse_id: item.warehouse_id,
         product_id: item.product_id,
       }).session(session);
 
-      let newAverageCost = costMain;
+      let finalAvgCost = newCostPerUnit;
+      let finalAvgPrice = newPricePerUnit;
+
       if (stock) {
-        const totalOldValue = stock.quantity * stock.cost;
-        const totalNewValue = qty * costMain;
-        const totalQty = stock.quantity + qty;
-        if (totalQty > 0)
-          newAverageCost = (totalOldValue + totalNewValue) / totalQty;
+        const oldQty = stock.quantity;
+        const totalQty = oldQty + qty; // จำนวนรวมทั้งหมดหลังรับเข้า
+
+        if (totalQty > 0) {
+          // 🧮 สูตรที่ 1: ต้นทุนเฉลี่ยถ่วงน้ำหนัก (Weighted Average Cost)
+          // สูตร: ((จำนวนเดิม x ทุนเดิม) + (จำนวนใหม่ x ทุนใหม่)) / จำนวนรวม
+          const totalOldCostVal = oldQty * stock.cost;
+          const totalNewCostVal = qty * newCostPerUnit;
+          finalAvgCost = (totalOldCostVal + totalNewCostVal) / totalQty;
+
+          // 🧮 สูตรที่ 2: ราคาขายเฉลี่ยถ่วงน้ำหนัก (Weighted Average Sale Price)
+          // สูตร: ((จำนวนเดิม x ราคาขายเดิม) + (จำนวนใหม่ x ราคาขายใหม่)) / จำนวนรวม
+          const oldPrice = stock.price || 0;
+          const totalOldSaleVal = oldQty * oldPrice;
+          const totalNewSaleVal = qty * newPricePerUnit;
+          finalAvgPrice = (totalOldSaleVal + totalNewSaleVal) / totalQty;
+        }
       }
 
+      // 🧮 อัปเดตข้อมูลลง Stock
+      // $inc: บวกเพิ่มจำนวนและน้ำหนักรวมเข้าไปในของเดิม
+      // $set: ทับค่าเดิมด้วยค่าเฉลี่ยที่คำนวณใหม่
       const updatedStock = await Stock.findOneAndUpdate(
         {
           comp_id: user.comp_id,
@@ -327,16 +373,19 @@ exports.createPurchase = async (req, res) => {
         {
           $inc: {
             quantity: qty,
-            total_gross_weight: Number(item.gross_weight) || 0,
-            total_net_weight: Number(item.net_weight) || 0,
-            total_stone_weight: Number(item.stone_weight) || 0,
+            total_gross_weight: item.gross_weight * qty,
           },
-          $set: { cost: newAverageCost }, // บันทึกทุนเฉลี่ยใหม่
+          $set: {
+            cost: finalAvgCost,
+            price: finalAvgPrice,
+          },
         },
         { new: true, upsert: true, session },
       );
 
-      // 7. สร้าง Stock Transaction
+      // -------------------------------------------------------------
+      // 7. สร้าง Stock Transaction (ประวัติการเคลื่อนไหว)
+      // -------------------------------------------------------------
       await StockTransaction.create(
         [
           {
@@ -346,18 +395,25 @@ exports.createPurchase = async (req, res) => {
             type: "in",
             action_type: "purchase",
             document_ref: newPurchase._id,
+            document_number: autoPurchaseNumber,
             qty: qty,
-            cost: costMain, // ทุนล็อตที่ซื้อมา (ก่อนเฉลี่ย)
-            amount: qty * costMain,
-            balance_after: updatedStock.quantity,
+
+            // 🧮 บันทึกน้ำหนักรวมของรายการนี้ (นน.ต่อชิ้น x จำนวน)
+            total_gross_weight: item.gross_weight * qty,
+
+            cost: newCostPerUnit, // บันทึกทุนจริงของล็อตนี้
+            price: newPricePerUnit, // บันทึกราคาขายจริงของล็อตนี้
+            amount: qty * newCostPerUnit,
+            balance_after: updatedStock.quantity, // ยอดคงเหลือหลังรับเข้า
             created_by: userId,
-            note: `Purchase Ref: ${autoPurchaseNumber} (Original: ${item.cost_foreign} ${selectedCurrency})`,
+            note: `Purchase Ref: ${autoPurchaseNumber}`,
           },
         ],
         { session },
       );
     }
 
+    // ยืนยันการบันทึกข้อมูลทั้งหมด (Commit)
     await session.commitTransaction();
     session.endSession();
 
@@ -367,6 +423,7 @@ exports.createPurchase = async (req, res) => {
       data: newPurchase,
     });
   } catch (error) {
+    // หากเกิด Error ให้ยกเลิกข้อมูลทั้งหมดที่พยายามบันทึก (Rollback)
     if (session) await session.abortTransaction();
     if (session) session.endSession();
     console.error("Purchase Error:", error);

@@ -24,11 +24,9 @@ const StockSchema = new mongoose.Schema(
       default: 0,
       min: 0,
       set: setTwoDecimals,
-    },
-    price: { type: Number, default: 0, min: 0, set: setTwoDecimals },
+    }, // ทุนเฉลี่ย
+    price: { type: Number, default: 0, min: 0, set: setTwoDecimals }, //ราคาขายเฉลี่ย (ที่คุณเพิ่งคำนวณมา)
 
-    total_stone_weight: { type: Number, default: 0, set: setTwoDecimals },
-    total_net_weight: { type: Number, default: 0, set: setTwoDecimals },
     total_gross_weight: { type: Number, default: 0, set: setTwoDecimals },
   },
   {
@@ -40,6 +38,10 @@ const StockSchema = new mongoose.Schema(
 
 StockSchema.virtual("amount").get(function () {
   return (this.quantity || 0) * (this.cost || 0);
+});
+
+StockSchema.virtual("total_sale_price").get(function () {
+  return (this.quantity || 0) * (this.price || 0);
 });
 
 StockSchema.index(

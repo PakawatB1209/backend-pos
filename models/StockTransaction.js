@@ -19,6 +19,7 @@ const StockTransactionSchema = new mongoose.Schema(
     },
 
     type: { type: String, enum: ["in", "out", "adjust"], required: true },
+    action_type: { type: String, required: true },
 
     qty: { type: Number, required: true },
     balance_after: { type: Number, required: true },
@@ -26,6 +27,9 @@ const StockTransactionSchema = new mongoose.Schema(
     cost: { type: Number, default: 0 },
     price: { type: Number, default: 0 },
     amount: { type: Number, default: 0 },
+
+    document_ref: { type: mongoose.Schema.Types.ObjectId },
+    document_number: { type: String },
 
     vendor: { type: String },
     doc_date: { type: Date, default: Date.now },

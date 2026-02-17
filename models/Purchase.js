@@ -13,6 +13,8 @@ const PurchaseSchema = new mongoose.Schema(
     currency: { type: String, default: "THB" },
     exchange_rate: { type: Number, default: 1 },
     total_amount: { type: Number, default: 0 },
+    total_quantity: { type: Number, default: 0 },
+    total_gross_weight: { type: Number, default: 0 },
     items: [
       {
         product_id: { type: mongoose.Schema.ObjectId, ref: "product" },

@@ -6,12 +6,89 @@ const getDateString = (daysAgo = 0) => {
   d.setDate(d.getDate() - daysAgo);
   return d.toISOString().split("T")[0];
 };
+// const getCurrentRate = async (targetCurrency, specificDate = null) => {
+//   if (!targetCurrency || targetCurrency === "THB") {
+//     return 1;
+//   }
+
+//   const targetDateStr = specificDate
+//     ? specificDate.split("T")[0]
+//     : getDateString(0);
+
+//   let rateRecord = await ExchangeRate.findOne({
+//     date: targetDateStr,
+//     currency: targetCurrency,
+//   });
+//   if (rateRecord) return rateRecord.rate;
+
+//   for (let i = 0; i < 7; i++) {
+//     const checkDate = getDateString(i);
+//     try {
+//       const response = await axios.get(
+//         "https://gateway.api.bot.or.th/Stat-ExchangeRate/v2/DAILY_AVG_EXG_RATE/",
+//         {
+//           params: {
+//             start_period: checkDate,
+//             end_period: checkDate,
+//             currency: targetCurrency,
+//           },
+//           headers: {
+//             Authorization: process.env.BOT_API_KEY || "",
+//             accept: "application/json",
+//           },
+//         },
+//       );
+
+//       const dataDetail = response.data?.result?.data?.data_detail;
+//       if (dataDetail && dataDetail.length > 0 && dataDetail[0].mid_rate) {
+//         const rate = parseFloat(dataDetail[0].mid_rate);
+//         await ExchangeRate.findOneAndUpdate(
+//           {
+//             date: todayStr,
+//             currency: targetCurrency,
+//           },
+//           {
+//             rate: rate,
+//             source:
+//               checkDate === todayStr ? "BOT" : `BOT_Fallback_${checkDate}`,
+//           },
+//           {
+//             upsert: true,
+//             new: true,
+//             setDefaultsOnInsert: true,
+//           },
+//         );
+
+//         console.log(
+//           `✅ Saved rate ${rate} (from ${checkDate}) as Today's Rate`,
+//         );
+
+//         return rate;
+//       }
+//     } catch (e) {
+//       console.error(
+//         `Error fetching ${checkDate}:`,
+//         e.response?.data || e.message,
+//       );
+
+//       if (!process.env.BOT_API_KEY) {
+//         console.error("WARNING: API KEY IS MISSING OR UNDEFINED!");
+//       }
+//     }
+//   }
+
+//   const last = await ExchangeRate.findOne({ currency: targetCurrency }).sort({
+//     date: -1,
+//   });
+//   return last ? last.rate : 1;
+// };
+
 const getCurrentRate = async (targetCurrency, specificDate = null) => {
-  console.log("🔑 Using API Key:", process.env.BOT_API_KEY); // 👈
   if (!targetCurrency || targetCurrency === "THB") {
     return 1;
   }
 
+  // ✅ 1. ประกาศตัวแปรนี้ไว้แล้ว
   const targetDateStr = specificDate
     ? specificDate.split("T")[0]
     : getDateString(0);
@@ -34,7 +111,7 @@ const getCurrentRate = async (targetCurrency, specificDate = null) => {
             currency: targetCurrency,
           },
           headers: {
-            Authorization: process.env.BOT_API_KEY || "",
+            Authorization: process.env.BOT_API_KEY, // หรือลองตัวนี้
             accept: "application/json",
           },
         },
@@ -42,16 +119,19 @@ const getCurrentRate = async (targetCurrency, specificDate = null) => {
 
       const dataDetail = response.data?.result?.data?.data_detail;
       if (dataDetail && dataDetail.length > 0 && dataDetail[0].mid_rate) {
-        const rate = parseFloat(dataDetail[0].mid_rate);
+        const rate = Number.parseFloat(dataDetail[0].mid_rate);
+
+        // ✅ 2. แก้ตรงนี้: เปลี่ยน todayStr -> targetDateStr
         await ExchangeRate.findOneAndUpdate(
           {
-            date: todayStr,
+            date: targetDateStr, // บันทึกว่าเป็นเรทของ "วันที่เราต้องการ"
             currency: targetCurrency,
           },
           {
             rate: rate,
+            // ✅ 3. แก้ตรงนี้ด้วย: เปลี่ยน todayStr -> targetDateStr
             source:
-              checkDate === todayStr ? "BOT" : `BOT_Fallback_${checkDate}`,
+              checkDate === targetDateStr ? "BOT" : `BOT_Fallback_${checkDate}`,
           },
           {
             upsert: true,
@@ -61,7 +141,7 @@ const getCurrentRate = async (targetCurrency, specificDate = null) => {
         );
 
         console.log(
-          `✅ Saved rate ${rate} (from ${checkDate}) as Today's Rate`,
+          `✅ Saved rate ${rate} (from ${checkDate}) as Rate for ${targetDateStr}`,
         );
 
         return rate;
@@ -71,7 +151,6 @@ const getCurrentRate = async (targetCurrency, specificDate = null) => {
         `Error fetching ${checkDate}:`,
         e.response?.data || e.message,
       );
-
       if (!process.env.BOT_API_KEY) {
         console.error("WARNING: API KEY IS MISSING OR UNDEFINED!");
       }
@@ -90,11 +169,12 @@ exports.getRate = async (req, res) => {
   try {
     const { currency, date } = req.query;
     const rate = await getCurrentRate(currency, date);
+    const fallbackDate = getDateString(0);
 
     res.json({
       success: true,
       currency: currency,
-      date: date,
+      date: date || fallbackDate,
       rate: rate,
     });
   } catch (error) {

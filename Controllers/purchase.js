@@ -9,14 +9,16 @@ const Warehouse = require("../models/Warehouse");
 const Product = require("../models/Product");
 const fs = require("fs");
 const path = require("path");
+const Company = require("../models/Company"); // เพิ่ม Import
 
 const { getCurrentRate } = require("../Controllers/exchangeRate");
 
-const generatePurchaseNumber = async () => {
+const generatePurchaseNumber = async (compId) => {
   const date = new Date();
   const year = date.getFullYear();
 
   const lastPurchase = await Purchase.findOne({
+    comp_id: compId,
     purchase_number: { $regex: `^${year}` },
   })
     .sort({ purchase_number: -1 })
@@ -26,7 +28,7 @@ const generatePurchaseNumber = async () => {
 
   if (lastPurchase) {
     const lastSeqStr = lastPurchase.purchase_number.substring(4);
-    const lastSeq = parseInt(lastSeqStr);
+    const lastSeq = Number.parseInt(lastSeqStr);
     nextSeq = lastSeq + 1;
   }
 
@@ -34,6 +36,177 @@ const generatePurchaseNumber = async () => {
 
   return `${year}${seqStr}`;
 };
+
+// exports.createPurchase = async (req, res) => {
+//   const session = await mongoose.startSession();
+//   session.startTransaction();
+
+//   try {
+//     const userId = req.user.id;
+//     const {
+//       date,
+//       vendor_name,
+//       ref1,
+//       ref2,
+//       note,
+//       items,
+//       currency,
+//       exchange_rate,
+//     } = req.body;
+
+//     const user = await User.findById(userId).select("comp_id");
+//     if (!user || !user.comp_id)
+//       throw new Error("User not associated with company");
+
+//     let defaultWarehouse = await Warehouse.findOne({
+//       comp_id: user.comp_id,
+//       warehouse_name: { $regex: /^others$/i },
+//     });
+
+//     if (!defaultWarehouse) {
+//       defaultWarehouse = await Warehouse.findOne({ comp_id: user.comp_id });
+//     }
+
+//     if (!defaultWarehouse) {
+//       throw new Error(
+//         "No Warehouse found. Please create at least one warehouse.",
+//       );
+//     }
+
+//     let finalRate = 1;
+//     const selectedCurrency = currency || "THB";
+
+//     if (selectedCurrency !== "THB") {
+//       if (exchange_rate && Number(exchange_rate) > 0) {
+//         finalRate = Number(exchange_rate);
+//       } else {
+//         finalRate = await getCurrentRate(selectedCurrency, date);
+//       }
+//     }
+//     console.log(`Purchase Currency: ${selectedCurrency}, Rate: ${finalRate}`);
+
+//     const autoPurchaseNumber = await generatePurchaseNumber(user.comp_id);
+//     const totalAmountOriginal = items.reduce(
+//       (sum, item) => sum + (Number(item.amount) || 0),
+//       0,
+//     );
+
+//     const finalItems = items.map((item) => {
+//       return {
+//         ...item,
+//         warehouse_id: item.warehouse_id || defaultWarehouse._id,
+//       };
+//     });
+
+//     const newPurchase = new Purchase({
+//       comp_id: user.comp_id,
+//       created_by: userId,
+//       purchase_number: autoPurchaseNumber,
+//       date,
+//       vendor_name,
+//       ref1,
+//       ref2,
+//       note,
+//       currency: selectedCurrency,
+//       exchange_rate: finalRate,
+//       total_amount: totalAmountOriginal,
+//       items: finalItems,
+//     });
+
+//     await newPurchase.save({ session }); // 🟢 Loop Update Stock (แก้ไขใหม่: คำนวณต้นทุนเฉลี่ย)
+
+//     for (const item of finalItems) {
+//       const qty = Number(item.quantity);
+
+//       const costOriginal = Number(item.cost);
+//       const costTHB = costOriginal * finalRate;
+
+//       const totalGwToAdd = (Number(item.gross_weight) || 0) * qty;
+//       const totalNwToAdd = (Number(item.net_weight) || 0) * qty;
+//       const totalSwToAdd = (Number(item.stone_weight) || 0) * qty; // 🟡 1. ค้นหา Stock เดิมก่อน (เพื่อเอามาคำนวณ)
+
+//       let stock = await Stock.findOne({
+//         comp_id: user.comp_id,
+//         warehouse_id: item.warehouse_id,
+//         product_id: item.product_id,
+//       }).session(session); // ตั้งค่าเริ่มต้น: ถ้าไม่มีของเดิม ให้ใช้ราคาใหม่เลย
+
+//       let newCost = costTHB;
+
+//       if (stock) {
+//         const currentQty = stock.quantity;
+//         const currentCost = stock.cost; // ทุนเดิม
+
+//         const totalOldValue = currentQty * currentCost;
+//         const totalNewValue = qty * costTHB;
+//         const totalQty = currentQty + qty;
+
+//         if (totalQty > 0) {
+//           newCost = (totalOldValue + totalNewValue) / totalQty;
+//         }
+//       } // 🟡 3. อัปเดตลง Database
+
+//       const updatedStock = await Stock.findOneAndUpdate(
+//         {
+//           comp_id: user.comp_id,
+//           warehouse_id: item.warehouse_id,
+//           product_id: item.product_id,
+//         },
+//         {
+//           $inc: {
+//             quantity: qty,
+//             total_gross_weight: totalGwToAdd,
+//             total_net_weight: totalNwToAdd,
+//             total_stone_weight: totalSwToAdd,
+//           },
+//           $set: {
+//             cost: newCost, // ✅ บันทึกต้นทุนเฉลี่ยใหม่ (ที่คำนวณแล้ว)
+//             price: Number(item.price),
+//           },
+//         },
+//         { new: true, upsert: true, session },
+//       ); // 🟡 4. บันทึก Transaction
+
+//       await StockTransaction.create(
+//         [
+//           {
+//             comp_id: user.comp_id,
+//             product_id: item.product_id,
+//             warehouse_id: item.warehouse_id,
+//             type: "in",
+//             action_type: "purchase",
+//             document_ref: newPurchase._id,
+//             qty: qty,
+
+//             cost: costTHB, // ✅ ใน Transaction เก็บราคา "ที่ซื้อจริงรอบนี้" (ไม่ใช่ราคาเฉลี่ย)
+//             amount: qty * costTHB,
+
+//             balance_after: updatedStock.quantity,
+//             created_by: userId,
+//             note: `Purchase Ref: ${autoPurchaseNumber} from ${vendor_name || "Vendor"}`,
+//           },
+//         ],
+//         { session },
+//       );
+//     }
+
+//     await session.commitTransaction();
+//     session.endSession();
+
+//     res.status(201).json({
+//       success: true,
+//       message: "Purchase saved successfully",
+//       data: newPurchase,
+//     });
+//   } catch (error) {
+//     await session.abortTransaction();
+//     session.endSession();
+//     console.error("Purchase Error:", error);
+//     res
+//       .status(500)
+//       .json({ success: false, message: error.message || "Server Error" });
+//   }
+// };
 
 exports.createPurchase = async (req, res) => {
   const session = await mongoose.startSession();
@@ -49,100 +222,101 @@ exports.createPurchase = async (req, res) => {
       note,
       items,
       currency,
-      exchange_rate,
+      manual_rate,
     } = req.body;
 
+    // 1. ตรวจสอบ User & Company
     const user = await User.findById(userId).select("comp_id");
     if (!user || !user.comp_id)
       throw new Error("User not associated with company");
 
+    const company = await Company.findById(user.comp_id)
+      .select("main_currency")
+      .lean();
+    const mainCurrency = company?.main_currency || "THB";
+
+    // 2. ค้นหา Warehouse (Default Logic)
     let defaultWarehouse = await Warehouse.findOne({
       comp_id: user.comp_id,
       warehouse_name: { $regex: /^others$/i },
     });
-
-    if (!defaultWarehouse) {
+    if (!defaultWarehouse)
       defaultWarehouse = await Warehouse.findOne({ comp_id: user.comp_id });
-    }
 
-    if (!defaultWarehouse) {
-      throw new Error(
-        "No Warehouse found. Please create at least one warehouse.",
-      );
-    }
-
+    // 3. คำนวณ Universal Rate (Cross Rate Logic)
     let finalRate = 1;
-    const selectedCurrency = currency || "THB";
+    const selectedCurrency = currency || mainCurrency;
 
-    if (selectedCurrency !== "THB") {
-      if (exchange_rate && Number(exchange_rate) > 0) {
-        finalRate = Number(exchange_rate);
-      } else {
-        finalRate = await getCurrentRate(selectedCurrency, date);
-      }
+    if (manual_rate && Number(manual_rate) > 0) {
+      finalRate = Number(manual_rate); // ใช้เรทที่ User กรอกเอง
+    } else if (selectedCurrency !== mainCurrency) {
+      // ดึงเรทของสกุลเงินที่ซื้อ และสกุลเงินของบริษัท มาเทียบกัน (หารกัน)
+      const ratePurchaseToTHB = await getCurrentRate(selectedCurrency, date);
+      const rateBaseToTHB = await getCurrentRate(mainCurrency, date);
+
+      finalRate = ratePurchaseToTHB / rateBaseToTHB;
     }
-    console.log(`Purchase Currency: ${selectedCurrency}, Rate: ${finalRate}`);
 
-    const autoPurchaseNumber = await generatePurchaseNumber(user.comp_id);
-    const totalAmountOriginal = items.reduce(
-      (sum, item) => sum + (Number(item.amount) || 0),
-      0,
-    );
+    // 4. แปลงราคา Item ทั้งหมดเป็นหน่วยเงินหลัก (costMain)
+    const processedItems = items.map((item) => {
+      const qty = Number(item.quantity);
+      const costForeign = Number(item.cost); // ราคาหน้าบิล (เช่น USD)
+      const costMain = costForeign * finalRate; // แปลงเป็นหน่วยเงินบริษัท (เช่น THB หรือ USD)
 
-    const finalItems = items.map((item) => {
       return {
         ...item,
-        warehouse_id: item.warehouse_id || defaultWarehouse._id,
+        warehouse_id: item.warehouse_id || defaultWarehouse?._id,
+        quantity: qty,
+        cost_foreign: costForeign,
+        amount_foreign: costForeign * qty,
+        cost: Number(costMain.toFixed(4)), // บันทึกลง field 'cost' ใน DB
+        amount: Number((costMain * qty).toFixed(4)), // บันทึกลง field 'amount' ใน DB
       };
     });
 
+    const totalAmountMain = processedItems.reduce(
+      (sum, item) => sum + item.amount,
+      0,
+    );
+    const autoPurchaseNumber = await generatePurchaseNumber(user.comp_id);
+
+    // 5. บันทึกใบ Purchase
     const newPurchase = new Purchase({
       comp_id: user.comp_id,
       created_by: userId,
       purchase_number: autoPurchaseNumber,
-      date,
+      date: date || new Date(),
       vendor_name,
       ref1,
       ref2,
       note,
       currency: selectedCurrency,
       exchange_rate: finalRate,
-      total_amount: totalAmountOriginal,
-      items: finalItems,
+      total_amount: totalAmountMain,
+      items: processedItems,
     });
 
-    await newPurchase.save({ session }); // 🟢 Loop Update Stock (แก้ไขใหม่: คำนวณต้นทุนเฉลี่ย)
+    await newPurchase.save({ session });
 
-    for (const item of finalItems) {
-      const qty = Number(item.quantity);
-
-      const costOriginal = Number(item.cost);
-      const costTHB = costOriginal * finalRate;
-
-      const totalGwToAdd = (Number(item.gross_weight) || 0) * qty;
-      const totalNwToAdd = (Number(item.net_weight) || 0) * qty;
-      const totalSwToAdd = (Number(item.stone_weight) || 0) * qty; // 🟡 1. ค้นหา Stock เดิมก่อน (เพื่อเอามาคำนวณ)
+    // 🟢 6. วนลูปอัปเดต Stock (ใช้ต้นทุน costMain ในการเฉลี่ย)
+    for (const item of processedItems) {
+      const qty = item.quantity;
+      const costMain = item.cost; // ต้นทุนในหน่วยเงินหลักบริษัท
 
       let stock = await Stock.findOne({
         comp_id: user.comp_id,
         warehouse_id: item.warehouse_id,
         product_id: item.product_id,
-      }).session(session); // ตั้งค่าเริ่มต้น: ถ้าไม่มีของเดิม ให้ใช้ราคาใหม่เลย
+      }).session(session);
 
-      let newCost = costTHB;
-
+      let newAverageCost = costMain;
       if (stock) {
-        const currentQty = stock.quantity;
-        const currentCost = stock.cost; // ทุนเดิม
-
-        const totalOldValue = currentQty * currentCost;
-        const totalNewValue = qty * costTHB;
-        const totalQty = currentQty + qty;
-
-        if (totalQty > 0) {
-          newCost = (totalOldValue + totalNewValue) / totalQty;
-        }
-      } // 🟡 3. อัปเดตลง Database
+        const totalOldValue = stock.quantity * stock.cost;
+        const totalNewValue = qty * costMain;
+        const totalQty = stock.quantity + qty;
+        if (totalQty > 0)
+          newAverageCost = (totalOldValue + totalNewValue) / totalQty;
+      }
 
       const updatedStock = await Stock.findOneAndUpdate(
         {
@@ -153,18 +327,16 @@ exports.createPurchase = async (req, res) => {
         {
           $inc: {
             quantity: qty,
-            total_gross_weight: totalGwToAdd,
-            total_net_weight: totalNwToAdd,
-            total_stone_weight: totalSwToAdd,
+            total_gross_weight: Number(item.gross_weight) || 0,
+            total_net_weight: Number(item.net_weight) || 0,
+            total_stone_weight: Number(item.stone_weight) || 0,
           },
-          $set: {
-            cost: newCost, // ✅ บันทึกต้นทุนเฉลี่ยใหม่ (ที่คำนวณแล้ว)
-            price: Number(item.price),
-          },
+          $set: { cost: newAverageCost }, // บันทึกทุนเฉลี่ยใหม่
         },
         { new: true, upsert: true, session },
-      ); // 🟡 4. บันทึก Transaction
+      );
 
+      // 7. สร้าง Stock Transaction
       await StockTransaction.create(
         [
           {
@@ -175,13 +347,11 @@ exports.createPurchase = async (req, res) => {
             action_type: "purchase",
             document_ref: newPurchase._id,
             qty: qty,
-
-            cost: costTHB, // ✅ ใน Transaction เก็บราคา "ที่ซื้อจริงรอบนี้" (ไม่ใช่ราคาเฉลี่ย)
-            amount: qty * costTHB,
-
+            cost: costMain, // ทุนล็อตที่ซื้อมา (ก่อนเฉลี่ย)
+            amount: qty * costMain,
             balance_after: updatedStock.quantity,
             created_by: userId,
-            note: `Purchase Ref: ${autoPurchaseNumber} from ${vendor_name || "Vendor"}`,
+            note: `Purchase Ref: ${autoPurchaseNumber} (Original: ${item.cost_foreign} ${selectedCurrency})`,
           },
         ],
         { session },
@@ -197,8 +367,8 @@ exports.createPurchase = async (req, res) => {
       data: newPurchase,
     });
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
+    if (session) await session.abortTransaction();
+    if (session) session.endSession();
     console.error("Purchase Error:", error);
     res
       .status(500)
@@ -208,8 +378,8 @@ exports.createPurchase = async (req, res) => {
 
 const parseNum = (v, def = 0) => {
   if (v == null) return def;
-  const n = Number(String(v).trim().replace(/,/g, ""));
-  return isNaN(n) ? def : n;
+  const n = Number(String(v).trim().replaceAll(/,/g, ""));
+  return Number.isNaN(n) ? def : n;
 };
 
 async function buildWarehouseMap(comp_id) {
@@ -219,7 +389,9 @@ async function buildWarehouseMap(comp_id) {
     firstId = warehouses[0]?._id;
 
   warehouses.forEach((wh) => {
-    const clean = wh.warehouse_name?.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+    const clean = wh.warehouse_name
+      ?.replaceAll(/[^a-zA-Z0-9]/g, "")
+      .toLowerCase();
     if (wh.warehouse_type) map[wh.warehouse_type.trim().toLowerCase()] = wh._id;
     if (clean) map[clean] = wh._id;
 
@@ -247,9 +419,8 @@ function getAllSheetData(workbook) {
 
 async function getProductMap(comp_id, allSheetData) {
   const codes = allSheetData
-    .map(({ row }) => row["Code"] || row["code"])
-    .filter((c) => c)
-    .map((c) => String(c).trim());
+    .map(({ row }) => String(row["Code"] || row["code"] || "").trim())
+    .filter(Boolean);
 
   const products = await Product.find({ comp_id, product_code: { $in: codes } })
     .select(
@@ -334,7 +505,7 @@ function mapValidItem(
   const whName = row["Warehouse"] || row["Category"] || "";
   const whKey = whName
     .toString()
-    .replace(/[^a-zA-Z0-9]/g, "")
+    .replaceAll(/[^a-zA-Z0-9]/g, "")
     .toLowerCase();
   const whId = warehouseMap[whKey] || fallbackId;
 

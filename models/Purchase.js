@@ -25,6 +25,8 @@ const PurchaseSchema = new mongoose.Schema(
         cost: { type: Number, default: 0, min: 0 },
         amount: { type: Number, default: 0, min: 0 },
         price: { type: Number, default: 0, min: 0 },
+        cost_foreign: { type: Number, default: 0 },
+        amount_foreign: { type: Number, default: 0 },
       },
     ],
     created_by: { type: mongoose.Schema.ObjectId, ref: "user" },

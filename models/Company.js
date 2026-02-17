@@ -27,8 +27,14 @@ const CompanySchema = new mongoose.Schema(
     },
     comp_person_email: { type: String, required: true },
     comp_file: { type: String, default: null },
+    main_currency: {
+      type: String,
+      default: "THB",
+      uppercase: true,
+      trim: true,
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("comp", CompanySchema);

@@ -378,6 +378,7 @@ exports.createPurchase = async (req, res) => {
           $set: {
             cost: finalAvgCost,
             price: finalAvgPrice,
+            last_in_date: date || new Date(),
           },
         },
         { new: true, upsert: true, session },

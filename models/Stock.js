@@ -28,6 +28,7 @@ const StockSchema = new mongoose.Schema(
     price: { type: Number, default: 0, min: 0, set: setTwoDecimals }, //ราคาขายเฉลี่ย (ที่คุณเพิ่งคำนวณมา)
 
     total_gross_weight: { type: Number, default: 0, set: setTwoDecimals },
+    last_in_date: { type: Date },
   },
   {
     timestamps: true,

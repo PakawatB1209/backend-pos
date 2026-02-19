@@ -39,6 +39,7 @@ exports.createStock = async (req, res) => {
           comp_id: user.comp_id,
           warehouse_id: warehouse_id,
           product_id: product_id,
+          last_in_date: date || new Date(),
         },
       },
       { new: true, upsert: true },
@@ -83,18 +84,21 @@ exports.getOneStock = async (req, res) => {
         .status(400)
         .json({ success: false, message: "User not associated with company" });
     }
+
     const stock = await Stock.findOne({
       _id: id,
       comp_id: user.comp_id,
     })
       .populate({
         path: "product_id",
+        // 🟢 ดึงข้อมูลสินค้าที่จำเป็นมาแสดงผลร่วมด้วย
         select: "product_code product_name file price",
       })
       .populate({
         path: "warehouse_id",
         select: "warehouse_name",
-      });
+      })
+      .lean({ virtuals: true }); // 🟢 ใช้ lean เพื่อความเร็ว และเปิด virtuals ให้ทำงาน
 
     if (!stock) {
       return res
@@ -102,21 +106,37 @@ exports.getOneStock = async (req, res) => {
         .json({ success: false, message: "Stock not found" });
     }
 
+    // --- จัด Format ข้อมูลให้ตรงกับระบบราคาเฉลี่ย ---
+    const product = stock.product_id || {};
+
+    const formattedData = {
+      ...stock,
+      // 🟢 ดึงราคาขายเฉลี่ยจาก Stock เป็นหลัก ถ้าไม่มีค่อยใช้ราคา Master
+      price: stock.price || product.price || 0,
+
+      // 🟢 ใช้วันที่นำเข้าล่าสุด
+      date: stock.last_in_date || stock.updatedAt,
+
+      // 🟢 รวมยอดต้นทุน (จำนวน x ทุนเฉลี่ย)
+      total_cost_amount: (stock.quantity || 0) * (stock.cost || 0),
+
+      // 🟢 รวมยอดราคาขาย (จำนวน x ราคาขายเฉลี่ย)
+      total_sale_amount: (stock.quantity || 0) * (stock.price || 0),
+    };
+
     res.status(200).json({
       success: true,
-      data: stock,
+      data: formattedData,
     });
   } catch (error) {
     console.log("Error getOneStock:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
-
+//ของใน stock ทั้งหมด
 exports.list = async (req, res) => {
   try {
-    // -------------------------------------------------------
-    // 1. ตรวจสอบสิทธิ์ผู้ใช้งาน (Auth & Company Check)
-    // -------------------------------------------------------
+    // 1. ตรวจสอบสิทธิ์ผู้ใช้งาน
     const userId = req.user.id;
     const user = await User.findById(userId).select("comp_id").lean();
 
@@ -126,84 +146,56 @@ exports.list = async (req, res) => {
         .json({ success: false, message: "User not associated with company" });
     }
 
-    // -------------------------------------------------------
     // 2. ตั้งค่า Pagination
-    // -------------------------------------------------------
     const page = Number.parseInt(req.query.page) || 1;
     const limit = Number.parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    // รับค่า Filter
     const { search, category, warehouse, start_date, end_date, status } =
       req.query;
-
     let stockQuery = { comp_id: user.comp_id };
 
-    // -------------------------------------------------------
     // 3. กรองตาม Search หรือ Category
-    // -------------------------------------------------------
     if (search || category) {
       const productQuery = { comp_id: user.comp_id };
-
-      if (category && category !== "All") {
+      if (category && category !== "All")
         productQuery.product_category = category;
-      }
-
       if (search) {
         productQuery.$or = [
           { product_name: { $regex: search, $options: "i" } },
           { product_code: { $regex: search, $options: "i" } },
         ];
       }
-
       const matchingProducts = await Product.find(productQuery).select("_id");
-      const productIds = matchingProducts.map((p) => p._id);
-      stockQuery.product_id = { $in: productIds };
+      stockQuery.product_id = { $in: matchingProducts.map((p) => p._id) };
     }
 
-    // -------------------------------------------------------
-    // 4. กรองตาม Warehouse และ วันที่
-    // -------------------------------------------------------
-    if (warehouse) {
-      stockQuery.warehouse_id = warehouse;
-    }
-
+    // 4. กรองตาม Warehouse และ วันที่ (ใช้ last_in_date แทนเพื่อให้แม่นยำตามการนำเข้า)
+    if (warehouse) stockQuery.warehouse_id = warehouse;
     if (start_date && end_date) {
-      stockQuery.updatedAt = {
+      stockQuery.last_in_date = {
+        // 🟢 เปลี่ยนจาก updatedAt เป็น last_in_date
         $gte: new Date(start_date),
         $lte: new Date(new Date(end_date).setHours(23, 59, 59)),
       };
     }
 
-    // -------------------------------------------------------
     // 5. กรองตามสถานะ
-    // -------------------------------------------------------
     if (status) {
-      if (status === "In Stock") {
-        stockQuery.quantity = { $gt: 0 };
-      } else if (status === "Out of Stock") {
-        stockQuery.quantity = { $lte: 0 };
-      }
+      if (status === "In Stock") stockQuery.quantity = { $gt: 0 };
+      else if (status === "Out of Stock") stockQuery.quantity = { $lte: 0 };
     }
 
-    // -------------------------------------------------------
-    // 6. ดึงข้อมูล (Query & Populate)
-    // -------------------------------------------------------
+    // 6. ดึงข้อมูล
     const [stocks, total] = await Promise.all([
       Stock.find(stockQuery)
         .populate({
           path: "product_id",
-          select: "product_code product_name file unit product_category", // ตัด price ออก ใช้จาก Stock แทน
-          populate: {
-            path: "product_category",
-            select: "master_name",
-          },
+          select: "product_code product_name file unit product_category",
+          populate: { path: "product_category", select: "master_name" },
         })
-        .populate({
-          path: "warehouse_id",
-          select: "warehouse_name",
-        })
-        .sort({ updatedAt: -1 })
+        .populate({ path: "warehouse_id", select: "warehouse_name" })
+        .sort({ last_in_date: -1 }) // 🟢 เรียงตามวันนำเข้าล่าสุด
         .skip(skip)
         .limit(limit)
         .lean({ virtuals: true }),
@@ -212,9 +204,7 @@ exports.list = async (req, res) => {
 
     const baseUrl = `${req.protocol}://${req.get("host")}/uploads/product/`;
 
-    // -------------------------------------------------------
-    // 7. จัดรูปแบบข้อมูล (Format Data)
-    // -------------------------------------------------------
+    // 7. จัดรูปแบบข้อมูล
     const formattedData = stocks.map((item) => {
       const product = item.product_id || {};
       const warehouse = item.warehouse_id || {};
@@ -228,12 +218,7 @@ exports.list = async (req, res) => {
       }
 
       const qty = item.quantity || 0;
-
-      // ฝั่งต้นทุน
       const cost = item.cost || 0;
-      const amount = qty * cost;
-
-      // 🟢 ฝั่งราคาขาย (Update: ดึงจาก Stock ราคาเฉลี่ย)
       const sale_price = item.price || 0;
 
       return {
@@ -243,24 +228,28 @@ exports.list = async (req, res) => {
         product_name: product.product_name || "-",
         category: catObj.master_name || "-",
         warehouse: warehouse.warehouse_name || "Unknown",
-        date: item.updatedAt,
+
+        // 🟢 เปลี่ยนมาใช้วันที่นำเข้าล่าสุด
+        date: item.last_in_date || item.updatedAt,
+
         unit: product.unit || "Pcs",
         qty: qty,
 
         // Cost Information
         cost: cost,
-        amount: amount,
+        amount: qty * cost,
 
-        // Sale Information (ราคาต่อชิ้น)
+        // Sale Information
         sale_price: sale_price,
+
+        // 🟢 เพิ่มน้ำหนักรวมส่งออกไปให้หน้าบ้าน
+        total_gross_weight: item.total_gross_weight || 0,
 
         status: qty > 0 ? "In Stock" : "Out of Stock",
       };
     });
 
-    // -------------------------------------------------------
     // 8. ส่ง Response
-    // -------------------------------------------------------
     res.status(200).json({
       success: true,
       data: formattedData,
@@ -276,12 +265,11 @@ exports.list = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
-
+//เเสดงรายละเอียดของ Stock นั้นๆ
 exports.getStockDetail = async (req, res) => {
   try {
-    const { id } = req.params; // รับ id ของ Inventory (Stock ID)
+    const { id } = req.params;
 
-    // 1. ดึงข้อมูล Stock พร้อม Populate ข้อมูล Product ลึกๆ
     const stock = await Stock.findById(id)
       .populate({
         path: "warehouse_id",
@@ -290,16 +278,10 @@ exports.getStockDetail = async (req, res) => {
       .populate({
         path: "product_id",
         populate: [
-          // 1.1 ดึง Detail หลัก
           {
             path: "product_detail_id",
             populate: [
-              // 1.2 ดึง Master Data (Metal, Color, etc.)
-              {
-                path: "masters.master_id",
-                select: "master_name master_type",
-              },
-              // 1.3 ดึงข้อมูล Stone (ที่เป็น Master)
+              { path: "masters.master_id", select: "master_name master_type" },
               { path: "primary_stone.stone_name", select: "master_name" },
               { path: "primary_stone.shape", select: "master_name" },
               { path: "primary_stone.size", select: "master_name" },
@@ -309,7 +291,6 @@ exports.getStockDetail = async (req, res) => {
               { path: "primary_stone.clarity", select: "master_name" },
             ],
           },
-          // 1.4 ดึง Accessories
           {
             path: "related_accessories.product_id",
             select: "product_code product_name product_detail_id",
@@ -334,13 +315,10 @@ exports.getStockDetail = async (req, res) => {
 
     const product = stock.product_id || {};
     const detail = product.product_detail_id || {};
-    const baseUrl = `${req.protocol}://${req.get("host")}/uploads/product/`;
 
-    // --- Helper: ดึงชื่อ Master Data ---
+    // --- Helper Functions ---
     const getMasterName = (obj) =>
       obj && obj.master_name ? obj.master_name : "-";
-
-    // หาค่าจาก Array Masters (เช่น Metal, Item Type)
     const findMaster = (type) => {
       if (!detail.masters) return "-";
       const found = detail.masters.find(
@@ -349,19 +327,29 @@ exports.getStockDetail = async (req, res) => {
       return found ? found.master_id.master_name : "-";
     };
 
-    // --- จัด Format ข้อมูลตามหน้า UI ---
+    // --- จัด Format ข้อมูล (อัปเดตตาม Logic ใหม่) ---
     const responseData = {
-      // 🟢 Header Section
       _id: stock._id,
-      date: stock.updatedAt,
-      unit: detail.unit,
+
+      // 🟢 1. เปลี่ยนมาแสดงวันที่นำเข้าล่าสุด (ถ้าไม่มีให้ใช้ updatedAt)
+      date: stock.last_in_date || stock.updatedAt,
+
+      unit: detail.unit || "Pcs",
       qty: stock.quantity || 0,
-      cost: stock.cost || 0,
-      amount: (stock.quantity || 0) * (stock.cost || 0),
-      price: product.price || stock.price || 0, // Sale Price
+
+      // 🟢 2. ต้นทุนเฉลี่ย (Weighted Average Cost)
+      avg_cost: stock.cost || 0,
+      total_cost_amount: (stock.quantity || 0) * (stock.cost || 0),
+
+      // 🟢 3. ราคาขายเฉลี่ย (Weighted Average Price) - ดึงจาก Stock เป็นหลัก
+      sale_price: stock.price || product.price || 0,
+      total_sale_amount: (stock.quantity || 0) * (stock.price || 0),
+
+      // 🟢 4. เพิ่มน้ำหนักรวมในคลัง (Total Weight)
+      total_gross_weight: stock.total_gross_weight || 0,
+
       status: (stock.quantity || 0) > 0 ? "In Stock" : "Out of Stock",
 
-      // 🟢 Product Details Section
       product_details: {
         category: product.product_category || "-",
         code: product.product_code || "-",
@@ -369,30 +357,26 @@ exports.getStockDetail = async (req, res) => {
         item_type: findMaster("item_type"),
         product_size: detail.size || "-",
         metal: findMaster("metal"),
-        metal_color: findMaster("metal_color"), // หรือ "color" แล้วแต่ Database
+        metal_color: findMaster("metal_color"),
         description: detail.description || "-",
-        nwt: detail.net_weight || 0, // Net Weight
-        gwt: detail.gross_weight || 0, // Gross Weight
+        nwt: detail.net_weight || 0,
+        gwt: detail.gross_weight || 0, // น้ำหนักต่อชิ้น (จาก Master)
       },
 
-      // 🟢 Stone Details Section
       stone_details: {
         stone_name: getMasterName(detail.primary_stone?.stone_name),
         shape: getMasterName(detail.primary_stone?.shape),
         size: getMasterName(detail.primary_stone?.size),
-        s_weight: detail.primary_stone?.weight || 0, // Stone Weight
+        s_weight: detail.primary_stone?.weight || 0,
         color: getMasterName(detail.primary_stone?.color),
         cutting: getMasterName(detail.primary_stone?.cutting),
         quality: getMasterName(detail.primary_stone?.quality),
         clarity: getMasterName(detail.primary_stone?.clarity),
       },
 
-      // 🟢 Accessories Section
       accessories: (product.related_accessories || []).map((acc) => {
         const accProd = acc.product_id;
         const accDetail = accProd?.product_detail_id || {};
-
-        // หา Metal ของ Accessory (ซับซ้อนหน่อยเพราะมันซ้อนอยู่)
         let accMetal = "-";
         if (accDetail.masters) {
           const m = accDetail.masters.find(
@@ -400,7 +384,6 @@ exports.getStockDetail = async (req, res) => {
           );
           if (m) accMetal = m.master_id.master_name;
         }
-
         return {
           code: accProd?.product_code || "-",
           product_name: accProd?.product_name || "-",
@@ -412,10 +395,7 @@ exports.getStockDetail = async (req, res) => {
       }),
     };
 
-    res.status(200).json({
-      success: true,
-      data: responseData,
-    });
+    res.status(200).json({ success: true, data: responseData });
   } catch (error) {
     console.log("Get Inventory Detail Error:", error);
     res.status(500).json({ success: false, message: "Server error" });

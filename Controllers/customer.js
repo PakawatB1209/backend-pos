@@ -392,7 +392,6 @@ exports.deleteCustomer = async (req, res) => {
 
 exports.getPosCustomers = async (req, res) => {
   try {
-    // 1. ตรวจสอบสิทธิ์และดึง comp_id จาก User
     const user = await User.findById(req.user.id).select("comp_id").lean();
     if (!user || !user.comp_id) {
       return res
@@ -400,14 +399,14 @@ exports.getPosCustomers = async (req, res) => {
         .json({ success: false, message: "User company not found" });
     }
 
-    // 2. ค้นหาลูกค้าของบริษัทนี้
-    // เลือกดึงเฉพาะข้อมูลที่จำเป็นต้องโชว์ใน Dropdown (ชื่อ, เบอร์โทร, ID)
+    // ปรับให้เหมือนกับ listCustomers
     const customers = await Customer.find({
       comp_id: user.comp_id,
-      is_active: true, // กรองเฉพาะลูกค้าที่ยังมีสถานะใช้งาน
+      // 🟢 แนะนำให้เช็คใน DB ว่ามีฟิลด์ is_active จริงไหม ถ้าไม่มีให้เอาบรรทัดล่างออก
+      // is_active: true
     })
-      .select("firstname lastname phone_number")
-      .sort({ firstname: 1 }); // เรียงตามชื่อจาก ก-ฮ หรือ A-Z
+      .select("customer_name customer_phone customer_id") // 🟢 ใช้ชื่อฟิลด์ที่ถูกต้องตาม Schema
+      .sort({ customer_name: 1 });
 
     res.json({
       success: true,

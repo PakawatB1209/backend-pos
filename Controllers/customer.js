@@ -389,3 +389,32 @@ exports.deleteCustomer = async (req, res) => {
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
+
+exports.getPosCustomers = async (req, res) => {
+  try {
+    // 1. ตรวจสอบสิทธิ์และดึง comp_id จาก User
+    const user = await User.findById(req.user.id).select("comp_id").lean();
+    if (!user || !user.comp_id) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User company not found" });
+    }
+
+    // 2. ค้นหาลูกค้าของบริษัทนี้
+    // เลือกดึงเฉพาะข้อมูลที่จำเป็นต้องโชว์ใน Dropdown (ชื่อ, เบอร์โทร, ID)
+    const customers = await Customer.find({
+      comp_id: user.comp_id,
+      is_active: true, // กรองเฉพาะลูกค้าที่ยังมีสถานะใช้งาน
+    })
+      .select("firstname lastname phone_number")
+      .sort({ firstname: 1 }); // เรียงตามชื่อจาก ก-ฮ หรือ A-Z
+
+    res.json({
+      success: true,
+      data: customers,
+    });
+  } catch (error) {
+    console.error("Get Customers Error:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};

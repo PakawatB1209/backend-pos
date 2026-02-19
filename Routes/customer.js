@@ -9,6 +9,7 @@ const {
   getCustomer,
   listCustomers,
   updateCustomer,
+  getPosCustomers,
 } = require("../Controllers/customer");
 
 router.get(
@@ -17,6 +18,9 @@ router.get(
   checkPermission("Customer", "view"),
   listCustomers,
 );
+
+// dropdown customer pos
+router.get("/POS/all-customer", auth, getPosCustomers);
 
 router.get(
   "/one-customer/:id",

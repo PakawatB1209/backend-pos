@@ -23,7 +23,12 @@ const CustomerSchema = new mongoose.Schema(
       required: true,
       match: [/^\+?[0-9]{8,15}$/, "Please enter a valid phone number."],
     },
-    customer_gender: { type: String, required: true },
+    customer_gender: {
+      type: String,
+      required: function () {
+        return this.business_type === "Individual";
+      },
+    },
     customer_date: { type: Date },
     address: {
       province: { type: String, required: true },
@@ -38,7 +43,7 @@ const CustomerSchema = new mongoose.Schema(
 
     note: { type: String },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 CustomerSchema.index({ comp_id: 1, customer_name: 1 }, { unique: true });
 

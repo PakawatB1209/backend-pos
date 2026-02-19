@@ -159,7 +159,11 @@ exports.listCustomers = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const { search } = req.query;
+    const { search, business_type } = req.query;
+
+    if (business_type) {
+      query.business_type = business_type;
+    }
 
     if (search) {
       const regex = new RegExp(escapeRegex(search), "i"); // สร้าง Regex ที่ปลอดภัย

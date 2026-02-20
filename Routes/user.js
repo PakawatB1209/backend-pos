@@ -16,6 +16,7 @@ const {
   createUsersendEmail,
   changeStatus,
   changeFirstPassword,
+  exportUsersExcel,
 } = require("../Controllers/user");
 
 router.get("/user", auth, list);
@@ -23,6 +24,8 @@ router.get("/user", auth, list);
 router.get("/getone-user/:id", auth, getOneUser);
 
 router.get("/getrole-user/:id", auth, getUserRole);
+
+router.get("/export-users", auth, adminCheck, exportUsersExcel);
 
 router.post("/create-user", auth, adminCheck, createUser);
 
@@ -36,14 +39,14 @@ router.put(
   "/resetpass-user-byadmin/:id",
   auth,
   adminCheck,
-  resetPassUserbyAdmin
+  resetPassUserbyAdmin,
 );
 
 router.put(
   "/resetpass-user-byadminsend/:id",
   auth,
   adminCheck,
-  resetPassUserbyAdmin_send
+  resetPassUserbyAdmin_send,
 );
 
 router.post("/request-reset-password", userRequestResetPassword);

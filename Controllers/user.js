@@ -3,6 +3,7 @@ const Permission = require("../models/Permission");
 const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const mongoose = require("mongoose");
+const excelJS = require("exceljs");
 const PNF = require("google-libphonenumber").PhoneNumberFormat;
 const phoneUtil =
   require("google-libphonenumber").PhoneNumberUtil.getInstance();
@@ -1275,5 +1276,100 @@ exports.changeStatus = async (req, res) => {
   } catch (error) {
     console.log("Error change status:", error);
     res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+exports.exportUsersExcel = async (req, res) => {
+  try {
+    // 1. หา comp_id ของคนที่กำลังกด Export (ระบบ Tenant Isolation)
+    const currentUser = await User.findById(req.user.id).select("comp_id");
+
+    if (!currentUser || !currentUser.comp_id) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Company not found" });
+    }
+
+    // 2. ดึงข้อมูล User ทั้งหมด "เฉพาะในบริษัทเดียวกัน" เรียงจากสร้างใหม่ไปเก่า
+    // 🚨 สำคัญมาก: .select("-user_password") เพื่อป้องกันไม่ให้ดึงรหัสผ่านที่เข้ารหัสไว้ออกมา
+    // 💡 .populate("permissions") เผื่ออยากเอาชื่อสิทธิ์ต่างๆ ออกมาโชว์ด้วย
+    const users = await User.find({ comp_id: currentUser.comp_id })
+      .select("-user_password")
+      .populate("permissions")
+      .sort({ createdAt: -1 });
+
+    if (users.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "No users found to export." });
+    }
+
+    // 3. สร้าง Workbook และ Worksheet
+    const workbook = new excelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Users Data");
+
+    // 4. กำหนดหัวตาราง (Columns)
+    worksheet.columns = [
+      { header: "Name", key: "user_name", width: 25 },
+      { header: "Email", key: "user_email", width: 25 },
+      { header: "Phone", key: "user_phone", width: 20 },
+      { header: "Role", key: "user_role", width: 15 },
+      { header: "Status", key: "status", width: 15 },
+      { header: "Permissions (Menu - Action)", key: "permissions", width: 40 },
+      { header: "Created At", key: "createdAt", width: 20 },
+      { header: "Password Changed At", key: "password_changed_at", width: 20 },
+    ];
+
+    // ตกแต่งหัวตารางให้เป็นตัวหนา
+    worksheet.getRow(1).font = { bold: true };
+
+    // 5. นำข้อมูลยัดใส่ทีละแถว
+    users.forEach((u) => {
+      // แปลง Array สิทธิ์การใช้งานให้ออกมาเป็นข้อความอ่านง่ายๆ (ถ้ามี)
+      // ตัวอย่าง: "Customer-View, Customer-Edit, Product-View"
+      const permissionList =
+        u.permissions?.length > 0
+          ? u.permissions
+              .map((p) => `${p.permission_menu}-${p.permission_action}`)
+              .join(", ")
+          : "-";
+
+      worksheet.addRow({
+        user_name: u.user_name,
+        user_email: u.user_email || "-",
+        user_phone: u.user_phone || "-",
+        user_role: u.user_role,
+        // แปลง true/false เป็นข้อความ Active/Inactive
+        status: u.status ? "Active" : "Inactive",
+        permissions: permissionList,
+
+        // จัดฟอร์แมตวันที่ให้สวยงาม
+        createdAt: u.createdAt
+          ? new Date(u.createdAt).toLocaleDateString("th-TH")
+          : "-",
+        password_changed_at: u.password_changed_at
+          ? new Date(u.password_changed_at).toLocaleDateString("th-TH")
+          : "Never",
+      });
+    });
+
+    // 6. ตั้งค่า Header เพื่อให้ Browser สั่งดาวน์โหลดไฟล์ Excel
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=Users_Export.xlsx",
+    );
+
+    // 7. เขียนไฟล์และส่งออก
+    await workbook.xlsx.write(res);
+    res.status(200).end();
+  } catch (err) {
+    console.error("Export Users Excel Error:", err);
+    res
+      .status(500)
+      .json({ success: false, message: "Server error during export" });
   }
 };

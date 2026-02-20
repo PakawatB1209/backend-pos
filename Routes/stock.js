@@ -10,6 +10,7 @@ const {
   removeStockAll,
   getStockTransactions,
   getStockDetail,
+  exportStocksExcel,
   // stockOut,
 } = require("../Controllers/stock");
 
@@ -34,6 +35,13 @@ router.get(
   auth,
   checkPermission("Inventory", "view"),
   getStockDetail,
+);
+
+router.get(
+  "/export-stocks",
+  auth,
+  // checkPermission("Stock", "Export"),
+  exportStocksExcel,
 );
 
 // Create Manual (POST)

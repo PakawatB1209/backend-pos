@@ -3,6 +3,7 @@ const StockTransaction = require("../models/StockTransaction");
 const User = require("../models/User");
 const Product = require("../models/Product");
 const Warehouse = require("../models/Warehouse");
+const excelJS = require("exceljs");
 
 const mongoose = require("mongoose");
 
@@ -520,5 +521,103 @@ exports.getStockTransactions = async (req, res) => {
   } catch (error) {
     console.error("Get Transaction Error:", error);
     res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+exports.exportStocksExcel = async (req, res) => {
+  try {
+    const currentUser = await User.findById(req.user.id).select("comp_id");
+    if (!currentUser || !currentUser.comp_id) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Company not found" });
+    }
+
+    const { warehouse_type } = req.query;
+    let queryCondition = { comp_id: currentUser.comp_id };
+
+    if (warehouse_type) {
+      const warehouses = await Warehouse.find({
+        comp_id: currentUser.comp_id,
+        warehouse_type: warehouse_type,
+      }).select("_id");
+
+      const warehouseIds = warehouses.map((w) => w._id);
+      queryCondition.warehouse_id = { $in: warehouseIds };
+    }
+
+    // 🟢 1. ดึง product_code มาด้วยใน .populate()
+    const stocks = await Stock.find(queryCondition)
+      .populate("warehouse_id", "warehouse_name warehouse_type")
+      .populate("product_id", "product_name product_code")
+      .sort({ createdAt: -1 });
+
+    if (stocks.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "No stocks found to export." });
+    }
+
+    const workbook = new excelJS.Workbook();
+    const sheetName = warehouse_type
+      ? `Stocks - ${warehouse_type}`
+      : "All Stocks";
+    const worksheet = workbook.addWorksheet(sheetName);
+
+    // 🟢 2. เพิ่มคอลัมน์ Product Code ใน Excel
+    worksheet.columns = [
+      { header: "Warehouse Type", key: "warehouse_type", width: 15 },
+      { header: "Warehouse Name", key: "warehouse_name", width: 20 },
+      { header: "Product Code", key: "product_code", width: 20 },
+      { header: "Product Name", key: "product_name", width: 35 },
+      { header: "Quantity", key: "quantity", width: 15 },
+      { header: "Total Gross Weight", key: "total_gross_weight", width: 20 },
+      { header: "Avg Cost", key: "cost", width: 15 },
+      { header: "Total Cost Amount", key: "amount", width: 20 },
+      { header: "Avg Price", key: "price", width: 15 },
+      { header: "Total Sale Price", key: "total_sale_price", width: 20 },
+      { header: "Last In Date", key: "last_in_date", width: 20 },
+    ];
+
+    worksheet.getRow(1).font = { bold: true };
+
+    // 🟢 3. ดึงค่า product_code มาใส่ในแต่ละบรรทัด
+    stocks.forEach((stock) => {
+      worksheet.addRow({
+        warehouse_type: stock.warehouse_id?.warehouse_type || "-",
+        warehouse_name: stock.warehouse_id?.warehouse_name || "-",
+
+        product_code: stock.product_id?.product_code || "-", // เพิ่มตรงนี้
+        product_name: stock.product_id?.product_name || "-",
+
+        quantity: stock.quantity,
+        total_gross_weight: stock.total_gross_weight,
+        cost: stock.cost,
+        amount: stock.amount,
+        price: stock.price,
+        total_sale_price: stock.total_sale_price,
+
+        last_in_date: stock.last_in_date
+          ? new Date(stock.last_in_date).toLocaleDateString("th-TH")
+          : "-",
+      });
+    });
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=Stocks_${warehouse_type || "All"}.xlsx`,
+    );
+
+    await workbook.xlsx.write(res);
+    res.status(200).end();
+  } catch (err) {
+    console.error("Export Stocks Excel Error:", err);
+    res
+      .status(500)
+      .json({ success: false, message: "Server error during export" });
   }
 };

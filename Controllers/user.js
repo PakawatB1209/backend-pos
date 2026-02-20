@@ -152,7 +152,7 @@ exports.createUsersendEmail = async (req, res) => {
     const adminId = req.user.id;
 
     const adminUser = await User.findById(adminId).select(
-      "comp_id user_role status",
+      "comp_id user_role status user_email",
     );
 
     if (
@@ -278,6 +278,7 @@ exports.createUsersendEmail = async (req, res) => {
     const mailOptions = {
       from: `"Jewelry System Admin" <${process.env.ADMIN_EMAIL}>`,
       to: user_email,
+      replyTo: adminUser.user_email,
       subject: `Welcome! Your Account Credentials for ${user_name}`,
       // Text Version (สำหรับ Client แบบเก่า)
       text: `
@@ -777,6 +778,7 @@ exports.userRequestResetPassword = async (req, res) => {
     const mailOptions = {
       from: `"System Notification" <${process.env.ADMIN_EMAIL}>`,
       to: admin.user_email,
+      replyTo: user.user_email,
       subject: `[Request] Password Reset Request from ${user.user_name}`,
       // Text version (สำหรับ Email Client ที่ไม่รองรับ HTML)
       text: `
@@ -790,7 +792,7 @@ Company  : ${companyInfo}
 Role     : ${user.user_role}
 
 Please login to the system and reset the password for this user manually.
-Login URL: http://localhost:5173/
+Login URL: ${process.env.ADMIN_DASHBOARD_URL || "http://localhost:5173/"}
 `,
       // HTML version (Style ใหม่ + ข้อมูลเดิม)
       html: `
@@ -980,7 +982,9 @@ exports.resetPassUserbyAdmin_send = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-    const adminUser = await User.findById(adminId).select("comp_id user_role");
+    const adminUser = await User.findById(adminId).select(
+      "comp_id user_role user_email",
+    );
 
     if (!adminUser || !adminUser.comp_id || !userToReset.comp_id) {
       return res.status(403).json({
@@ -1013,6 +1017,7 @@ exports.resetPassUserbyAdmin_send = async (req, res) => {
 
     const mailOptions = {
       from: `"System Admin" <${process.env.ADMIN_EMAIL}>`,
+      replyTo: adminUser.user_email,
       to: userToReset.user_email,
       subject: `[Notification] Your password has been reset by Admin`,
 

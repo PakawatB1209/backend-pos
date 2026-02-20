@@ -162,11 +162,12 @@ exports.listCustomers = async (req, res) => {
     const { search, business_type } = req.query;
 
     if (business_type) {
-      query.business_type = business_type;
+      query.business_type = String(business_type);
     }
 
     if (search) {
-      const regex = new RegExp(escapeRegex(search), "i"); // สร้าง Regex ที่ปลอดภัย
+      const safeSearch = String(search);
+      const regex = new RegExp(escapeRegex(safeSearch), "i"); // สร้าง Regex ที่ปลอดภัย
       query.$or = [
         { customer_name: regex },
         { customer_id: regex },

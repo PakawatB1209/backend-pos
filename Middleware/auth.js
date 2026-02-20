@@ -11,7 +11,7 @@ exports.auth = async (req, res, next) => {
       return res.status(401).json({ success: false, message: "No token" });
     }
 
-    const decoded = jwt.verify(token, "jwtsecret");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = decoded.user ?? decoded;
 
     if (!user?.id) {

@@ -36,32 +36,37 @@ exports.login = async (req, res) => {
       },
     };
 
-    jwt.sign(payload, "jwtsecret", { expiresIn: "12h" }, (err, token) => {
-      if (err) throw err;
+    jwt.sign(
+      payload,
+      process.env.JWT_SECRET,
+      { expiresIn: "12h" },
+      (err, token) => {
+        if (err) throw err;
 
-      let forceChangePassword = false;
+        let forceChangePassword = false;
 
-      if (user.user_role === "User" && user.password_changed_at === null) {
-        forceChangePassword = true;
-      }
+        if (user.user_role === "User" && user.password_changed_at === null) {
+          forceChangePassword = true;
+        }
 
-      return res.json({
-        success: true,
-        token,
-        user: {
-          id: user._id,
-          name: user.user_name,
-          pass: user.user_password,
-          email: user.user_email,
-          role: user.user_role,
-          phone: user.user_phone,
-          status: user.status,
-          permissionId: user.permission_id,
-          companyId: user.comp_id,
-        },
-        forceChangePassword,
-      });
-    });
+        return res.json({
+          success: true,
+          token,
+          user: {
+            id: user._id,
+            name: user.user_name,
+            pass: user.user_password,
+            email: user.user_email,
+            role: user.user_role,
+            phone: user.user_phone,
+            status: user.status,
+            permissionId: user.permission_id,
+            companyId: user.comp_id,
+          },
+          forceChangePassword,
+        });
+      },
+    );
   } catch (error) {
     console.log(error);
     return res.status(500).send("Server error");

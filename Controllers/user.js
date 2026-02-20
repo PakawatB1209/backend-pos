@@ -280,7 +280,7 @@ exports.createUsersendEmail = async (req, res) => {
       to: user_email,
       replyTo: adminUser.user_email,
       subject: `Welcome! Your Account Credentials for ${user_name}`,
-      // Text Version (สำหรับ Client แบบเก่า)
+      // Text Version
       text: `
 Hello ${user_name},
 
@@ -350,12 +350,31 @@ System Admin
                     <strong style="color:#2563EB;">User Account Information:</strong><br/>
                     <hr style="border:0;border-top:1px solid #CBD5E1;margin:10px 0;" />
                     
-                    <strong>Username:</strong> ${newUser.user_name}<br />
-                    <strong>Email:</strong> ${newUser.user_email}<br />
-                    <strong>Password:</strong> ${user_password}</span><br />
-                    <strong>Role:</strong> ${roleToBeCreated}<br />
-                    <strong>Status:</strong> ${newUser.status ? '<span style="color:#16A34A;font-weight:bold;">Active</span>' : '<span style="color:#DC2626;font-weight:bold;">Inactive</span>'}
-                  </td>
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size: 15px;">
+                      <tr>
+                        <td width="90" style="padding-bottom: 6px;"><strong>Username:</strong></td>
+                        <td style="padding-bottom: 6px; padding-left: 8px;">${newUser.user_name}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding-bottom: 6px;"><strong>Email:</strong></td>
+                        <td style="padding-bottom: 6px; padding-left: 8px;">${newUser.user_email}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding-bottom: 6px;"><strong>Password:</strong></td>
+                        <td style="padding-bottom: 6px; padding-left: 8px;">${user_password}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding-bottom: 6px;"><strong>Role:</strong></td>
+                        <td style="padding-bottom: 6px; padding-left: 8px;">${roleToBeCreated}</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Status:</strong></td>
+                        <td style="padding-left: 8px;">
+                          ${newUser.status ? '<span style="color:#16A34A;font-weight:bold;">Active</span>' : '<span style="color:#DC2626;font-weight:bold;">Inactive</span>'}
+                        </td>
+                      </tr>
+                    </table>
+                    </td>
                 </tr>
               </table>
 
@@ -907,6 +926,7 @@ exports.resetPassUserbyAdmin = async (req, res) => {
         success: false,
         message: "Please enter the new password.",
       });
+      1;
     }
     const user = await User.findById(id);
     if (!user) {
@@ -1085,10 +1105,24 @@ IT Support Team
                 style="background:#F1F5F9;border-radius:14px;margin:24px 0;">
                 <tr>
                   <td>
-                    <strong>Username:</strong> ${userToReset.user_name}<br />
-                    <strong>Password:</strong> ${user_password}<br />
-                    <strong>Date:</strong> ${new Date().toLocaleString("th-TH")}
-                  </td>
+                    <strong style="color:#2563EB;">New Login Credentials:</strong><br/>
+                    <hr style="border:0;border-top:1px solid #CBD5E1;margin:10px 0;" />
+                    
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size: 15px;">
+                      <tr>
+                        <td width="90" style="padding-bottom: 6px;"><strong>Username:</strong></td>
+                        <td style="padding-bottom: 6px; padding-left: 8px;">${userToReset.user_name}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding-bottom: 6px;"><strong>Password:</strong></td>
+                        <td style="padding-bottom: 6px; padding-left: 8px;">${user_password}</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Date:</strong></td>
+                        <td style="padding-left: 8px;">${new Date().toLocaleString("th-TH")}</td>
+                      </tr>
+                    </table>
+                    </td>
                 </tr>
               </table>
 

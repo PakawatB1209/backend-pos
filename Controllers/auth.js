@@ -277,7 +277,7 @@ exports.userForgotPassword = async (req, res) => {
       to: admin.user_email,
       replyTo: user.user_email,
       subject: `[Request] Password Reset Request from ${user.user_name}`,
-      // Text version (สำหรับ Email Client ที่ไม่รองรับ HTML)
+      // Text version
       text: `
 Admin,
 User has requested a password reset.
@@ -289,9 +289,9 @@ Company  : ${companyInfo}
 Role     : ${user.user_role}
 
 Please login to the system and reset the password for this user manually.
-Login URL: ${process.env.ADMIN_DASHBOARD_URL || "http://localhost:5173/"}
+Login URL: ${process.env.LOGIN_URL || "http://localhost:5173/"}
 `,
-      // HTML version (Style ใหม่ + ข้อมูลเดิม)
+      // HTML version
       html: `
 <!DOCTYPE html>
 <html>
@@ -335,15 +335,32 @@ Login URL: ${process.env.ADMIN_DASHBOARD_URL || "http://localhost:5173/"}
               <table width="100%" cellpadding="10" cellspacing="0"
                 style="background:#F1F5F9;border-radius:14px;margin:24px 0;">
                 <tr>
+                  
                   <td>
                     <strong style="color:#2563EB;">User Details:</strong><br/>
                     <hr style="border:0;border-top:1px solid #CBD5E1;margin:10px 0;" />
-                    <strong>Username:</strong> ${user.user_name}<br />
-                    <strong>Email:</strong> ${user.user_email}<br />
-                    <strong>Company:</strong> ${companyInfo}<br />
-                    <strong>Role:</strong> ${user.user_role}
+                    
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size: 15px;">
+                      <tr>
+                        <td width="90" style="padding-bottom: 6px;"><strong>Username:</strong></td>
+                        <td style="padding-bottom: 6px; padding-left: 8px;">${user.user_name}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding-bottom: 6px;"><strong>Email:</strong></td>
+                        <td style="padding-bottom: 6px; padding-left: 8px;">${user.user_email}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding-bottom: 6px;"><strong>Company:</strong></td>
+                        <td style="padding-bottom: 6px; padding-left: 8px;">${companyInfo}</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Role:</strong></td>
+                        <td style="padding-left: 8px;">${user.user_role}</td>
+                      </tr>
+                    </table>
+
                   </td>
-                </tr>
+                  </tr>
               </table>
 
               <p>
@@ -351,7 +368,7 @@ Login URL: ${process.env.ADMIN_DASHBOARD_URL || "http://localhost:5173/"}
               </p>
 
               <p style="text-align:center;margin-top:32px;">
-                <a href="http://localhost:5173/"
+                <a href="${process.env.LOGIN_URL || "http://localhost:5173/"}"
                   style="background:#2563EB;color:#FFFFFF;padding:14px 40px;border-radius:999px;text-decoration:none;font-weight:bold;">
                   Login to System
                 </a>

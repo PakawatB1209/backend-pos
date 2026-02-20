@@ -31,10 +31,11 @@ const CustomerSchema = new mongoose.Schema(
     },
     customer_date: { type: Date },
     address: {
+      country: { type: String, required: true },
       province: { type: String, required: true },
       district: { type: String, required: true },
       sub_district: { type: String, required: true },
-      zipcode: { type: String, maxlength: 10, required: true },
+      zipcode: { type: String, minLength: 5, maxlength: 10, required: true },
     },
 
     customer_tax_id: { type: String, maxlength: 18 },

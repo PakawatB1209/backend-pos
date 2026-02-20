@@ -10,6 +10,7 @@ const {
   listCustomers,
   updateCustomer,
   getPosCustomers,
+  exportCustomersExcel,
 } = require("../Controllers/customer");
 
 router.get(
@@ -27,6 +28,13 @@ router.get(
   auth,
   checkPermission("Customer", "view"),
   getCustomer,
+);
+
+router.get(
+  "/export-customers",
+  auth,
+  // checkPermission("Customer", "Export"),
+  exportCustomersExcel,
 );
 
 router.post(

@@ -3,6 +3,7 @@ const User = require("../models/User");
 const Customer = require("../models/Customer");
 const Counter = require("../models/Counter");
 const PNF = require("google-libphonenumber").PhoneNumberFormat;
+const excelJS = require("exceljs");
 const phoneUtil =
   require("google-libphonenumber").PhoneNumberUtil.getInstance();
 
@@ -32,6 +33,7 @@ exports.createCustomer = async (req, res) => {
       company_name,
       contact_person,
 
+      addr_country,
       addr_province,
       addr_district,
       addr_sub_district,
@@ -103,6 +105,7 @@ exports.createCustomer = async (req, res) => {
       contact_person,
 
       address: {
+        country: addr_country,
         province: addr_province,
         district: addr_district,
         sub_district: addr_sub_district,
@@ -416,5 +419,101 @@ exports.getPosCustomers = async (req, res) => {
   } catch (error) {
     console.error("Get Customers Error:", error);
     res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+exports.exportCustomersExcel = async (req, res) => {
+  try {
+    // 1. หา comp_id ของคนที่กำลังกด Export
+    const user = await User.findById(req.user.id).select("comp_id");
+    if (!user || !user.comp_id) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Company not found" });
+    }
+
+    // 2. ดึงข้อมูลลูกค้า "เฉพาะของบริษัทนี้" เรียงจากใหม่ไปเก่า
+    const customers = await Customer.find({ comp_id: user.comp_id }).sort({
+      createdAt: -1,
+    });
+
+    if (customers.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "No customers found to export." });
+    }
+
+    // 3. สร้าง Workbook (ไฟล์ Excel) และ Worksheet (แผ่นงาน)
+    const workbook = new excelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Customers Data");
+
+    // 4. กำหนดหัวตาราง (คอลัมน์) ให้ตรงกับ Schema ของคุณ
+    worksheet.columns = [
+      { header: "Customer ID", key: "customer_id", width: 15 },
+      { header: "Business Type", key: "business_type", width: 15 },
+      { header: "Customer Name", key: "customer_name", width: 25 },
+      { header: "Company Name", key: "company_name", width: 25 },
+      { header: "Contact Person", key: "contact_person", width: 20 },
+      { header: "Email", key: "customer_email", width: 25 },
+      { header: "Phone", key: "customer_phone", width: 15 },
+      { header: "Gender", key: "customer_gender", width: 10 },
+      { header: "Date", key: "customer_date", width: 15 },
+      { header: "Province", key: "province", width: 20 },
+      { header: "District", key: "district", width: 20 },
+      { header: "Sub-District", key: "sub_district", width: 20 },
+      { header: "Zipcode", key: "zipcode", width: 10 },
+      { header: "Tax ID", key: "customer_tax_id", width: 20 },
+      { header: "Tax Address", key: "tax_addr", width: 30 },
+      { header: "Note", key: "note", width: 25 },
+    ];
+
+    // ตกแต่งหัวตารางให้เป็นตัวหนา
+    worksheet.getRow(1).font = { bold: true };
+
+    // 5. นำข้อมูลจาก Database ยัดใส่แต่ละแถว
+    customers.forEach((c) => {
+      worksheet.addRow({
+        customer_id: c.customer_id,
+        business_type: c.business_type,
+        customer_name: c.customer_name,
+        company_name: c.company_name || "-",
+        contact_person: c.contact_person,
+        customer_email: c.customer_email || "-",
+        customer_phone: c.customer_phone,
+        customer_gender: c.customer_gender || "-",
+        // จัดฟอร์แมตวันที่ให้สวยงาม (ถ้ามี)
+        customer_date: c.customer_date
+          ? new Date(c.customer_date).toLocaleDateString("th-TH")
+          : "-",
+        // กระจาย Object Address ออกมาใส่ทีละช่อง
+        province: c.address?.province || "-",
+        district: c.address?.district || "-",
+        sub_district: c.address?.sub_district || "-",
+        zipcode: c.address?.zipcode || "-",
+
+        customer_tax_id: c.customer_tax_id || "-",
+        tax_addr: c.tax_addr || "-",
+        note: c.note || "-",
+      });
+    });
+
+    // 6. ตั้งค่า Header สำหรับให้ Browser สั่งดาวน์โหลดไฟล์
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=Customers_Export.xlsx",
+    );
+
+    // 7. เขียนไฟล์และส่งออกไป
+    await workbook.xlsx.write(res);
+    res.status(200).end();
+  } catch (err) {
+    console.error("Export Excel Error:", err);
+    res
+      .status(500)
+      .json({ success: false, message: "Server error during export" });
   }
 };

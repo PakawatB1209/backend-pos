@@ -20,6 +20,7 @@ exports.createCompany = async (req, res) => {
 
     const {
       comp_name,
+      comp_country,
       comp_addr,
       comp_subdist,
       comp_dist,
@@ -35,6 +36,7 @@ exports.createCompany = async (req, res) => {
 
     const requiredFields = [
       "comp_name",
+      "comp_country",
       "comp_addr",
       "comp_subdist",
       "comp_dist",
@@ -136,6 +138,7 @@ exports.createCompany = async (req, res) => {
 
     const newCompany = await Company.create({
       comp_name,
+      comp_country,
       comp_addr,
       comp_subdist,
       comp_dist,

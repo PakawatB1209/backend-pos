@@ -158,19 +158,17 @@ exports.listCustomers = async (req, res) => {
 
     let query = { comp_id: user.comp_id };
 
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
     const skip = (page - 1) * limit;
 
     const { search, business_type } = req.query;
 
-    if (business_type) {
-      query.business_type = String(business_type);
-    }
+    if (business_type) query.business_type = String(business_type);
 
     if (search) {
-      const safeSearch = String(search);
-      const regex = new RegExp(escapeRegex(safeSearch), "i"); // สร้าง Regex ที่ปลอดภัย
+      const safeSearch = escapeRegex(String(search));
+      const regex = new RegExp(safeSearch, "i");
       query.$or = [
         { customer_name: regex },
         { customer_id: regex },
@@ -181,20 +179,22 @@ exports.listCustomers = async (req, res) => {
       ];
     }
 
-    const customers = await Customer.find(query)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean();
+    const [customers, total] = await Promise.all([
+      Customer.find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Customer.countDocuments(query),
+    ]);
 
-    const total = await Customer.countDocuments(query);
-
-    res.json({
+    res.status(200).json({
       success: true,
       count: customers.length,
-      total,
-      page,
-      totalPages: Math.ceil(total / limit),
+      total_record: total,
+      total_page: Math.ceil(total / limit),
+      current_page: page,
+      limit: limit,
       data: customers,
     });
   } catch (err) {

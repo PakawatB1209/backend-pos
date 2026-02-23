@@ -12,6 +12,10 @@ const sharp = require("sharp");
 const ExcelJS = require("exceljs");
 const path = require("path");
 
+const escapeRegex = (string) => {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+};
+
 //helper
 // Helper Function: จัดรูปแบบข้อมูลให้หน้าบ้านใช้งานง่าย (Clean Version)
 
@@ -603,8 +607,8 @@ exports.list = async (req, res) => {
         .json({ success: false, message: "User not associated with company." });
     }
 
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 20;
     const skip = (page - 1) * limit;
 
     const { category, search, item_type, stone } = req.query;
@@ -636,16 +640,14 @@ exports.list = async (req, res) => {
     if (stone) {
       const stoneNames = stone.split(",");
 
-      // 3.1 หา ID ของพลอยชื่อนี้ใน Masters
       const masterStones = await Masters.find({
         master_name: { $in: stoneNames },
         comp_id: user.comp_id,
       }).select("_id");
       const masterStoneIds = masterStones.map((m) => m._id);
 
-      // 3.2 เอา ID พลอย ไปหาใน ProductDetail
       const matchedDetails = await ProductDetail.find({
-        "primary_stone.stone_name": { $in: masterStoneIds }, // ใช้ ID ค้นหา
+        "primary_stone.stone_name": { $in: masterStoneIds },
       }).select("_id");
 
       const detailIds = matchedDetails.map((detail) => detail._id);
@@ -653,9 +655,10 @@ exports.list = async (req, res) => {
     }
 
     if (search) {
+      const safeSearch = escapeRegex(String(search));
       query.$or = [
-        { product_name: { $regex: search, $options: "i" } },
-        { product_code: { $regex: search, $options: "i" } },
+        { product_name: { $regex: safeSearch, $options: "i" } },
+        { product_code: { $regex: safeSearch, $options: "i" } },
       ];
     }
 
@@ -807,6 +810,7 @@ exports.list = async (req, res) => {
       total_record: total,
       total_page: Math.ceil(total / limit),
       current_page: page,
+      limit: limit,
       data: formattedProducts,
     });
   } catch (error) {

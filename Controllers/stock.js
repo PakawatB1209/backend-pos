@@ -137,57 +137,73 @@ exports.getOneStock = async (req, res) => {
 //ของใน stock ทั้งหมด
 exports.list = async (req, res) => {
   try {
-    // 1. ตรวจสอบสิทธิ์ผู้ใช้งาน
     const userId = req.user.id;
     const user = await User.findById(userId).select("comp_id").lean();
 
     if (!user || !user.comp_id) {
       return res
-        .status(400)
+        .status(403)
         .json({ success: false, message: "User not associated with company" });
     }
 
-    // 2. ตั้งค่า Pagination
-    const page = Number.parseInt(req.query.page) || 1;
-    const limit = Number.parseInt(req.query.limit) || 10;
+    // 🟢 1. รับค่า Pagination
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
     const skip = (page - 1) * limit;
 
     const { search, category, warehouse, start_date, end_date, status } =
       req.query;
     let stockQuery = { comp_id: user.comp_id };
 
-    // 3. กรองตาม Search หรือ Category
-    if (search || category) {
-      const productQuery = { comp_id: user.comp_id };
-      if (category && category !== "All")
-        productQuery.product_category = category;
-      if (search) {
-        productQuery.$or = [
-          { product_name: { $regex: search, $options: "i" } },
-          { product_code: { $regex: search, $options: "i" } },
-        ];
-      }
-      const matchingProducts = await Product.find(productQuery).select("_id");
-      stockQuery.product_id = { $in: matchingProducts.map((p) => p._id) };
-    }
-
-    // 4. กรองตาม Warehouse และ วันที่ (ใช้ last_in_date แทนเพื่อให้แม่นยำตามการนำเข้า)
     if (warehouse) stockQuery.warehouse_id = warehouse;
+
     if (start_date && end_date) {
       stockQuery.last_in_date = {
-        // 🟢 เปลี่ยนจาก updatedAt เป็น last_in_date
         $gte: new Date(start_date),
-        $lte: new Date(new Date(end_date).setHours(23, 59, 59)),
+        $lte: new Date(new Date(end_date).setHours(23, 59, 59, 999)),
       };
     }
 
-    // 5. กรองตามสถานะ
     if (status) {
       if (status === "In Stock") stockQuery.quantity = { $gt: 0 };
       else if (status === "Out of Stock") stockQuery.quantity = { $lte: 0 };
     }
 
-    // 6. ดึงข้อมูล
+    if (search || category) {
+      const productQuery = { comp_id: user.comp_id };
+
+      if (category && category !== "All")
+        productQuery.product_category = category;
+
+      if (search) {
+        const safeSearch = escapeRegex(String(search)); // ต้องมีฟังก์ชัน escapeRegex ข้างบนด้วยนะ
+        productQuery.$or = [
+          { product_name: { $regex: safeSearch, $options: "i" } },
+          { product_code: { $regex: safeSearch, $options: "i" } },
+        ];
+      }
+
+      const matchingProducts = await Product.find(productQuery)
+        .select("_id")
+        .lean();
+
+      if (matchingProducts.length === 0) {
+        // 🎯 ส่ง Response มาตรฐาน (กรณีหาไม่เจอ)
+        return res.status(200).json({
+          success: true,
+          count: 0,
+          total_record: 0,
+          total_page: 0,
+          current_page: page,
+          limit: limit,
+          data: [],
+        });
+      }
+
+      stockQuery.product_id = { $in: matchingProducts.map((p) => p._id) };
+    }
+
+    // 🚀 2. รัน Query คู่ขนาน
     const [stocks, total] = await Promise.all([
       Stock.find(stockQuery)
         .populate({
@@ -196,7 +212,7 @@ exports.list = async (req, res) => {
           populate: { path: "product_category", select: "master_name" },
         })
         .populate({ path: "warehouse_id", select: "warehouse_name" })
-        .sort({ last_in_date: -1 }) // 🟢 เรียงตามวันนำเข้าล่าสุด
+        .sort({ last_in_date: -1 })
         .skip(skip)
         .limit(limit)
         .lean({ virtuals: true }),
@@ -205,7 +221,6 @@ exports.list = async (req, res) => {
 
     const baseUrl = `${req.protocol}://${req.get("host")}/uploads/product/`;
 
-    // 7. จัดรูปแบบข้อมูล
     const formattedData = stocks.map((item) => {
       const product = item.product_id || {};
       const warehouse = item.warehouse_id || {};
@@ -220,7 +235,6 @@ exports.list = async (req, res) => {
 
       const qty = item.quantity || 0;
       const cost = item.cost || 0;
-      const sale_price = item.price || 0;
 
       return {
         _id: item._id,
@@ -229,44 +243,165 @@ exports.list = async (req, res) => {
         product_name: product.product_name || "-",
         category: catObj.master_name || "-",
         warehouse: warehouse.warehouse_name || "Unknown",
-
-        // 🟢 เปลี่ยนมาใช้วันที่นำเข้าล่าสุด
         date: item.last_in_date || item.updatedAt,
-
         unit: product.unit || "Pcs",
         qty: qty,
-
-        // Cost Information
         cost: cost,
         amount: qty * cost,
-
-        // Sale Information
-        sale_price: sale_price,
-
-        // 🟢 เพิ่มน้ำหนักรวมส่งออกไปให้หน้าบ้าน
+        sale_price: item.price || 0,
         total_gross_weight: item.total_gross_weight || 0,
-
         status: qty > 0 ? "In Stock" : "Out of Stock",
       };
     });
 
-    // 8. ส่ง Response
+    // 🎯 3. ส่ง Response มาตรฐาน (ถอดก้อน Pagination ออกแล้ว)
     res.status(200).json({
       success: true,
+      count: formattedData.length,
+      total_record: total,
+      total_page: Math.ceil(total / limit),
+      current_page: page,
+      limit: limit,
       data: formattedData,
-      pagination: {
-        total_record: total,
-        total_page: Math.ceil(total / limit),
-        current_page: page,
-        limit: limit,
-      },
     });
   } catch (error) {
     console.log("Inventory List Error:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
-//เเสดงรายละเอียดของ Stock นั้นๆ
+
+// exports.list = async (req, res) => {
+//   try {
+//     // 1. ตรวจสอบสิทธิ์ผู้ใช้งาน
+//     const userId = req.user.id;
+//     const user = await User.findById(userId).select("comp_id").lean();
+
+//     if (!user || !user.comp_id) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "User not associated with company" });
+//     }
+
+//     // 2. ตั้งค่า Pagination
+//     const page = Number.parseInt(req.query.page) || 1;
+//     const limit = Number.parseInt(req.query.limit) || 10;
+//     const skip = (page - 1) * limit;
+
+//     const { search, category, warehouse, start_date, end_date, status } =
+//       req.query;
+//     let stockQuery = { comp_id: user.comp_id };
+
+//     // 3. กรองตาม Search หรือ Category
+//     if (search || category) {
+//       const productQuery = { comp_id: user.comp_id };
+//       if (category && category !== "All")
+//         productQuery.product_category = category;
+//       if (search) {
+//         productQuery.$or = [
+//           { product_name: { $regex: search, $options: "i" } },
+//           { product_code: { $regex: search, $options: "i" } },
+//         ];
+//       }
+//       const matchingProducts = await Product.find(productQuery).select("_id");
+//       stockQuery.product_id = { $in: matchingProducts.map((p) => p._id) };
+//     }
+
+//     // 4. กรองตาม Warehouse และ วันที่ (ใช้ last_in_date แทนเพื่อให้แม่นยำตามการนำเข้า)
+//     if (warehouse) stockQuery.warehouse_id = warehouse;
+//     if (start_date && end_date) {
+//       stockQuery.last_in_date = {
+//         // 🟢 เปลี่ยนจาก updatedAt เป็น last_in_date
+//         $gte: new Date(start_date),
+//         $lte: new Date(new Date(end_date).setHours(23, 59, 59)),
+//       };
+//     }
+
+//     // 5. กรองตามสถานะ
+//     if (status) {
+//       if (status === "In Stock") stockQuery.quantity = { $gt: 0 };
+//       else if (status === "Out of Stock") stockQuery.quantity = { $lte: 0 };
+//     }
+
+//     // 6. ดึงข้อมูล
+//     const [stocks, total] = await Promise.all([
+//       Stock.find(stockQuery)
+//         .populate({
+//           path: "product_id",
+//           select: "product_code product_name file unit product_category",
+//           populate: { path: "product_category", select: "master_name" },
+//         })
+//         .populate({ path: "warehouse_id", select: "warehouse_name" })
+//         .sort({ last_in_date: -1 }) // 🟢 เรียงตามวันนำเข้าล่าสุด
+//         .skip(skip)
+//         .limit(limit)
+//         .lean({ virtuals: true }),
+//       Stock.countDocuments(stockQuery),
+//     ]);
+
+//     const baseUrl = `${req.protocol}://${req.get("host")}/uploads/product/`;
+
+//     // 7. จัดรูปแบบข้อมูล
+//     const formattedData = stocks.map((item) => {
+//       const product = item.product_id || {};
+//       const warehouse = item.warehouse_id || {};
+//       const catObj = product.product_category || {};
+
+//       let imageUrl = "";
+//       if (product.file && product.file.length > 0) {
+//         imageUrl = product.file[0].startsWith("http")
+//           ? product.file[0]
+//           : `${baseUrl}${product.file[0]}`;
+//       }
+
+//       const qty = item.quantity || 0;
+//       const cost = item.cost || 0;
+//       const sale_price = item.price || 0;
+
+//       return {
+//         _id: item._id,
+//         image: imageUrl,
+//         code: product.product_code || "-",
+//         product_name: product.product_name || "-",
+//         category: catObj.master_name || "-",
+//         warehouse: warehouse.warehouse_name || "Unknown",
+
+//         // 🟢 เปลี่ยนมาใช้วันที่นำเข้าล่าสุด
+//         date: item.last_in_date || item.updatedAt,
+
+//         unit: product.unit || "Pcs",
+//         qty: qty,
+
+//         // Cost Information
+//         cost: cost,
+//         amount: qty * cost,
+
+//         // Sale Information
+//         sale_price: sale_price,
+
+//         // 🟢 เพิ่มน้ำหนักรวมส่งออกไปให้หน้าบ้าน
+//         total_gross_weight: item.total_gross_weight || 0,
+
+//         status: qty > 0 ? "In Stock" : "Out of Stock",
+//       };
+//     });
+
+//     // 8. ส่ง Response
+//     res.status(200).json({
+//       success: true,
+//       data: formattedData,
+//       pagination: {
+//         total_record: total,
+//         total_page: Math.ceil(total / limit),
+//         current_page: page,
+//         limit: limit,
+//       },
+//     });
+//   } catch (error) {
+//     console.log("Inventory List Error:", error);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// };
+
 exports.getStockDetail = async (req, res) => {
   try {
     const { id } = req.params;
@@ -401,7 +536,7 @@ exports.getStockDetail = async (req, res) => {
     console.log("Get Inventory Detail Error:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
-};
+}; //เเสดงรายละเอียดของ Stock นั้นๆ
 
 exports.removeOneStock = async (req, res) => {
   try {

@@ -281,6 +281,7 @@ exports.createUsersendEmail = async (req, res) => {
       to: user_email,
       replyTo: adminUser.user_email,
       subject: `Welcome! Your Account Credentials for ${user_name}`,
+
       // Text Version
       text: `
 Hello ${user_name},
@@ -303,6 +304,8 @@ Please verify your information and change your password after the first login.
 Best regards,
 System Admin
       `,
+
+      // HTML Version
       html: `
 <!DOCTYPE html>
 <html>
@@ -310,7 +313,7 @@ System Admin
   <meta charset="UTF-8" />
 </head>
 
-<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;">
+<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background-color:#F3F4F6;">
   <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
     <tr>
       <td align="center">
@@ -338,59 +341,73 @@ System Admin
             <td style="padding:0 40px 40px 40px;color:#1F2937;">
               <h2>Welcome !</h2>
 
-              <p>
+              <p style="font-size:16px;line-height:1.5;">
                 Hello <strong>${user_name}</strong>,<br /><br />
                 Welcome to the Jewelry Management System. Your account has been successfully created.
                 Here are your login credentials:
               </p>
 
-              <table width="100%" cellpadding="10" cellspacing="0"
-                style="background:#F1F5F9;border-radius:14px;margin:24px 0;">
+              <table width="100%" cellpadding="14" cellspacing="0" border="0"
+                style="background:#EFF6FF; border:1px solid #DBEAFE; border-radius:12px; margin:24px 0; font-size:15px; border-collapse: separate; border-spacing:0; overflow:hidden;">
+                
                 <tr>
-                  <td>
-                    <strong style="color:#2563EB;">User Account Information:</strong><br/>
-                    <hr style="border:0;border-top:1px solid #CBD5E1;margin:10px 0;" />
-                    
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size: 15px;">
-                      <tr>
-                        <td width="90" style="padding-bottom: 6px;"><strong>Username:</strong></td>
-                        <td style="padding-bottom: 6px; padding-left: 8px;">${newUser.user_name}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding-bottom: 6px;"><strong>Email:</strong></td>
-                        <td style="padding-bottom: 6px; padding-left: 8px;">${newUser.user_email}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding-bottom: 6px;"><strong>Password:</strong></td>
-                        <td style="padding-bottom: 6px; padding-left: 8px;">${user_password}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding-bottom: 6px;"><strong>Role:</strong></td>
-                        <td style="padding-bottom: 6px; padding-left: 8px;">${roleToBeCreated}</td>
-                      </tr>
-                      <tr>
-                        <td><strong>Status:</strong></td>
-                        <td style="padding-left: 8px;">
-                          ${newUser.status ? '<span style="color:#16A34A;font-weight:bold;">Active</span>' : '<span style="color:#DC2626;font-weight:bold;">Inactive</span>'}
-                        </td>
-                      </tr>
-                    </table>
-                    </td>
+                  <td width="35%" style="color:#1E3A8A; font-weight:bold; border-bottom:1px solid #DBEAFE;">
+                    Username :
+                  </td>
+                  <td width="65%" style="color:#374151; border-bottom:1px solid #DBEAFE;">
+                    ${newUser.user_name}
+                  </td>
                 </tr>
-              </table>
 
-              <p style="font-size:14px;color:#DC2626;">
+                <tr>
+                  <td style="color:#1E3A8A; font-weight:bold; border-bottom:1px solid #DBEAFE;">
+                    Email :
+                  </td>
+                  <td style="color:#374151; border-bottom:1px solid #DBEAFE;">
+                    ${newUser.user_email}
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="color:#1E3A8A; font-weight:bold; border-bottom:1px solid #DBEAFE;">
+                    Password :
+                  </td>
+                  <td style="color:#374151; border-bottom:1px solid #DBEAFE;">
+                    ${user_password}
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="color:#1E3A8A; font-weight:bold; border-bottom:1px solid #DBEAFE;">
+                    Role :
+                  </td>
+                  <td style="color:#374151; border-bottom:1px solid #DBEAFE;">
+                    ${roleToBeCreated}
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="color:#1E3A8A; font-weight:bold;">
+                    Status :
+                  </td>
+                  <td style="color:#374151;">
+                    ${newUser.status ? '<span style="color:#16A34A;font-weight:bold;">Active</span>' : '<span style="color:#DC2626;font-weight:bold;">Inactive</span>'}
+                  </td>
+                </tr>
+
+              </table>
+              <p style="font-size:14px;color:#DC2626;margin-top:16px;">
                 *Important: Please verify your information and change your password immediately after the first login.
               </p>
 
               <p style="text-align:center;margin-top:32px;">
                 <a href="${process.env.LOGIN_URL || "http://localhost:5173/"}"
-                  style="background:#2563EB;color:#FFFFFF;padding:14px 40px;border-radius:999px;text-decoration:none;font-weight:bold;">
+                  style="background:#2563EB;color:#FFFFFF;padding:14px 40px;border-radius:999px;text-decoration:none;font-weight:bold;display:inline-block;">
                   Login Now
                 </a>
               </p>
 
-              <p style="margin-top:40px;font-size:14px;color:#6B7280;">
+              <p style="margin-top:40px;font-size:14px;color:#6B7280;border-top:1px solid #E5E7EB;padding-top:20px;">
                 Best regards,<br />
                 <strong>System Admin</strong>
               </p>
@@ -498,27 +515,34 @@ exports.getUserRole = async (req, res) => {
 exports.list = async (req, res) => {
   try {
     const { comp_id, user_role } = req.query;
-
     const query = {};
 
-    if (comp_id) {
-      query.comp_id = comp_id;
-    }
+    if (comp_id) query.comp_id = comp_id;
+    if (user_role) query.user_role = user_role;
 
-    if (user_role) {
-      query.user_role = user_role;
-    }
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
 
-    const users = await User.find(query)
-      .select("-__v")
-      .populate("comp_id")
-      .populate("permissions")
-      .sort({ createdAt: -1 })
-      .lean();
+    const [users, total] = await Promise.all([
+      User.find(query)
+        .select("-__v")
+        .populate("comp_id")
+        .populate("permissions")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      User.countDocuments(query),
+    ]);
 
     return res.status(200).json({
       success: true,
       count: users.length,
+      total_record: total,
+      total_page: Math.ceil(total / limit),
+      current_page: page,
+      limit: limit,
       data: users,
     });
   } catch (error) {
@@ -800,6 +824,7 @@ exports.userRequestResetPassword = async (req, res) => {
       to: admin.user_email,
       replyTo: user.user_email,
       subject: `[Request] Password Reset Request from ${user.user_name}`,
+
       // Text version (สำหรับ Email Client ที่ไม่รองรับ HTML)
       text: `
 Admin,
@@ -814,7 +839,8 @@ Role     : ${user.user_role}
 Please login to the system and reset the password for this user manually.
 Login URL: ${process.env.ADMIN_DASHBOARD_URL || "http://localhost:5173/"}
 `,
-      // HTML version (Style ใหม่ + ข้อมูลเดิม)
+
+      // HTML version (Style ใหม่ + ข้อมูลเดิม + ตารางดีไซน์ล่าสุด)
       html: `
 <!DOCTYPE html>
 <html>
@@ -822,7 +848,7 @@ Login URL: ${process.env.ADMIN_DASHBOARD_URL || "http://localhost:5173/"}
   <meta charset="UTF-8" />
 </head>
 
-<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;">
+<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background-color:#F3F4F6;">
   <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
     <tr>
       <td align="center">
@@ -850,37 +876,63 @@ Login URL: ${process.env.ADMIN_DASHBOARD_URL || "http://localhost:5173/"}
             <td style="padding:0 40px 40px 40px;color:#1F2937;">
               <h2>Password Reset Request</h2>
 
-              <p>
+              <p style="font-size:16px;line-height:1.5;">
                 Hello <strong>Admin</strong>,<br /><br />
                 User has requested a password reset. Please review the details below:
               </p>
 
-              <table width="100%" cellpadding="10" cellspacing="0"
-                style="background:#F1F5F9;border-radius:14px;margin:24px 0;">
+              <table width="100%" cellpadding="14" cellspacing="0" border="0"
+                style="background:#EFF6FF; border:1px solid #DBEAFE; border-radius:12px; margin:24px 0; font-size:15px; border-collapse: separate; border-spacing:0; overflow:hidden;">
+                
                 <tr>
-                  <td>
-                    <strong style="color:#2563EB;">User Details:</strong><br/>
-                    <hr style="border:0;border-top:1px solid #CBD5E1;margin:10px 0;" />
-                    <strong>Username:</strong> ${user.user_name}<br />
-                    <strong>Email:</strong> ${user.user_email}<br />
-                    <strong>Company:</strong> ${companyInfo}<br />
-                    <strong>Role:</strong> ${user.user_role}
+                  <td width="35%" style="color:#1E3A8A; font-weight:bold; border-bottom:1px solid #DBEAFE;">
+                    Username :
+                  </td>
+                  <td width="65%" style="color:#374151; border-bottom:1px solid #DBEAFE;">
+                    ${user.user_name}
                   </td>
                 </tr>
-              </table>
 
-              <p>
+                <tr>
+                  <td style="color:#1E3A8A; font-weight:bold; border-bottom:1px solid #DBEAFE;">
+                    Email :
+                  </td>
+                  <td style="color:#374151; border-bottom:1px solid #DBEAFE;">
+                    ${user.user_email}
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="color:#1E3A8A; font-weight:bold; border-bottom:1px solid #DBEAFE;">
+                    Company :
+                  </td>
+                  <td style="color:#374151; border-bottom:1px solid #DBEAFE;">
+                    ${companyInfo}
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="color:#1E3A8A; font-weight:bold;">
+                    Role :
+                  </td>
+                  <td style="color:#374151;">
+                    ${user.user_role}
+                  </td>
+                </tr>
+
+              </table>
+              <p style="font-size:16px;line-height:1.5;">
                 Please login to the system and reset the password for this user manually.
               </p>
 
               <p style="text-align:center;margin-top:32px;">
-                <a href="http://localhost:5173/"
-                  style="background:#2563EB;color:#FFFFFF;padding:14px 40px;border-radius:999px;text-decoration:none;font-weight:bold;">
+                <a href="${process.env.ADMIN_DASHBOARD_URL || "http://localhost:5173/"}"
+                  style="background:#2563EB;color:#FFFFFF;padding:14px 40px;border-radius:999px;text-decoration:none;font-weight:bold;display:inline-block;">
                   Login to System
                 </a>
               </p>
 
-              <p style="margin-top:40px;font-size:14px;color:#6B7280;">
+              <p style="margin-top:40px;font-size:14px;color:#6B7280;border-top:1px solid #E5E7EB;padding-top:20px;">
                 System Auto-Message<br />
               </p>
             </td>
@@ -1042,6 +1094,7 @@ exports.resetPassUserbyAdmin_send = async (req, res) => {
       to: userToReset.user_email,
       subject: `[Notification] Your password has been reset by Admin`,
 
+      // แบบ Text
       text: `
 Hello ${userToReset.user_name},
 
@@ -1058,9 +1111,9 @@ Please login and change your password immediately if this was not requested by y
 
 Best regards,
 IT Support Team
-  `,
+      `,
 
-      // HTML email
+      // แบบ HTML
       html: `
 <!DOCTYPE html>
 <html>
@@ -1068,81 +1121,82 @@ IT Support Team
   <meta charset="UTF-8" />
 </head>
 
-<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;">
+<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background-color:#F3F4F6;">
   <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
     <tr>
       <td align="center">
 
         <table width="600" cellpadding="0" cellspacing="0"
-          style="background:#FFFFFF;border-radius:20px;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,0.25);">
+          style="background:#FFFFFF;border-radius:12px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,0.1);">
 
           <tr>
-            <td style="background:linear-gradient(135deg,#1E3A8A,#2563EB);padding:28px 36px;color:#FFFFFF;font-size:18px;font-weight:bold;">
+            <td style="background:linear-gradient(135deg,#1E3A8A,#2563EB);padding:24px 36px;color:#FFFFFF;font-size:20px;font-weight:bold;">
               YOUR COMPANY
             </td>
           </tr>
 
           <tr>
-            <td align="center" style="padding:36px 0;">
-              <img
-                src="https://cdn-icons-png.flaticon.com/512/747/747376.png"
-                width="48"
-                alt="Security"
-              />
-            </td>
-          </tr>
+            <td style="padding:40px 36px;color:#374151;">
+              
+              <div style="text-align:center; margin-bottom: 24px;">
+                <img src="https://cdn-icons-png.flaticon.com/512/747/747376.png" width="48" alt="Security" />
+              </div>
 
-          <tr>
-            <td style="padding:0 40px 40px 40px;color:#1F2937;">
-              <h2>Password Reset Notification</h2>
+              <h2 style="margin-top:0;color:#111827;">Password Reset Notification</h2>
 
-              <p>
+              <p style="font-size:16px;line-height:1.5;">
                 Hello <strong>${userToReset.user_name}</strong>,<br /><br />
-                This is to inform you that your password has been reset
-                by the system administrator.
+                This is to inform you that your password has been reset by the system administrator.
               </p>
 
-              <table width="100%" cellpadding="10" cellspacing="0"
-                style="background:#F1F5F9;border-radius:14px;margin:24px 0;">
+              <table width="100%" cellpadding="14" cellspacing="0" border="0"
+                style="background:#EFF6FF; border:1px solid #DBEAFE; border-radius:12px; margin:24px 0; font-size:15px; border-collapse: separate; border-spacing:0; overflow:hidden;">
+                
                 <tr>
-                  <td>
-                    <strong style="color:#2563EB;">New Login Credentials:</strong><br/>
-                    <hr style="border:0;border-top:1px solid #CBD5E1;margin:10px 0;" />
-                    
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size: 15px;">
-                      <tr>
-                        <td width="90" style="padding-bottom: 6px;"><strong>Username:</strong></td>
-                        <td style="padding-bottom: 6px; padding-left: 8px;">${userToReset.user_name}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding-bottom: 6px;"><strong>Password:</strong></td>
-                        <td style="padding-bottom: 6px; padding-left: 8px;">${user_password}</td>
-                      </tr>
-                      <tr>
-                        <td><strong>Date:</strong></td>
-                        <td style="padding-left: 8px;">${new Date().toLocaleString("th-TH")}</td>
-                      </tr>
-                    </table>
-                    </td>
+                  <td width="35%" style="color:#1E3A8A; font-weight:bold; border-bottom:1px solid #DBEAFE;">
+                    Name :
+                  </td>
+                  <td width="65%" style="color:#374151; border-bottom:1px solid #DBEAFE;">
+                    ${user.user_name}
+                  </td>
                 </tr>
+
+                <tr>
+                  <td style="color:#1E3A8A; font-weight:bold; border-bottom:1px solid #DBEAFE;">
+                    Email Address :
+                  </td>
+                  <td style="color:#374151; border-bottom:1px solid #DBEAFE;">
+                    ${user.user_email}
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="color:#1E3A8A; font-weight:bold;">
+                    Phone Number :
+                  </td>
+                  <td style="color:#374151;">
+                    ${user.user_phone || "<i>Not provided</i>"}
+                  </td>
+                </tr>
+
               </table>
 
-              <p>
-                Please log in and change your password immediately
-                if you did not request this action.
+              <p style="font-size:16px;line-height:1.5;">
+                Please log in and change your password immediately if you did not request this action.
               </p>
 
               <p style="text-align:center;margin-top:32px;">
                 <a href="${process.env.LOGIN_URL || "#"}"
-                  style="background:#2563EB;color:#FFFFFF;padding:14px 40px;border-radius:999px;text-decoration:none;font-weight:bold;">
+                  style="background:#2563EB;color:#FFFFFF;padding:12px 32px;border-radius:6px;text-decoration:none;font-weight:bold;display:inline-block;">
                   Login to System
                 </a>
               </p>
 
-              <p style="margin-top:40px;font-size:14px;color:#6B7280;">
+              <p style="margin-top:40px;font-size:14px;color:#6B7280;border-top:1px solid #E5E7EB;padding-top:20px;">
                 Best regards,<br />
                 <strong>IT Support Team</strong>
               </p>
+
             </td>
           </tr>
 
@@ -1153,7 +1207,7 @@ IT Support Team
   </table>
 </body>
 </html>
-  `,
+      `,
     };
 
     await transporter.sendMail(mailOptions);

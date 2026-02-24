@@ -41,7 +41,14 @@ const CustomerSchema = new mongoose.Schema(
 
     customer_tax_id: { type: String, maxlength: 18 },
 
-    tax_addr: { type: String },
+    tax_addr: {
+      address_line: { type: String },
+      country: { type: String },
+      province: { type: String },
+      district: { type: String },
+      sub_district: { type: String },
+      zipcode: { type: String, minLength: 5, maxlength: 10 },
+    },
 
     note: { type: String },
   },

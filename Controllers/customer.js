@@ -47,7 +47,12 @@ exports.createCustomer = async (req, res) => {
       customer_tax_id,
       customer_gender,
       note,
-      tax_addr,
+      tax_addr_line,
+      tax_addr_country,
+      tax_addr_province,
+      tax_addr_district,
+      tax_addr_sub_district,
+      tax_addr_zipcode,
     } = req.body;
 
     if (!customer_name || !customer_phone) {
@@ -126,7 +131,14 @@ exports.createCustomer = async (req, res) => {
       customer_tax_id,
       customer_gender,
       note,
-      tax_addr,
+      tax_addr: {
+        address_line: tax_addr_line,
+        country: tax_addr_country,
+        province: tax_addr_province,
+        district: tax_addr_district,
+        sub_district: tax_addr_sub_district,
+        zipcode: tax_addr_zipcode,
+      },
     });
 
     await newCustomer.save();
@@ -265,19 +277,28 @@ exports.updateCustomer = async (req, res) => {
       business_type,
       company_name,
       contact_person,
-      customer_country,
+
+      addr_line,
+      addr_country,
       addr_province,
       addr_district,
       addr_sub_district,
       addr_zipcode,
 
+      tax_addr_line,
+      tax_addr_country,
+      tax_addr_province,
+      tax_addr_district,
+      tax_addr_sub_district,
+      tax_addr_zipcode,
+
       customer_date,
       customer_email,
       customer_phone,
+      customer_country,
       customer_tax_id,
       customer_gender,
       note,
-      tax_addr,
     } = req.body;
 
     let finalPhone = customer_phone;
@@ -286,7 +307,7 @@ exports.updateCustomer = async (req, res) => {
       try {
         const number = phoneUtil.parseAndKeepRawInput(
           customer_phone,
-          customer_country,
+          customer_country || "TH",
         );
 
         if (!phoneUtil.isValidNumber(number)) {
@@ -313,10 +334,23 @@ exports.updateCustomer = async (req, res) => {
       }),
       ...(contact_person && { contact_person }),
 
+      // อัปเดตที่อยู่หลัก
+      ...(addr_line && { "address.address_line": addr_line }),
+      ...(addr_country && { "address.country": addr_country }),
       ...(addr_province && { "address.province": addr_province }),
       ...(addr_district && { "address.district": addr_district }),
       ...(addr_sub_district && { "address.sub_district": addr_sub_district }),
       ...(addr_zipcode && { "address.zipcode": addr_zipcode }),
+
+      // อัปเดตที่อยู่ภาษี
+      ...(tax_addr_line && { "tax_addr.address_line": tax_addr_line }),
+      ...(tax_addr_country && { "tax_addr.country": tax_addr_country }),
+      ...(tax_addr_province && { "tax_addr.province": tax_addr_province }),
+      ...(tax_addr_district && { "tax_addr.district": tax_addr_district }),
+      ...(tax_addr_sub_district && {
+        "tax_addr.sub_district": tax_addr_sub_district,
+      }),
+      ...(tax_addr_zipcode && { "tax_addr.zipcode": tax_addr_zipcode }),
 
       ...(customer_date && { customer_date: new Date(customer_date) }),
       ...(customer_email && { customer_email }),
@@ -324,7 +358,6 @@ exports.updateCustomer = async (req, res) => {
       ...(customer_tax_id && { customer_tax_id }),
       ...(customer_gender && { customer_gender }),
       ...(note !== undefined && { note }),
-      ...(tax_addr && { tax_addr }),
 
       updatedAt: new Date(),
     };
@@ -456,7 +489,7 @@ exports.exportCustomersExcel = async (req, res) => {
     const workbook = new excelJS.Workbook();
     const worksheet = workbook.addWorksheet("Customers Data");
 
-    // 4. กำหนดหัวตาราง (คอลัมน์) ให้ตรงกับ Schema ของคุณ
+    // 4. กำหนดหัวตาราง (คอลัมน์) ให้ตรงกับ Schema ล่าสุดของคุณ
     worksheet.columns = [
       { header: "Customer ID", key: "customer_id", width: 15 },
       { header: "Business Type", key: "business_type", width: 15 },
@@ -467,12 +500,16 @@ exports.exportCustomersExcel = async (req, res) => {
       { header: "Phone", key: "customer_phone", width: 15 },
       { header: "Gender", key: "customer_gender", width: 10 },
       { header: "Date", key: "customer_date", width: 15 },
+
+      { header: "Address Line", key: "address_line", width: 30 },
+      { header: "Country", key: "country", width: 15 },
       { header: "Province", key: "province", width: 20 },
       { header: "District", key: "district", width: 20 },
       { header: "Sub-District", key: "sub_district", width: 20 },
       { header: "Zipcode", key: "zipcode", width: 10 },
+
       { header: "Tax ID", key: "customer_tax_id", width: 20 },
-      { header: "Tax Address", key: "tax_addr", width: 30 },
+      { header: "Tax Address", key: "tax_addr", width: 50 }, // 🟢 ขยายความกว้างเผื่อที่อยู่ยาว
       { header: "Note", key: "note", width: 25 },
     ];
 
@@ -481,6 +518,23 @@ exports.exportCustomersExcel = async (req, res) => {
 
     // 5. นำข้อมูลจาก Database ยัดใส่แต่ละแถว
     customers.forEach((c) => {
+      let formattedTaxAddr = "-";
+      if (c.tax_addr) {
+        // ดึงเฉพาะค่าที่มีอยู่จริงมาต่อกันด้วยลูกน้ำ (,)
+        const taxParts = [
+          c.tax_addr.address_line,
+          c.tax_addr.sub_district,
+          c.tax_addr.district,
+          c.tax_addr.province,
+          c.tax_addr.country,
+          c.tax_addr.zipcode,
+        ].filter(Boolean); // filter(Boolean) จะช่วยตัดค่าที่เป็น undefined, null, "" ทิ้งไป
+
+        if (taxParts.length > 0) {
+          formattedTaxAddr = taxParts.join(", ");
+        }
+      }
+
       worksheet.addRow({
         customer_id: c.customer_id,
         business_type: c.business_type,
@@ -490,18 +544,21 @@ exports.exportCustomersExcel = async (req, res) => {
         customer_email: c.customer_email || "-",
         customer_phone: c.customer_phone,
         customer_gender: c.customer_gender || "-",
-        // จัดฟอร์แมตวันที่ให้สวยงาม (ถ้ามี)
+
+        // จัดฟอร์แมตวันที่ให้สวยงาม
         customer_date: c.customer_date
           ? new Date(c.customer_date).toLocaleDateString("th-TH")
           : "-",
-        // กระจาย Object Address ออกมาใส่ทีละช่อง
+
+        address_line: c.address?.address_line || "-",
+        country: c.address?.country || "-",
         province: c.address?.province || "-",
         district: c.address?.district || "-",
         sub_district: c.address?.sub_district || "-",
         zipcode: c.address?.zipcode || "-",
 
         customer_tax_id: c.customer_tax_id || "-",
-        tax_addr: c.tax_addr || "-",
+        tax_addr: formattedTaxAddr,
         note: c.note || "-",
       });
     });

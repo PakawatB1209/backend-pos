@@ -31,6 +31,7 @@ const CustomerSchema = new mongoose.Schema(
     },
     customer_date: { type: Date },
     address: {
+      address_line: { type: String, required: true },
       country: { type: String, required: true },
       province: { type: String, required: true },
       district: { type: String, required: true },

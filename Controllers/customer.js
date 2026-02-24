@@ -33,6 +33,7 @@ exports.createCustomer = async (req, res) => {
       company_name,
       contact_person,
 
+      addr_line,
       addr_country,
       addr_province,
       addr_district,
@@ -108,6 +109,7 @@ exports.createCustomer = async (req, res) => {
       contact_person,
 
       address: {
+        address_line: addr_line,
         country: addr_country,
         province: addr_province,
         district: addr_district,

@@ -42,6 +42,7 @@ exports.createCustomer = async (req, res) => {
       customer_date,
       customer_email,
       customer_phone,
+      customer_country,
       customer_tax_id,
       customer_gender,
       note,
@@ -58,21 +59,23 @@ exports.createCustomer = async (req, res) => {
 
     if (customer_phone) {
       try {
-        const number = phoneUtil.parseAndKeepRawInput(customer_phone, "TH");
+        const number = phoneUtil.parseAndKeepRawInput(
+          customer_phone,
+          customer_country || "TH",
+        );
 
         if (!phoneUtil.isValidNumber(number)) {
           return res.status(400).json({
             success: false,
-            message: "Invalid phone number format (เบอร์โทรศัพท์ไม่ถูกต้อง)",
+            message: "Invalid phone number",
           });
         }
 
         finalPhone = phoneUtil.format(number, PNF.E164);
       } catch (error) {
-        console.log("Phone parse error:", error.message);
         return res.status(400).json({
           success: false,
-          message: "Unable to parse phone number (รูปแบบเบอร์โทรศัพท์ผิดพลาด)",
+          message: "Unable to parse phone number",
         });
       }
     }
@@ -260,6 +263,7 @@ exports.updateCustomer = async (req, res) => {
       business_type,
       company_name,
       contact_person,
+      customer_country,
       addr_province,
       addr_district,
       addr_sub_district,
@@ -278,7 +282,10 @@ exports.updateCustomer = async (req, res) => {
 
     if (customer_phone) {
       try {
-        const number = phoneUtil.parseAndKeepRawInput(customer_phone, "TH");
+        const number = phoneUtil.parseAndKeepRawInput(
+          customer_phone,
+          customer_country,
+        );
 
         if (!phoneUtil.isValidNumber(number)) {
           return res.status(400).json({

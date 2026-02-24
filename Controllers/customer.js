@@ -47,6 +47,7 @@ exports.createCustomer = async (req, res) => {
       customer_tax_id,
       customer_gender,
       note,
+      tax_company_name,
       tax_addr_line,
       tax_addr_country,
       tax_addr_province,
@@ -132,6 +133,7 @@ exports.createCustomer = async (req, res) => {
       customer_gender,
       note,
       tax_addr: {
+        company_name: tax_company_name,
         address_line: tax_addr_line,
         country: tax_addr_country,
         province: tax_addr_province,
@@ -285,6 +287,7 @@ exports.updateCustomer = async (req, res) => {
       addr_sub_district,
       addr_zipcode,
 
+      tax_company_name,
       tax_addr_line,
       tax_addr_country,
       tax_addr_province,
@@ -343,6 +346,7 @@ exports.updateCustomer = async (req, res) => {
       ...(addr_zipcode && { "address.zipcode": addr_zipcode }),
 
       // อัปเดตที่อยู่ภาษี
+      ...(tax_company_name && { "tax_addr.company_name": tax_company_name }),
       ...(tax_addr_line && { "tax_addr.address_line": tax_addr_line }),
       ...(tax_addr_country && { "tax_addr.country": tax_addr_country }),
       ...(tax_addr_province && { "tax_addr.province": tax_addr_province }),

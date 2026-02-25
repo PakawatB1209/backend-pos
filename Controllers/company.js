@@ -32,6 +32,7 @@ exports.createCompany = async (req, res) => {
       comp_person_name,
       comp_person_phone,
       comp_person_email,
+      main_currency,
     } = req.body;
 
     const requiredFields = [
@@ -151,6 +152,7 @@ exports.createCompany = async (req, res) => {
       comp_person_phone: finalPersonPhone,
       comp_person_email,
       comp_file: imageFileName,
+      main_currency: main_currency || "THB",
     });
 
     //default warehouse

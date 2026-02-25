@@ -11,6 +11,35 @@ function escapeRegex(text) {
   return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 }
 
+exports.getNextCustomerId = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("comp_id").lean();
+    if (!user || !user.comp_id) {
+      return res.status(403).json({
+        success: false,
+        message: "User is not assigned to any company.",
+      });
+    }
+
+    const counterName = `customer_id_${user.comp_id}`;
+
+    // ค้นหาเลขปัจจุบันใน Counter (ใช้ findOne ไม่ใช่ Update เพื่อแค่ขอดู)
+    const counter = await Counter.findOne({ _id: counterName }).lean();
+
+    // ถ้ายังไม่มีข้อมูลในระบบเลย เลขคิวถัดไปคือ 1 ถ้ามีแล้วก็เอาเลขนั้น + 1
+    const nextSeq = counter ? counter.seq + 1 : 1;
+
+    // แปลงให้เป็น Format (เช่น CUS-0001)
+    const seqStr = nextSeq.toString().padStart(4, "0");
+    const nextCustomerID = `CUS-${seqStr}`;
+
+    res.json({ success: true, next_customer_id: nextCustomerID });
+  } catch (error) {
+    console.error("Get Next ID Error:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
 exports.createCustomer = async (req, res) => {
   try {
     if (!req.user || !req.user.id) {

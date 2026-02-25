@@ -4,6 +4,7 @@ const { auth, adminCheck } = require("../Middleware/auth");
 const { checkPermission } = require("../Middleware/checkPermission");
 
 const {
+  getNextCustomerId,
   createCustomer,
   deleteCustomer,
   getCustomer,
@@ -12,6 +13,8 @@ const {
   getPosCustomers,
   exportCustomersExcel,
 } = require("../Controllers/customer");
+
+router.get("/customer/next-id", auth, getNextCustomerId);
 
 router.get(
   "/all-customer",

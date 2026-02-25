@@ -11,6 +11,20 @@ function escapeRegex(text) {
   return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 }
 
+function normalizeTaxAddr(customer) {
+  if (!customer) return customer;
+
+  if (typeof customer.tax_addr === "string") {
+    try {
+      customer.tax_addr = JSON.parse(customer.tax_addr);
+    } catch {
+      customer.tax_addr = null;
+    }
+  }
+
+  return customer;
+}
+
 exports.getNextCustomerId = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("comp_id").lean();
@@ -22,14 +36,10 @@ exports.getNextCustomerId = async (req, res) => {
     }
 
     const counterName = `customer_id_${user.comp_id}`;
-
-    // ค้นหาเลขปัจจุบันใน Counter (ใช้ findOne ไม่ใช่ Update เพื่อแค่ขอดู)
     const counter = await Counter.findOne({ _id: counterName }).lean();
 
-    // ถ้ายังไม่มีข้อมูลในระบบเลย เลขคิวถัดไปคือ 1 ถ้ามีแล้วก็เอาเลขนั้น + 1
     const nextSeq = counter ? counter.seq + 1 : 1;
 
-    // แปลงให้เป็น Format (เช่น CUS-0001)
     const seqStr = nextSeq.toString().padStart(4, "0");
     const nextCustomerID = `CUS-${seqStr}`;
 
@@ -236,14 +246,16 @@ exports.listCustomers = async (req, res) => {
       Customer.countDocuments(query),
     ]);
 
+    const normalized = customers.map(normalizeTaxAddr);
+
     res.status(200).json({
       success: true,
-      count: customers.length,
+      count: normalized.length,
       total_record: total,
       total_page: Math.ceil(total / limit),
       current_page: page,
       limit: limit,
-      data: customers,
+      data: normalized,
     });
   } catch (err) {
     console.log("List Customer Error:", err);
@@ -270,7 +282,18 @@ exports.getCustomer = async (req, res) => {
     const customer = await Customer.findOne({
       _id: id,
       comp_id: user.comp_id,
-    });
+    }).lean();
+
+    if (!customer) {
+      return res.status(404).json({
+        success: false,
+        message: "Customer not found (or access denied).",
+      });
+    }
+
+    const normalized = normalizeTaxAddr(customer);
+
+    res.json({ success: true, data: normalized });
 
     if (!customer) {
       return res.status(404).json({
@@ -359,37 +382,53 @@ exports.updateCustomer = async (req, res) => {
     }
 
     const updateFields = {
-      ...(customer_name && { customer_name }),
-      ...(business_type && { business_type }),
+      ...(customer_name !== undefined && { customer_name }),
+      ...(business_type !== undefined && { business_type }),
       ...(company_name !== undefined && {
         company_name: business_type === "Individual" ? "" : company_name,
       }),
-      ...(contact_person && { contact_person }),
+      ...(contact_person !== undefined && { contact_person }),
 
       // อัปเดตที่อยู่หลัก
-      ...(addr_line && { "address.address_line": addr_line }),
-      ...(addr_country && { "address.country": addr_country }),
-      ...(addr_province && { "address.province": addr_province }),
-      ...(addr_district && { "address.district": addr_district }),
-      ...(addr_sub_district && { "address.sub_district": addr_sub_district }),
-      ...(addr_zipcode && { "address.zipcode": addr_zipcode }),
+      ...(addr_line !== undefined && { "address.address_line": addr_line }),
+      ...(addr_country !== undefined && { "address.country": addr_country }),
+      ...(addr_province !== undefined && { "address.province": addr_province }),
+      ...(addr_district !== undefined && { "address.district": addr_district }),
+      ...(addr_sub_district !== undefined && {
+        "address.sub_district": addr_sub_district,
+      }),
+      ...(addr_zipcode !== undefined && { "address.zipcode": addr_zipcode }),
 
       // อัปเดตที่อยู่ภาษี
-      ...(tax_company_name && { "tax_addr.company_name": tax_company_name }),
-      ...(tax_addr_line && { "tax_addr.address_line": tax_addr_line }),
-      ...(tax_addr_country && { "tax_addr.country": tax_addr_country }),
-      ...(tax_addr_province && { "tax_addr.province": tax_addr_province }),
-      ...(tax_addr_district && { "tax_addr.district": tax_addr_district }),
-      ...(tax_addr_sub_district && {
+      ...(tax_company_name !== undefined && {
+        "tax_addr.company_name": tax_company_name,
+      }),
+      ...(tax_addr_line !== undefined && {
+        "tax_addr.address_line": tax_addr_line,
+      }),
+      ...(tax_addr_country !== undefined && {
+        "tax_addr.country": tax_addr_country,
+      }),
+      ...(tax_addr_province !== undefined && {
+        "tax_addr.province": tax_addr_province,
+      }),
+      ...(tax_addr_district !== undefined && {
+        "tax_addr.district": tax_addr_district,
+      }),
+      ...(tax_addr_sub_district !== undefined && {
         "tax_addr.sub_district": tax_addr_sub_district,
       }),
-      ...(tax_addr_zipcode && { "tax_addr.zipcode": tax_addr_zipcode }),
+      ...(tax_addr_zipcode !== undefined && {
+        "tax_addr.zipcode": tax_addr_zipcode,
+      }),
 
-      ...(customer_date && { customer_date: new Date(customer_date) }),
-      ...(customer_email && { customer_email }),
-      ...(customer_phone && { customer_phone: finalPhone }),
-      ...(customer_tax_id && { customer_tax_id }),
-      ...(customer_gender && { customer_gender }),
+      ...(customer_date !== undefined && {
+        customer_date: customer_date ? new Date(customer_date) : null,
+      }),
+      ...(customer_email !== undefined && { customer_email }),
+      ...(customer_phone !== undefined && { customer_phone: finalPhone }),
+      ...(customer_tax_id !== undefined && { customer_tax_id }),
+      ...(customer_gender !== undefined && { customer_gender }),
       ...(note !== undefined && { note }),
 
       updatedAt: new Date(),

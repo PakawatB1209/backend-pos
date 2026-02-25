@@ -29,14 +29,13 @@ const OrderSchema = new mongoose.Schema(
 
     items: [
       {
-        product_id: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "product",
-        },
+        product_id: { type: mongoose.Schema.Types.ObjectId, ref: "product" },
         product_code: String,
         product_name: String,
+        image: String,
 
         custom_spec: {
+          // --- General ---
           item_type_id: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "masters",
@@ -49,6 +48,7 @@ const OrderSchema = new mongoose.Schema(
           gwt: Number,
           description: String,
 
+          // --- Primary Stone (พลอยหลัก) ---
           stone_name_id: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "masters",
@@ -63,10 +63,31 @@ const OrderSchema = new mongoose.Schema(
           cutting: { type: mongoose.Schema.Types.ObjectId, ref: "masters" },
           quality: { type: mongoose.Schema.Types.ObjectId, ref: "masters" },
           clarity: { type: mongoose.Schema.Types.ObjectId, ref: "masters" },
+
+          // 🟢 --- Additional Stones (พลอยรอง) ---
+          additional_stones: [
+            {
+              stone_name_id: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "masters",
+              },
+              stone_shape_id: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "masters",
+              },
+              stone_size: String,
+              s_weight: Number,
+              stone_color: String,
+              cutting: { type: mongoose.Schema.Types.ObjectId, ref: "masters" },
+              quality: { type: mongoose.Schema.Types.ObjectId, ref: "masters" },
+              clarity: { type: mongoose.Schema.Types.ObjectId, ref: "masters" },
+              qty: Number,
+            },
+          ],
         },
 
         qty: { type: Number, default: 1 },
-        unit_price: { type: Number, required: true }, // ราคาที่ตกลงขาย
+        unit_price: { type: Number, required: true },
         total_item_price: { type: Number, required: true },
       },
     ],

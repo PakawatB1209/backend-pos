@@ -5,7 +5,9 @@ const Masters = require("../models/masters");
 const mongoose = require("mongoose");
 const Stock = require("../models/Stock");
 const Warehouse = require("../models/Warehouse");
-// list แสดงหวมดหมู่
+const CustomSession = require("../models/CustomSession");
+
+// ค้นหาและเลือกสินค้า (Catalog)
 exports.getPosItemTypes = async (req, res) => {
   try {
     // --- 🟢 ส่วนเช็คสิทธิ์ (เพิ่มใหม่) ---
@@ -104,13 +106,11 @@ exports.getPosItemTypes = async (req, res) => {
     console.error("Get Menu Error:", error);
     res.status(500).json({ success: false, message: "Server Error" });
   }
-};
-
-// list Product ของ catalog
+}; // list แสดงหวมดหมู่
 exports.getPosProducts = async (req, res) => {
   try {
     // -----------------------------------------------------------
-    // 1. Check Auth & Company (ตรวจสอบสิทธิ์)
+    // 1. Check Auth & Company
     // -----------------------------------------------------------
     if (!req.user || !req.user.id) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
@@ -121,16 +121,23 @@ exports.getPosProducts = async (req, res) => {
         .status(400)
         .json({ success: false, message: "User not associated with company." });
     }
-    const comp_id = user.comp_id; // ✅ ใช้ comp_id นี้ในการ Query
+    const comp_id = user.comp_id;
 
     // -----------------------------------------------------------
     // 2. Prepare Variables
     // -----------------------------------------------------------
-    const { category, item_type, search, page = 1, limit = 20 } = req.query;
+    const {
+      category,
+      item_type,
+      search,
+      page = 1,
+      limit = 20,
+      view_mode = "master",
+    } = req.query;
     const baseUrl = `${req.protocol}://${req.get("host")}/uploads/product/`;
 
     // -----------------------------------------------------------
-    // 3. Find Target Warehouse (ถ้ามีการเลือก Category มา)
+    // 3. Find Target Warehouse
     // -----------------------------------------------------------
     let targetWarehouseId = null;
     if (category) {
@@ -143,7 +150,6 @@ exports.getPosProducts = async (req, res) => {
           Accessories: "accessory",
           Others: "others",
         };
-        // แปลงชื่อ Category เป็น warehouse_type เพื่อหา ID คลัง
         const warehouseType =
           nameMap[masterCat.master_name] ||
           masterCat.master_name.toLowerCase().replace(/ /g, "");
@@ -172,8 +178,30 @@ exports.getPosProducts = async (req, res) => {
     }
 
     // -----------------------------------------------------------
-    // 5. Fetch Products (ดึงสินค้า)
+    // 🟢 4.5 กรองโหมด Inventory (เอาเฉพาะตัวที่เคยเข้าคลัง)
     // -----------------------------------------------------------
+    if (view_mode === "inventory") {
+      const stockQueryFilter = { comp_id };
+      if (targetWarehouseId) stockQueryFilter.warehouse_id = targetWarehouseId;
+
+      // หา Record ใน Stock ทั้งหมด (ไม่สนว่า quantity จะเป็น 0 หรือไม่)
+      const stockRecords = await Stock.find(stockQueryFilter)
+        .select("product_id")
+        .lean();
+
+      // ดึงเฉพาะ ID ของสินค้าที่เจอในคลัง
+      const productIdsInStock = stockRecords.map((s) => s.product_id);
+
+      // บังคับให้ Query Product หาแค่สินค้าที่อยู่ใน Array นี้
+      query._id = { $in: productIdsInStock };
+    }
+
+    // -----------------------------------------------------------
+    // 5. Fetch Products
+    // -----------------------------------------------------------
+    // นับ Total ก่อนที่จะไป Populate เพื่อความรวดเร็ว
+    const total = await Product.countDocuments(query);
+
     const products = await Product.find(query)
       .populate("product_detail_id", "unit size price")
       .select(
@@ -185,7 +213,7 @@ exports.getPosProducts = async (req, res) => {
       .lean();
 
     // -----------------------------------------------------------
-    // 🟢 6. Fetch Stock (ส่วนที่แก้ไข: ดึงสต็อกแม้ไม่มี Warehouse ID)
+    // 6. Fetch Stock
     // -----------------------------------------------------------
     let stocks = [];
     if (products.length > 0) {
@@ -196,8 +224,6 @@ exports.getPosProducts = async (req, res) => {
         comp_id: comp_id,
       };
 
-      // ✅ ถ้าเจาะจง Warehouse (เลือก Tab) ให้กรองเฉพาะคลังนั้น
-      // ❌ ถ้าไม่เจาะจง (All) ให้ดึงมาทั้งหมด เดี๋ยวไปรวมยอดเอา
       if (targetWarehouseId) {
         stockQuery.warehouse_id = targetWarehouseId;
       }
@@ -206,27 +232,21 @@ exports.getPosProducts = async (req, res) => {
     }
 
     // -----------------------------------------------------------
-    // 🟢 7. Merge Data (รวมข้อมูลสินค้า + สต็อก + รูปภาพ)
+    // 7. Merge Data
     // -----------------------------------------------------------
     const mergedProducts = products.map((product) => {
-      // หาสต็อกทั้งหมดที่เป็นของสินค้านี้
       const productStocks = stocks.filter(
         (s) => s.product_id.toString() === product._id.toString(),
       );
 
-      // 7.1 รวมจำนวนสินค้า (Sum Quantity)
-      // กรณี All Products: สินค้าชิ้นนี้อาจมีวางอยู่หลายคลัง ให้รวมยอดทั้งหมด
       const totalQuantity = productStocks.reduce(
         (sum, s) => sum + s.quantity,
         0,
       );
 
-      // 7.2 หาราคา (Prioritize Stock Price)
-      // ถ้าเจอราคาใน Stock ให้ใช้ราคานั้น (เอาตัวแรกที่เจอ) ถ้าไม่มีให้ใช้ราคา Master
       const stockPrice =
         productStocks.length > 0 ? productStocks[0].price : null;
 
-      // 7.3 จัดการรูปภาพ
       let coverImage = null;
       if (product.file && product.file.length > 0) {
         coverImage = product.file[0].startsWith("http")
@@ -243,16 +263,12 @@ exports.getPosProducts = async (req, res) => {
         unit: product.product_detail_id?.unit || "",
         size: product.product_detail_id?.size || "",
 
-        // ✅ ใช้ราคาจาก Stock ก่อน ถ้าไม่มีใช้ราคาจาก Product Detail
         price:
           stockPrice !== null
             ? stockPrice
             : product.product_detail_id?.price || 0,
 
-        // ✅ ใช้ยอดรวมที่คำนวณมา
         quantity: totalQuantity,
-
-        // ส่ง warehouse_id กลับไปเฉพาะกรณีที่ระบุ Category มา (เอาไว้ใช้ตอนตัดสต็อกถ้าจำเป็น)
         warehouse_id: targetWarehouseId,
       };
     });
@@ -260,8 +276,6 @@ exports.getPosProducts = async (req, res) => {
     // -----------------------------------------------------------
     // 8. Final Response
     // -----------------------------------------------------------
-    const total = await Product.countDocuments(query);
-
     res.json({
       success: true,
       data: mergedProducts,
@@ -275,9 +289,186 @@ exports.getPosProducts = async (req, res) => {
     console.error("Get POS Products Error:", error);
     res.status(500).json({ success: false, message: "Server Error" });
   }
-};
+}; // list Product ของ catalog
 
-// show datail and custom
+//ระบบจองสินค้า (Badge System)
+exports.addToCustomSession = async (req, res) => {
+  try {
+    const { product_id } = req.body; // รับแค่ ID สินค้า
+    const user = await User.findById(req.user.id).select("comp_id").lean();
+
+    // 1. สร้างรายการจอง (Session) เข้าตะกร้าของพนักงานคนนี้ทันที
+    const newSession = await CustomSession.create({
+      comp_id: user.comp_id,
+      sales_staff_id: req.user.id, // 🟢 ผูกตะกร้ากับพนักงานที่ล็อกอิน
+      product_id: product_id,
+      customer_id: null, // ปล่อยว่างไว้ก่อน ไปเลือกตอนหน้า Custom
+    });
+
+    // 2. นับจำนวนสินค้าในตะกร้าของพนักงานคนนี้ เพื่อส่งไปโชว์ที่ Badge
+    const count = await CustomSession.countDocuments({
+      comp_id: user.comp_id,
+      sales_staff_id: req.user.id, // 🟢 นับจากตะกร้าพนักงาน
+    });
+
+    return res.json({
+      success: true,
+      status: "ADDED",
+      badge_count: count,
+      session_id: newSession._id,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+}; // กดปุ่ม Custom (หน้า List)
+exports.getCustomSessionList = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("comp_id").lean();
+
+    // 1. ดึงรายการจากตะกร้าของพนักงานที่กำลังใช้งานอยู่
+    const items = await CustomSession.find({
+      comp_id: user.comp_id,
+      sales_staff_id: req.user.id, // 🟢 หาจากตะกร้าของพนักงาน
+    })
+      .populate({
+        path: "product_id",
+        select:
+          "product_code product_name file price product_detail_id product_category product_item_type",
+        populate: [
+          { path: "product_category", select: "master_name" },
+          { path: "product_item_type", select: "master_name" },
+        ],
+      })
+      .sort({ createdAt: -1 });
+
+    const baseUrl = `${req.protocol}://${req.get("host")}/uploads/product/`;
+
+    const formattedData = items.map((item) => {
+      const prod = item.product_id || {};
+      let imgUrl = null;
+      if (prod.file && prod.file.length > 0) {
+        imgUrl = prod.file[0].startsWith("http")
+          ? prod.file[0]
+          : `${baseUrl}${prod.file[0]}`;
+      }
+
+      return {
+        session_id: item._id,
+        product_id: prod._id,
+        product_code: prod.product_code,
+        product_name: prod.product_name,
+        image: imgUrl,
+        is_saved: item.is_saved,
+        item_type: prod.product_item_type?.master_name || "-",
+        category: prod.product_category?.master_name || "-",
+      };
+    });
+
+    // 🟢 ส่งข้อมูลกลับไป หน้าบ้านจัดการ Dropdown ลูกค้าเองได้เลย
+    res.json({
+      success: true,
+      count: formattedData.length,
+      data: formattedData,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+}; // แสดง List ซ้ายมือ (หน้า Editor)
+exports.clearCustomSession = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const user = await User.findById(req.user.id).select("comp_id").lean();
+
+    // 🟢 1. หา Session ที่ค้างอยู่ "เฉพาะของพนักงานคนนี้"
+    const activeSessions = await CustomSession.find({
+      comp_id: user.comp_id,
+      sales_staff_id: req.user.id, // ป้องกันไปลบตะกร้าคนอื่น
+    });
+
+    for (const s of activeSessions) {
+      const productId = s.product_id;
+
+      // 2. ลบสินค้า (Product) และรายละเอียด
+      const product = await Product.findById(productId);
+      if (product && product.is_custom) {
+        // 🟢 ดักไว้หน่อยว่าลบเฉพาะตัวที่สร้าง custom แล้ว
+        if (product.product_detail_id) {
+          await ProductDetail.findByIdAndDelete(product.product_detail_id, {
+            session,
+          });
+        }
+        await Product.findByIdAndDelete(productId, { session });
+      }
+
+      // 3. ลบ Session ทิ้ง
+      await CustomSession.findByIdAndDelete(s._id, { session });
+    }
+
+    await session.commitTransaction();
+    res.json({ success: true, message: "ล้างรายการเก่าเรียบร้อย" });
+  } catch (error) {
+    await session.abortTransaction();
+    res.status(500).json({ success: false, message: "Error clearing session" });
+  } finally {
+    session.endSession();
+  }
+}; // ล้างสินค้า custom เก่าทั้งหมด
+exports.deleteCustomSessionItem = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const { session_id } = req.params;
+    const user = await User.findById(req.user.id).select("comp_id").lean();
+
+    const targetSession = await CustomSession.findById(session_id);
+    if (!targetSession) {
+      return res
+        .status(404)
+        .json({ success: false, message: "ไม่พบรายการที่ต้องการลบ" });
+    }
+
+    const productId = targetSession.product_id;
+
+    // ลบสินค้าตัว Custom ทิ้ง (ถ้ามี)
+    const product = await Product.findById(productId);
+    if (product && product.is_custom) {
+      if (product.product_detail_id) {
+        await ProductDetail.findByIdAndDelete(product.product_detail_id, {
+          session,
+        });
+      }
+      await Product.findByIdAndDelete(productId, { session });
+    }
+
+    // ลบ Session ทิ้ง
+    await CustomSession.findByIdAndDelete(session_id, { session });
+
+    // 🟢 คำนวณจำนวนที่เหลือใหม่ จากตะกร้าของพนักงานคนนี้
+    const remainingCount = await CustomSession.countDocuments({
+      comp_id: user.comp_id,
+      sales_staff_id: req.user.id,
+    }).session(session);
+
+    await session.commitTransaction();
+
+    res.json({
+      success: true,
+      message: "ลบรายการเรียบร้อย",
+      badge_count: remainingCount,
+    });
+  } catch (error) {
+    await session.abortTransaction();
+    console.error("Delete Item Error:", error);
+    res.status(500).json({ success: false, message: "Error deleting item" });
+  } finally {
+    session.endSession();
+  }
+}; // ล้างสินค้า custom ที่ละตัว
+
+//ปรับแต่งและบันทึก (Editor)
 exports.getPosProductDetail = async (req, res) => {
   try {
     // ---------------------------------------------------
@@ -537,56 +728,227 @@ exports.getPosProductDetail = async (req, res) => {
     console.error("Get Detail Error:", error);
     res.status(500).json({ success: false, message: "Server Error" });
   }
-};
-
-// list ของ หน้า custom
-exports.getPosProductsByIds = async (req, res) => {
+}; // คลิกสินค้าใน List เพื่อดูสเปก
+exports.saveCustomProduct = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
-    if (!req.user || !req.user.id) {
-      return res.status(401).json({ success: false, message: "Unauthorized" });
-    }
-    const user = await User.findById(req.user.id).select("comp_id").lean();
-    if (!user || !user.comp_id) {
-      return res
-        .status(400)
-        .json({ success: false, message: "User not associated with company." });
-    }
-    const comp_id = user.comp_id;
+    const { session_id, customer_id, product_data, detail_data } = req.body;
 
-    const { ids } = req.body;
-
-    if (!ids || !Array.isArray(ids) || ids.length === 0) {
-      return res.status(400).json({ success: false, message: "IDs required" });
+    // 🚨 1. ดักจับตรงนี้เลย! บังคับว่าต้องมีลูกค้านะ ถึงจะยอมให้ Save
+    if (!customer_id) {
+      return res.status(400).json({
+        success: false,
+        message: "กรุณาเลือกลูกค้าก่อนบันทึกรายการ (Customer is required)",
+      });
     }
 
-    // 2. ค้นหาสินค้าทั้งหมดที่มี ID ตรงกับใน Array
-    const products = await Product.find({
-      _id: { $in: ids },
-      comp_id: comp_id, // อย่าลืมเช็คว่าเป็นของบริษัทตัวเอง
+    const user = await User.findById(req.user.id).select("comp_id");
+
+    // สร้าง Product Detail ใหม่
+    const newDetail = new ProductDetail({
+      ...detail_data,
+      comp_id: user.comp_id,
+    });
+    await newDetail.save({ session });
+
+    // สร้าง Product ใหม่ (Custom)
+    const newProduct = new Product({
+      ...product_data,
+      comp_id: user.comp_id,
+      product_detail_id: newDetail._id,
+      is_custom: true,
       is_active: true,
-    })
-      .select("product_code product_name file product_detail_id price") // เอา field เท่าที่จำเป็น
-      .populate("product_detail_id", "price unit") // ถ้าต้องการราคา/หน่วย
-      .lean();
+    });
+    await newProduct.save({ session });
 
-    // 3. จัด Format รูปภาพ (เหมือนฟังก์ชันอื่น)
-    const baseUrl = `${req.protocol}://${req.get("host")}/uploads/product/`;
-    const data = products.map((p) => ({
-      _id: p._id,
-      product_code: p.product_code,
-      product_name: p.product_name,
-      price: p.product_detail_id?.price || 0,
-      image:
-        p.file && p.file.length > 0
-          ? p.file[0].startsWith("http")
-            ? p.file[0]
-            : `${baseUrl}${p.file[0]}`
-          : null,
-    }));
+    // อัปเดตใบจอง (Session) ผูกกับลูกค้า
+    await CustomSession.findByIdAndUpdate(
+      session_id,
+      {
+        product_id: newProduct._id,
+        is_saved: true,
+        customer_id: customer_id, // 🟢 ผูกชื่อลูกค้าลงตะกร้าอย่างสมบูรณ์
+      },
+      { session },
+    );
 
-    res.json({ success: true, data });
+    await session.commitTransaction();
+    res.json({ success: true, data: newProduct });
   } catch (error) {
-    console.error("Bulk Fetch Error:", error);
-    res.status(500).json({ success: false, message: "Server Error" });
+    await session.abortTransaction();
+    console.error(error);
+    res.status(500).json({ success: false, message: "Save Failed" });
+  } finally {
+    session.endSession();
+  }
+}; // เรียกตอนกด "Save" ในหน้า Editor
+
+const generateOrderNumber = async (comp_id) => {
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const prefix = `${year}${month}${day}`; // 20260223
+
+  const lastOrder = await Order.findOne({
+    comp_id,
+    order_no: { $regex: `^${prefix}` },
+  }).sort({ order_no: -1 });
+
+  let nextSeq = 1;
+  if (lastOrder) {
+    const lastSeqStr = lastOrder.order_no.split("-")[1]; // ตัดเอา 0001 มา
+    nextSeq = parseInt(lastSeqStr, 10) + 1;
+  }
+  return `${prefix}-${String(nextSeq).padStart(4, "0")}`;
+};
+exports.finishCustomOrder = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId).select("comp_id").lean();
+
+    // 🟢 1. รับค่าจากหน้าบ้าน (Frontend ต้องส่งมาเป็น Array)
+    const {
+      customer_id,
+      items, // Array ของสินค้าที่แต่งสเปกเสร็จแล้ว
+      sub_total,
+      discount_total,
+      grand_total,
+      remark,
+    } = req.body;
+
+    if (!customer_id) throw new Error("กรุณาเลือกลูกค้าก่อนทำรายการ");
+    if (!items || items.length === 0) throw new Error("ไม่มีสินค้าในรายการ");
+
+    const orderNo = await generateOrderNumber(user.comp_id);
+    let orderItems = [];
+
+    // 🟢 2. วนลูปสร้างสินค้า Custom ทีละชิ้น
+    for (const item of items) {
+      // 2.1 สร้าง ProductDetail ใหม่ (เก็บสเปก)
+      const newDetail = new ProductDetail({
+        ...item.custom_spec,
+        comp_id: user.comp_id,
+      });
+      await newDetail.save({ session });
+
+      // 🟢 2.1.5 สร้างรหัสสินค้า Custom ให้ไม่ซ้ำ (เช่น ER-1005-C8192)
+      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+      const customProductCode = `${item.product_code}-C${randomSuffix}`;
+
+      // 2.2 สร้าง Product ใหม่ (is_custom: true)
+      const newProduct = new Product({
+        product_code: customProductCode, // 🟢 ใช้รหัสที่ป้องกันการซ้ำแล้ว
+        product_name: `${item.product_name} (Custom)`, // 🟢 เติมคำว่า Custom ท้ายชื่อให้ดูง่ายในตาราง
+        file: item.image ? [item.image.replace(/^.*\/\/[^\/]+/, "")] : [], // ตัด baseUrl ทิ้งเพื่อเก็บเฉพาะ path
+        product_category: item.category_id,
+        product_item_type: item.custom_spec.item_type_id,
+        comp_id: user.comp_id,
+        product_detail_id: newDetail._id,
+        is_custom: true,
+        is_active: true,
+      });
+      await newProduct.save({ session });
+
+      // 2.3 เตรียมก้อนข้อมูลยัดใส่ใบ Order
+      orderItems.push({
+        product_id: newProduct._id,
+        product_code: newProduct.product_code, // ใช้รหัสใหม่ที่เพิ่งสร้าง
+        product_name: newProduct.product_name, // ใช้ชื่อใหม่
+        image: item.image, // URL รูปภาพ
+        custom_spec: item.custom_spec,
+        qty: item.qty || 1,
+        unit_price: item.unit_price,
+        total_item_price: (item.qty || 1) * item.unit_price,
+      });
+
+      // 2.4 ลบรายการนี้ออกจากตะกร้า CustomSession (เคลียร์ตะกร้า)
+      if (item.session_id) {
+        await CustomSession.findByIdAndDelete(item.session_id, { session });
+      }
+    }
+
+    // 🟢 3. สร้างใบ Order บันทึกลงฐานข้อมูล
+    const newOrder = new Order({
+      comp_id: user.comp_id,
+      sale_staff_id: userId,
+      customer_id,
+      order_no: orderNo,
+      items: orderItems,
+      sub_total: sub_total || 0,
+      discount_total: discount_total || 0,
+      grand_total: grand_total,
+      remark,
+    });
+    await newOrder.save({ session });
+
+    await session.commitTransaction();
+    res.json({
+      success: true,
+      message: "Order created successfully",
+      order_no: orderNo,
+    });
+  } catch (error) {
+    await session.abortTransaction();
+    console.error("Finish Order Error:", error);
+    res
+      .status(500)
+      .json({ success: false, message: error.message || "Server Error" });
+  } finally {
+    session.endSession();
   }
 };
+
+// exports.getPosProductsByIds = async (req, res) => {
+//   try {
+//     if (!req.user || !req.user.id) {
+//       return res.status(401).json({ success: false, message: "Unauthorized" });
+//     }
+//     const user = await User.findById(req.user.id).select("comp_id").lean();
+//     if (!user || !user.comp_id) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "User not associated with company." });
+//     }
+//     const comp_id = user.comp_id;
+
+//     const { ids } = req.body;
+
+//     if (!ids || !Array.isArray(ids) || ids.length === 0) {
+//       return res.status(400).json({ success: false, message: "IDs required" });
+//     }
+
+//     // 2. ค้นหาสินค้าทั้งหมดที่มี ID ตรงกับใน Array
+//     const products = await Product.find({
+//       _id: { $in: ids },
+//       comp_id: comp_id, // อย่าลืมเช็คว่าเป็นของบริษัทตัวเอง
+//       is_active: true,
+//     })
+//       .select("product_code product_name file product_detail_id price") // เอา field เท่าที่จำเป็น
+//       .populate("product_detail_id", "price unit") // ถ้าต้องการราคา/หน่วย
+//       .lean();
+
+//     // 3. จัด Format รูปภาพ (เหมือนฟังก์ชันอื่น)
+//     const baseUrl = `${req.protocol}://${req.get("host")}/uploads/product/`;
+//     const data = products.map((p) => ({
+//       _id: p._id,
+//       product_code: p.product_code,
+//       product_name: p.product_name,
+//       price: p.product_detail_id?.price || 0,
+//       image:
+//         p.file && p.file.length > 0
+//           ? p.file[0].startsWith("http")
+//             ? p.file[0]
+//             : `${baseUrl}${p.file[0]}`
+//           : null,
+//     }));
+
+//     res.json({ success: true, data });
+//   } catch (error) {
+//     console.error("Bulk Fetch Error:", error);
+//     res.status(500).json({ success: false, message: "Server Error" });
+//   }
+// };

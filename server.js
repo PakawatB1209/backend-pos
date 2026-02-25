@@ -16,7 +16,7 @@ const rateLimit = require("express-rate-limit");
 const startExchangeRateJob = require("./cron/exchangeRateCron");
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 นาที
-  max: 100, // จำกัด 100 requests ต่อ IP ภายใน 15 นาที
+  max: 500, // จำกัด 500 requests ต่อ IP ภายใน 15 นาที
   message: {
     success: false,
     message: "เรียกใช้งาน API ถี่เกินไป กรุณารอ 15 นาทีแล้วลองใหม่",

@@ -566,6 +566,7 @@ exports.updateCompany = async (req, res) => {
       "comp_person_name",
       "comp_person_phone",
       "comp_person_email",
+      "main_currency",
     ];
 
     let updateData = {};

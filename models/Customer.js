@@ -15,7 +15,12 @@ const CustomerSchema = new mongoose.Schema(
       required: true,
     },
     customer_name: { type: String, required: true },
-    company_name: { type: String, required: true },
+    company_name: {
+      type: String,
+      required: function () {
+        return this.business_type === "Corporation";
+      },
+    },
     contact_person: { type: String, required: true },
     customer_email: { type: String },
     customer_phone: {

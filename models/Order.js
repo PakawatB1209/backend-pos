@@ -12,20 +12,15 @@ const OrderSchema = new mongoose.Schema(
       ref: "user",
       required: true,
     },
-    customer_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "customer",
-    },
-
-    order_no: {
+    customer_id: { type: mongoose.Schema.Types.ObjectId, ref: "customer" },
+    order_no: { type: String, required: true, unique: true },
+    order_type: {
       type: String,
+      enum: ["Custom", "Sell"],
       required: true,
-      unique: true,
+      default: "Custom",
     },
-    order_date: {
-      type: Date,
-      default: Date.now,
-    },
+    order_date: { type: Date, default: Date.now },
 
     items: [
       {
@@ -40,7 +35,9 @@ const OrderSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "masters",
           },
+          item_type_name: String,
           metal_id: { type: mongoose.Schema.Types.ObjectId, ref: "masters" },
+          metal_name: String,
           metal_color: String,
           product_size: String,
           size: String,
@@ -53,40 +50,53 @@ const OrderSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "masters",
           },
+          stone_name: String,
           stone_shape_id: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "masters",
           },
+          stone_shape_name: String,
           stone_size: String,
           s_weight: Number,
           stone_color: String,
           cutting: { type: mongoose.Schema.Types.ObjectId, ref: "masters" },
+          cutting_name: String,
           quality: { type: mongoose.Schema.Types.ObjectId, ref: "masters" },
+          quality_name: String,
           clarity: { type: mongoose.Schema.Types.ObjectId, ref: "masters" },
+          clarity_name: String,
 
-          // 🟢 --- Additional Stones (พลอยรอง) ---
+          // --- Additional Stones (พลอยรอง) ---
           additional_stones: [
             {
               stone_name_id: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "masters",
               },
+              stone_name: String,
               stone_shape_id: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "masters",
               },
+              stone_shape_name: String,
               stone_size: String,
               s_weight: Number,
               stone_color: String,
               cutting: { type: mongoose.Schema.Types.ObjectId, ref: "masters" },
+              cutting_name: String,
               quality: { type: mongoose.Schema.Types.ObjectId, ref: "masters" },
+              quality_name: String,
               clarity: { type: mongoose.Schema.Types.ObjectId, ref: "masters" },
+              clarity_name: String,
               qty: Number,
             },
           ],
         },
 
         qty: { type: Number, default: 1 },
+        original_price: { type: Number, required: true, default: 0 },
+        discount_percent: { type: Number, default: 0 },
+        discount_amount: { type: Number, default: 0 },
         unit_price: { type: Number, required: true },
         total_item_price: { type: Number, required: true },
       },
@@ -94,6 +104,8 @@ const OrderSchema = new mongoose.Schema(
 
     sub_total: { type: Number, default: 0 },
     discount_total: { type: Number, default: 0 },
+    tax_total: { type: Number, default: 0 },
+    tax_rate: { type: Number, default: 7 },
     grand_total: { type: Number, required: true },
 
     payment_status: {
@@ -106,7 +118,7 @@ const OrderSchema = new mongoose.Schema(
       enum: ["Pending", "Production", "Ready", "Completed", "Cancelled"],
       default: "Pending",
     },
-
+    sale_staff_name: String,
     remark: String,
   },
   { timestamps: true },

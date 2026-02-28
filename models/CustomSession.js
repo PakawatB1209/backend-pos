@@ -20,6 +20,9 @@ const CustomSessionSchema = new mongoose.Schema(
     }, // เจ้าของงาน
     sales_staff_id: { type: mongoose.Schema.Types.ObjectId, ref: "user" }, // พนักงานที่ทำรายการ
     is_saved: { type: Boolean, default: false },
+
+    qty: { type: Number, default: 1 },
+    custom_spec: { type: Object, default: {} },
   },
   { timestamps: true },
 );

@@ -381,6 +381,59 @@ exports.updateCustomer = async (req, res) => {
       }
     }
 
+    // const updateFields = {
+    //   ...(customer_name !== undefined && { customer_name }),
+    //   ...(business_type !== undefined && { business_type }),
+    //   ...(company_name !== undefined && {
+    //     company_name: business_type === "Individual" ? "" : company_name,
+    //   }),
+    //   ...(contact_person !== undefined && { contact_person }),
+
+    //   // อัปเดตที่อยู่หลัก
+    //   ...(addr_line !== undefined && { "address.address_line": addr_line }),
+    //   ...(addr_country !== undefined && { "address.country": addr_country }),
+    //   ...(addr_province !== undefined && { "address.province": addr_province }),
+    //   ...(addr_district !== undefined && { "address.district": addr_district }),
+    //   ...(addr_sub_district !== undefined && {
+    //     "address.sub_district": addr_sub_district,
+    //   }),
+    //   ...(addr_zipcode !== undefined && { "address.zipcode": addr_zipcode }),
+
+    //   // อัปเดตที่อยู่ภาษี
+    //   ...(tax_company_name !== undefined && {
+    //     "tax_addr.company_name": tax_company_name,
+    //   }),
+    //   ...(tax_addr_line !== undefined && {
+    //     "tax_addr.address_line": tax_addr_line,
+    //   }),
+    //   ...(tax_addr_country !== undefined && {
+    //     "tax_addr.country": tax_addr_country,
+    //   }),
+    //   ...(tax_addr_province !== undefined && {
+    //     "tax_addr.province": tax_addr_province,
+    //   }),
+    //   ...(tax_addr_district !== undefined && {
+    //     "tax_addr.district": tax_addr_district,
+    //   }),
+    //   ...(tax_addr_sub_district !== undefined && {
+    //     "tax_addr.sub_district": tax_addr_sub_district,
+    //   }),
+    //   ...(tax_addr_zipcode !== undefined && {
+    //     "tax_addr.zipcode": tax_addr_zipcode,
+    //   }),
+
+    //   ...(customer_date !== undefined && {
+    //     customer_date: customer_date ? new Date(customer_date) : null,
+    //   }),
+    //   ...(customer_email !== undefined && { customer_email }),
+    //   ...(customer_phone !== undefined && { customer_phone: finalPhone }),
+    //   ...(customer_tax_id !== undefined && { customer_tax_id }),
+    //   ...(customer_gender !== undefined && { customer_gender }),
+    //   ...(note !== undefined && { note }),
+
+    //   updatedAt: new Date(),
+    // };
+
     const updateFields = {
       ...(customer_name !== undefined && { customer_name }),
       ...(business_type !== undefined && { business_type }),
@@ -389,7 +442,6 @@ exports.updateCustomer = async (req, res) => {
       }),
       ...(contact_person !== undefined && { contact_person }),
 
-      // อัปเดตที่อยู่หลัก
       ...(addr_line !== undefined && { "address.address_line": addr_line }),
       ...(addr_country !== undefined && { "address.country": addr_country }),
       ...(addr_province !== undefined && { "address.province": addr_province }),
@@ -399,40 +451,61 @@ exports.updateCustomer = async (req, res) => {
       }),
       ...(addr_zipcode !== undefined && { "address.zipcode": addr_zipcode }),
 
-      // อัปเดตที่อยู่ภาษี
-      ...(tax_company_name !== undefined && {
-        "tax_addr.company_name": tax_company_name,
-      }),
-      ...(tax_addr_line !== undefined && {
-        "tax_addr.address_line": tax_addr_line,
-      }),
-      ...(tax_addr_country !== undefined && {
-        "tax_addr.country": tax_addr_country,
-      }),
-      ...(tax_addr_province !== undefined && {
-        "tax_addr.province": tax_addr_province,
-      }),
-      ...(tax_addr_district !== undefined && {
-        "tax_addr.district": tax_addr_district,
-      }),
-      ...(tax_addr_sub_district !== undefined && {
-        "tax_addr.sub_district": tax_addr_sub_district,
-      }),
-      ...(tax_addr_zipcode !== undefined && {
-        "tax_addr.zipcode": tax_addr_zipcode,
-      }),
-
       ...(customer_date !== undefined && {
         customer_date: customer_date ? new Date(customer_date) : null,
       }),
       ...(customer_email !== undefined && { customer_email }),
       ...(customer_phone !== undefined && { customer_phone: finalPhone }),
-      ...(customer_tax_id !== undefined && { customer_tax_id }),
       ...(customer_gender !== undefined && { customer_gender }),
       ...(note !== undefined && { note }),
 
       updatedAt: new Date(),
     };
+
+    const updateQuery = { $set: updateFields };
+
+    // ================= TAX LOGIC =================
+
+    // ถ้าส่ง null → ลบทั้งก้อน
+    if (customer_tax_id === null && tax_company_name === null) {
+      updateQuery.$unset = {
+        tax_addr: "",
+        customer_tax_id: "",
+      };
+    } else {
+      // update ทีละ field
+      if (customer_tax_id !== undefined) {
+        updateQuery.$set.customer_tax_id = customer_tax_id;
+      }
+
+      if (tax_company_name !== undefined) {
+        updateQuery.$set["tax_addr.company_name"] = tax_company_name;
+      }
+
+      if (tax_addr_line !== undefined) {
+        updateQuery.$set["tax_addr.address_line"] = tax_addr_line;
+      }
+
+      if (tax_addr_country !== undefined) {
+        updateQuery.$set["tax_addr.country"] = tax_addr_country;
+      }
+
+      if (tax_addr_province !== undefined) {
+        updateQuery.$set["tax_addr.province"] = tax_addr_province;
+      }
+
+      if (tax_addr_district !== undefined) {
+        updateQuery.$set["tax_addr.district"] = tax_addr_district;
+      }
+
+      if (tax_addr_sub_district !== undefined) {
+        updateQuery.$set["tax_addr.sub_district"] = tax_addr_sub_district;
+      }
+
+      if (tax_addr_zipcode !== undefined) {
+        updateQuery.$set["tax_addr.zipcode"] = tax_addr_zipcode;
+      }
+    }
 
     if (customer_name) {
       const duplicate = await Customer.findOne({
@@ -450,9 +523,15 @@ exports.updateCustomer = async (req, res) => {
 
     const updatedCustomer = await Customer.findOneAndUpdate(
       { _id: id, comp_id: user.comp_id },
-      { $set: updateFields },
+      updateQuery,
       { new: true, runValidators: true },
     );
+
+    // const updatedCustomer = await Customer.findOneAndUpdate(
+    //   { _id: id, comp_id: user.comp_id },
+    //   { $set: updateFields },
+    //   { new: true, runValidators: true },
+    // );
 
     if (!updatedCustomer) {
       return res.status(404).json({

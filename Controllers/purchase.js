@@ -655,3 +655,29 @@ exports.importPreview = async (req, res) => {
     res.status(500).json({ success: false, message: "Import failed" });
   }
 };
+
+exports.getNextPurchaseNumber = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const user = await User.findById(userId).select("comp_id");
+    if (!user || !user.comp_id) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User not associated with company" });
+    }
+
+    const nextNumber = await generatePurchaseNumber(user.comp_id);
+
+    res.status(200).json({
+      success: true,
+      data: nextNumber,
+    });
+  } catch (error) {
+    console.error("Error generating purchase number:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};

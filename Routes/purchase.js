@@ -5,6 +5,7 @@ const {
   createPurchase,
   importPreview,
   downloadErrorFile,
+  getNextPurchaseNumber,
 } = require("../Controllers/purchase");
 const { uploadExcel } = require("../Middleware/upload");
 const { auth } = require("../Middleware/auth");
@@ -25,3 +26,10 @@ router.post(
   importPreview,
 );
 module.exports = router;
+
+router.get(
+  "/purchase/next-number",
+  auth,
+  checkPermission("Purchase", "add"),
+  getNextPurchaseNumber,
+);

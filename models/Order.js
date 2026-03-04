@@ -99,9 +99,12 @@ const OrderSchema = new mongoose.Schema(
         discount_amount: { type: Number, default: 0 },
         unit_price: { type: Number, required: true },
         total_item_price: { type: Number, required: true },
+        deposit: { type: Number, default: 0 },
       },
     ],
 
+    total_items: { type: Number, default: 0 },
+    total_deposit: { type: Number, default: 0 },
     sub_total: { type: Number, default: 0 },
     discount_total: { type: Number, default: 0 },
     tax_total: { type: Number, default: 0 },

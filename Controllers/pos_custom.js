@@ -56,6 +56,9 @@ exports.getCustomSessionList = async (req, res) => {
 
     const baseUrl = `${req.protocol}://${req.get("host")}/uploads/product/`;
 
+    let totalItems = 0;
+    let totalDeposit = 0;
+
     const formattedData = items.map((item) => {
       const prod = item.product_id || {};
       let imgUrl = null;
@@ -64,7 +67,8 @@ exports.getCustomSessionList = async (req, res) => {
           ? prod.file[0]
           : `${baseUrl}${prod.file[0]}`;
       }
-
+      const qty = item.qty || 1;
+      const deposit = item.deposit || 0;
       return {
         session_id: item._id,
         product_id: prod._id,
@@ -74,11 +78,18 @@ exports.getCustomSessionList = async (req, res) => {
         is_saved: item.is_saved,
         item_type: prod.product_item_type?.master_name || "-",
         category: prod.product_category?.master_name || "-",
+        qty: qty,
+        deposit: deposit,
       };
     });
 
     res.json({
       success: true,
+      summary: {
+        current_date: new Date(), // ส่งวันที่ปัจจุบันไปให้โชว์
+        total_items: totalItems,
+        total_deposit: totalDeposit,
+      },
       count: formattedData.length,
       data: formattedData,
     });
@@ -207,25 +218,31 @@ exports.saveCustomProduct = async (req, res) => {
   }
 }; // เรียกตอนกด "Save" ในหน้า Editor
 
-exports.updateCustomSessionQty = async (req, res) => {
+exports.updateCustomSessionItem = async (req, res) => {
   try {
     const { session_id } = req.params;
-    const { qty } = req.body;
+    const { qty, deposit } = req.body;
 
-    if (qty === undefined || qty < 1) {
-      return res
-        .status(400)
-        .json({ success: false, message: "จำนวนต้องไม่น้อยกว่า 1" });
+    let updateData = {};
+    if (qty !== undefined) {
+      if (qty < 1)
+        return res
+          .status(400)
+          .json({ success: false, message: "จำนวนต้องไม่น้อยกว่า 1" });
+      updateData.qty = qty;
+    }
+    if (deposit !== undefined) {
+      updateData.deposit = Number(deposit);
     }
 
-    await CustomSession.findByIdAndUpdate(session_id, { $set: { qty: qty } });
+    await CustomSession.findByIdAndUpdate(session_id, { $set: updateData });
 
-    res.json({ success: true, message: "อัปเดตจำนวนเรียบร้อย" });
+    res.json({ success: true, message: "อัปเดตข้อมูลเรียบร้อย" });
   } catch (error) {
     console.error("Update Custom Qty Error:", error);
     res.status(500).json({ success: false, message: "Server Error" });
   }
-}; // อัปเดตจำนวน (Qty) ในหน้าตะกร้า Custom (ปุ่ม + / -)
+}; // อัปเดตจำนวน (Qty) ในหน้าตะกร้า Custom (ปุ่ม + / -)/อัปเดทค่า Deposit มัดจำ
 
 exports.generateOrderNumber = async (comp_id, typeCode = "ORD") => {
   const date = new Date();
@@ -260,6 +277,7 @@ exports.finishCustomOrder = async (req, res) => {
       items,
       sub_total,
       discount_total,
+      total_deposit,
       grand_total,
       remark,
     } = req.body;
@@ -353,6 +371,9 @@ exports.finishCustomOrder = async (req, res) => {
         await CustomSession.findByIdAndDelete(item.session_id, { session });
       }
 
+      const itemQty = item.qty || 1;
+      calculatedTotalItems += itemQty;
+
       orderItems.push({
         product_id: item.product_id,
         product_code: item.product_code,
@@ -361,6 +382,7 @@ exports.finishCustomOrder = async (req, res) => {
         qty: item.qty || 1,
         unit_price: item.unit_price || 0,
         total_item_price: (item.qty || 1) * (item.unit_price || 0),
+        deposit: item.deposit || 0,
         custom_spec: finalCustomSpec,
       });
     }
@@ -372,12 +394,14 @@ exports.finishCustomOrder = async (req, res) => {
       order_no: orderNo,
       order_type: "Custom",
       items: orderItems,
+      total_deposit: total_deposit,
       sub_total: sub_total || 0,
       discount_total: discount_total || 0,
       grand_total: grand_total,
+      total_items: calculatedTotalItems,
       remark,
       order_status: "Pending",
-      payment_status: "Pending",
+      payment_status: "Partial",
     });
 
     await newOrder.save({ session });

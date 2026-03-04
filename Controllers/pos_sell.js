@@ -157,6 +157,8 @@ exports.getSellSessionList = async (req, res) => {
       product_id: { $in: productIds },
     }).lean();
 
+    let totalItems = 0;
+
     const formattedData = items.map((item) => {
       const prod = item.product_id || {};
       const detail = prod.product_detail_id || {};
@@ -182,6 +184,8 @@ exports.getSellSessionList = async (req, res) => {
       const color = detail.color || ""; // หน้าบ้านอาจจะต้องผสมสีเอง
       const size = detail.size || "";
       const subtitle = `${stoneName} ${color} ${size}`.trim();
+
+      totalItems += item.qty;
 
       return {
         session_id: item._id,
@@ -210,6 +214,8 @@ exports.getSellSessionList = async (req, res) => {
       success: true,
       data: formattedData,
       summary: {
+        current_date: new Date(),
+        total_items: totalItems,
         sub_total: subTotal,
         tax_rate: 7,
       },
@@ -287,8 +293,10 @@ exports.finishSellOrder = async (req, res) => {
     if (!customer_id) throw new Error("กรุณาเลือกลูกค้าก่อนทำรายการ");
     if (!items || items.length === 0) throw new Error("ไม่มีสินค้าในตะกร้า");
 
-    const orderNo = await generateOrderNumber(user.comp_id, "ORD");
+    const orderNo = await generateOrderNumber(user.comp_id, "SA");
     let orderItems = [];
+
+    let calculatedTotalItems = 0;
 
     for (const item of items) {
       // ตัดสต็อก
@@ -328,6 +336,7 @@ exports.finishSellOrder = async (req, res) => {
         sellSpec = item.custom_spec; // กรณีหน้าบ้านส่งมาครบ
       }
 
+      calculatedTotalItems += item.qty || 1;
       orderItems.push({
         product_id: item.product_id,
         product_code: item.product_code,
@@ -356,6 +365,7 @@ exports.finishSellOrder = async (req, res) => {
       tax_total: tax_amount || 0,
       tax_rate: tax_rate,
       grand_total,
+      total_items: calculatedTotalItems,
       remark,
       order_status: "Completed",
       payment_status: "Paid",

@@ -16,11 +16,12 @@ const CustomSessionSchema = new mongoose.Schema(
     customer_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "customer",
-      required: true,
+      default: null,
     }, // เจ้าของงาน
     sales_staff_id: { type: mongoose.Schema.Types.ObjectId, ref: "user" }, // พนักงานที่ทำรายการ
     is_saved: { type: Boolean, default: false },
 
+    deposit: { type: Number, default: 0 },
     qty: { type: Number, default: 1 },
     custom_spec: { type: Object, default: {} },
   },

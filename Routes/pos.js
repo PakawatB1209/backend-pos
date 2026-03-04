@@ -15,7 +15,7 @@ const {
   clearCustomSession,
   deleteCustomSessionItem,
   saveCustomProduct,
-  updateCustomSessionQty,
+  updateCustomSessionItem,
   finishCustomOrder,
 } = require("../Controllers/pos_custom");
 
@@ -52,9 +52,9 @@ router.get("/POS/custom/custom-session-list", auth, getCustomSessionList);
 
 // ปรับจำนวน (Qty) ในตะกร้า Custom
 router.put(
-  "/POS/custom/update-custom-qty/:session_id",
+  "/POS/custom/update-custom/:session_id",
   auth,
-  updateCustomSessionQty,
+  updateCustomSessionItem,
 );
 
 // ล้างรายการสั่งทำทั้งหมด (Clear All)

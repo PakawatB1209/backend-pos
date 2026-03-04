@@ -5,6 +5,7 @@ const Order = require("../models/Order");
 const Customer = require("../models/Customer");
 const Masters = require("../models/masters");
 const Product = require("../models/Product");
+const ExcelJS = require("exceljs");
 
 exports.getDayBookList = async (req, res) => {
   try {
@@ -68,7 +69,7 @@ exports.getDayBookList = async (req, res) => {
   }
 };
 
-exports.getCustomOrderReport = async (req, res) => {
+exports.getOrderReport = async (req, res) => {
   try {
     // 1. ตรวจสอบสิทธิ์การใช้งาน (ต้องล็อกอินและมี Company ID)
     if (!req.user || !req.user.comp_id) {
@@ -210,5 +211,122 @@ exports.getCustomOrderReport = async (req, res) => {
       message: "Server Error",
       error: error.message,
     });
+  }
+};
+
+exports.exportOrderReportExcel = async (req, res) => {
+  try {
+    if (!req.user || !req.user.comp_id) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const { order_type } = req.query; // รับค่ามาว่าจะเป็น Sell หรือ Custom
+    const query = { comp_id: req.user.comp_id };
+
+    if (order_type) {
+      query.order_type = order_type;
+    }
+
+    // 1. ดึงข้อมูลทั้งหมดมา (ไม่ใส่ skip, ไม่ใส่ limit)
+    const orders = await Order.find(query)
+      .populate("customer_id", "name")
+      .populate("sale_staff_id", "username")
+      .populate("items.custom_spec.item_type_id", "master_name")
+      .populate("items.custom_spec.metal_id", "master_name")
+      .populate("items.custom_spec.stone_name_id", "master_name")
+      .populate("items.custom_spec.stone_shape_id", "master_name")
+      .populate("items.custom_spec.cutting", "master_name")
+      .populate("items.custom_spec.quality", "master_name")
+      .populate("items.custom_spec.clarity", "master_name")
+      .sort({ createdAt: -1 });
+
+    // 2. สร้างไฟล์ Excel
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet(`${order_type || "All"}_Report`);
+
+    // 3. กำหนดหัวคอลัมน์ (Header) ให้ตรงกับหน้า UI
+    worksheet.columns = [
+      { header: "Order ID", key: "order_no", width: 15 },
+      { header: "Date", key: "date", width: 20 },
+      { header: "Customer", key: "customer", width: 25 },
+      { header: "Product Code", key: "code", width: 15 },
+      { header: "Product Name", key: "product_name", width: 30 },
+      { header: "Category", key: "category", width: 15 },
+      { header: "Item Type", key: "item_type", width: 15 },
+      { header: "Metal", key: "metal", width: 15 },
+      { header: "Metal Color", key: "metal_color", width: 15 },
+      { header: "Stone Name", key: "stone_name", width: 15 },
+      { header: "Shape", key: "shape", width: 15 },
+      { header: "Qty", key: "qty", width: 10 },
+      { header: "Price", key: "price", width: 15 },
+      { header: "Discount", key: "discount", width: 15 },
+      { header: "Amount", key: "amount", width: 15 },
+      { header: "Total Order Amount", key: "total_order_amount", width: 20 },
+    ];
+
+    // 4. วนลูปยัดข้อมูลใส่ Excel (แปลงข้อมูลให้อยู่ในรูปแบบบรรทัดเดียว Flat Data)
+    orders.forEach((order) => {
+      // ยอดรวมบิล
+      const headerAmount =
+        order.order_type === "Custom"
+          ? order.total_deposit || 0
+          : order.grand_total || 0;
+
+      // เนื่องจาก 1 บิลมีหลายชิ้น เราจึงต้องวนลูป items เพื่อสร้างบรรทัดใน Excel
+      order.items.forEach((item) => {
+        const spec = item.custom_spec || {};
+
+        const discountStr =
+          item.discount_percent && item.discount_percent > 0
+            ? `${item.discount_percent}%`
+            : item.discount_amount || 0;
+
+        const itemAmount =
+          order.order_type === "Custom"
+            ? item.deposit || 0
+            : item.total_item_price || 0;
+
+        worksheet.addRow({
+          order_no: order.order_no,
+          date: order.order_date
+            ? new Date(order.order_date).toLocaleString("en-GB")
+            : "-",
+          customer: order.customer_id?.name || "-",
+          code: item.product_code,
+          product_name: item.product_name,
+          category: spec.item_type_name || "-",
+          item_type: spec.item_type_name || "-",
+          metal: spec.metal_name || "-",
+          metal_color: spec.metal_color || "-",
+          stone_name: spec.stone_name || "-",
+          shape: spec.stone_shape_name || "-",
+          qty: item.qty || 1,
+          price: item.original_price || item.unit_price || 0,
+          discount: discountStr,
+          amount: itemAmount,
+          total_order_amount: headerAmount, // ใส่ยอดรวมหัวบิลแนบไปด้วยทุกบรรทัด
+        });
+      });
+    });
+
+    // 5. ปรับแต่ง Header เล็กน้อยให้ตัวหนา
+    worksheet.getRow(1).font = { bold: true };
+
+    // 6. ตั้งค่า Header สำหรับส่งไฟล์กลับไปให้เบราว์เซอร์ดาวน์โหลด
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=${order_type || "Order"}_Report.xlsx`,
+    );
+
+    // 7. ส่งไฟล์ออกไป
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error("Export Excel Error:", error);
+    res.status(500).json({ success: false, message: "Export failed" });
   }
 };

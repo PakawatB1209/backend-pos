@@ -22,6 +22,7 @@ const StockTransactionSchema = new mongoose.Schema(
     action_type: { type: String, required: true },
 
     qty: { type: Number, required: true },
+    total_gross_weight: { type: Number, default: 0 },
     balance_after: { type: Number, required: true },
 
     cost: { type: Number, default: 0 },

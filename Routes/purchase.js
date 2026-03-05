@@ -6,6 +6,8 @@ const {
   importPreview,
   downloadErrorFile,
   getNextPurchaseNumber,
+  getProductPurchaseHistory,
+  getPurchaseById,
 } = require("../Controllers/purchase");
 const { uploadExcel } = require("../Middleware/upload");
 const { auth } = require("../Middleware/auth");
@@ -33,3 +35,7 @@ router.get(
   checkPermission("Purchase", "add"),
   getNextPurchaseNumber,
 );
+
+router.get("/purchase/:id", auth, getPurchaseById);
+
+router.get("/history/:productId", auth, getProductPurchaseHistory);

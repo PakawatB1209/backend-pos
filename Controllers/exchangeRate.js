@@ -167,17 +167,37 @@ exports.getCurrentRate = getCurrentRate;
 // show front
 exports.getRate = async (req, res) => {
   try {
-    const { currency, date } = req.query;
-    const rate = await getCurrentRate(currency, date);
+    const { currency, date } = req.query; // currency คือค่าที่พนักงานเลือกจาก Dropdown
+
+    // 1. ดึงสกุลเงินหลักของบริษัทออกมาก่อน (เหมือนตอนทำ Create Purchase)
+    const user = await User.findById(req.user.id).select("comp_id").lean();
+    const company = await Company.findById(user.comp_id)
+      .select("main_currency")
+      .lean();
+    const mainCurrency = company?.main_currency || "THB";
+
+    let finalRate = 1; // ค่าเริ่มต้น (ถ้าสกุลเงินชนกัน จะได้เรท 1)
+
+    // 2. ตรวจสอบว่าสกุลเงินที่เลือก ตรงกับสกุลเงินบริษัทไหม
+    if (currency && currency !== mainCurrency) {
+      // ถ้าไม่ตรง ค่อยไปคำนวณ Cross Rate จากแบงก์ชาติ
+      const ratePurchaseToTHB = await getCurrentRate(currency, date);
+      const rateBaseToTHB = await getCurrentRate(mainCurrency, date);
+
+      finalRate = ratePurchaseToTHB / rateBaseToTHB;
+    }
+
     const fallbackDate = getDateString(0);
 
     res.json({
       success: true,
       currency: currency,
+      base_currency: mainCurrency, // ส่งไปบอกหน้าบ้านด้วยว่าบริษัทใช้เงินอะไรเป็นหลัก
       date: date || fallbackDate,
-      rate: rate,
+      rate: finalRate, // 🟢 ส่งเรทที่คำนวณแล้ว (ถ้า USD เจอ USD จะส่ง 1 กลับไป)
     });
   } catch (error) {
+    console.error("Get Rate Error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

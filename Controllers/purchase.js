@@ -260,27 +260,52 @@ exports.createPurchase = async (req, res) => {
     // 4. เตรียมข้อมูล Item และคำนวณค่าเงินรายชิ้น (Unit Conversion)
     // -------------------------------------------------------------
     const processedItems = items.map((item) => {
-      const qty = Number(item.quantity);
-      const costForeign = Number(item.cost); // ทุนหน้าบิล (เช่น USD)
+      const qty = Number(item.quantity) || 0;
+      const gwt = Number(item.gross_weight) || 0;
+      const swt = Number(item.stone_weight) || 0;
+      const costForeign = Number(item.cost);
 
-      // 🧮 สูตร: ทุนเงินต่างประเทศ x อัตราแลกเปลี่ยน = ทุนเงินหลัก (Base Currency)
       const costMain = costForeign * finalRate;
+      const unit = String(item.unit || "")
+        .trim()
+        .toLowerCase(); // ทำให้เป็นตัวเล็กเพื่อเช็คง่ายๆ
+
+      // LOGIC ใหม่: คิด Amount ตาม Unit ของสินค้า
+      let calculatedAmountForeign = 0;
+      let calculatedAmountMain = 0;
+
+      if (unit === "g" || unit === "gram" || unit === "grams") {
+        // ถ้าเป็นกรัม (ทอง/เงิน) ให้เอา ทุน x น้ำหนักรวม (Gwt)
+        calculatedAmountForeign = costForeign * gwt;
+        calculatedAmountMain = costMain * gwt;
+      } else if (unit === "cts" || unit === "ct" || unit === "carat") {
+        const weightInGrams = gwt * 0.2;
+
+        // คำนวณ Amount โดยเอา ทุน x น้ำหนักที่แปลงเป็นกรัมแล้ว
+        calculatedAmountForeign = costForeign * weightInGrams;
+        calculatedAmountMain = costMain * weightInGrams;
+      } else {
+        // ถ้าเป็น Pcs (ชิ้น/วง/เส้น) ให้เอา ทุน x จำนวนชิ้น (Qty)
+        calculatedAmountForeign = costForeign * qty;
+        calculatedAmountMain = costMain * qty;
+      }
 
       return {
         ...item,
         warehouse_id: item.warehouse_id || defaultWarehouse?._id,
         quantity: qty,
         cost_foreign: costForeign,
-        amount_foreign: costForeign * qty, // ยอดรวมเงินต่างประเทศของรายการนี้
 
-        // บันทึกต้นทุนและยอดรวมเป็นสกุลเงินหลัก (ทศนิยม 4 ตำแหน่ง)
+        // บันทึกยอดรวมที่คำนวณตาม Unit แล้ว
+        amount_foreign: calculatedAmountForeign,
+        amount: Number(calculatedAmountMain.toFixed(4)),
         cost: Number(costMain.toFixed(4)),
-        amount: Number((costMain * qty).toFixed(4)),
 
-        price: Number(item.price) || 0, // ราคาขายที่รับมา
-        stone_weight: Number(item.stone_weight) || 0,
-        gross_weight: Number(item.gross_weight) || 0,
+        price: Number(item.price) || 0,
+        stone_weight: swt,
+        gross_weight: gwt,
         net_weight: Number(item.net_weight) || 0,
+        unit: item.unit || "Pcs", // บันทึก Unit กลับไปด้วย
       };
     });
 
@@ -399,13 +424,15 @@ exports.createPurchase = async (req, res) => {
             document_number: autoPurchaseNumber,
             qty: qty,
 
-            // 🧮 บันทึกน้ำหนักรวมของรายการนี้ (นน.ต่อชิ้น x จำนวน)
-            total_gross_weight: item.gross_weight * qty,
+            total_gross_weight: item._calculated_total_gross,
 
-            cost: newCostPerUnit, // บันทึกทุนจริงของล็อตนี้
-            price: newPricePerUnit, // บันทึกราคาขายจริงของล็อตนี้
-            amount: qty * newCostPerUnit,
-            balance_after: updatedStock.quantity, // ยอดคงเหลือหลังรับเข้า
+            cost: newCostPerUnit,
+            price: newPricePerUnit,
+
+            //  ดึงยอด Amount ที่ผ่านการเช็คหน่วย (g, cts, pcs) มาบันทึกเลย
+            amount: item.amount,
+
+            balance_after: updatedStock.quantity,
             created_by: userId,
             note: `Purchase Ref: ${autoPurchaseNumber}`,
           },
@@ -414,7 +441,6 @@ exports.createPurchase = async (req, res) => {
       );
     }
 
-    // ยืนยันการบันทึกข้อมูลทั้งหมด (Commit)
     await session.commitTransaction();
     session.endSession();
 
@@ -679,5 +705,77 @@ exports.getNextPurchaseNumber = async (req, res) => {
       success: false,
       message: "Server error",
     });
+  }
+};
+
+// ดึงข้อมูลใบสั่งซื้อ 1 ใบ ตาม ID ทำมาดูข้อมูล
+exports.getPurchaseById = async (req, res) => {
+  try {
+    const { id } = req.params; // รับ ID ของใบสั่งซื้อมาจาก URL
+
+    // ไปค้นหาบิลในตาราง Purchase
+    const purchase = await Purchase.findById(id)
+      .populate("items.product_id", "product_code product_name file") // ดึงชื่อและรูปสินค้ามาด้วย
+      .populate("items.warehouse_id", "warehouse_name") // ดึงชื่อคลังมาด้วย
+      .populate("created_by", "name email") // ดึงชื่อคนสร้างบิลมาด้วย
+      .lean();
+
+    if (!purchase) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Purchase not found" });
+    }
+
+    // ส่งข้อมูลกลับไปให้หน้าบ้าน
+    res.status(200).json({
+      success: true,
+      data: purchase,
+    });
+  } catch (error) {
+    console.error("Get Purchase Error:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+//ดูยอดรวมทุกบิล
+exports.getProductPurchaseHistory = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const user = await User.findById(req.user.id).select("comp_id").lean();
+    const historyData = await StockTransaction.aggregate([
+      {
+        $match: {
+          comp_id: user.comp_id,
+          product_id: new mongoose.Types.ObjectId(productId),
+          type: "in", // เอาเฉพาะขาเข้า
+          action_type: "purchase", // เอาเฉพาะที่มาจากการ "ซื้อ" (ไม่เอารับคืนจากลูกค้า)
+        },
+      },
+      {
+        $group: {
+          _id: "$product_id",
+          total_qty_purchased: { $sum: "$qty" }, // รวมจำนวนชิ้นที่เคยซื้อทั้งหมด
+          total_amount_spent: { $sum: "$amount" }, // 🟢 รวมจำนวนเงินที่เคยจ่ายไปทั้งหมด (100 + 100 = 200)
+        },
+      },
+    ]);
+
+    // ถ้าไม่มีประวัติการซื้อเลย
+    if (!historyData || historyData.length === 0) {
+      return res.json({
+        success: true,
+        data: {
+          total_qty_purchased: 0,
+          total_amount_spent: 0,
+        },
+      });
+    }
+
+    res.json({
+      success: true,
+      data: historyData[0], // พ่นก้อนที่รวมยอดแล้วกลับไปให้หน้าบ้าน
+    });
+  } catch (error) {
+    console.error("History Error:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
   }
 };

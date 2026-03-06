@@ -1,3 +1,5 @@
+const User = require("../models/User");
+const Company = require("../models/Company");
 const axios = require("axios");
 const ExchangeRate = require("../models/ExchangeRate");
 require("dotenv").config();

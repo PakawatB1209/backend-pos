@@ -1,6 +1,7 @@
 // routes/test.js (หรือไฟล์ไหนก็ได้ที่ active อยู่)
 const express = require("express");
 const router = express.Router();
+const { auth } = require("../Middleware/auth");
 const {
   getCurrentRate,
   getRate,
@@ -36,6 +37,6 @@ const {
 router.get("/exchange-rates", listExchangeRates);
 
 // show front
-router.get("/get-rate", getRate);
+router.get("/get-rate", auth, getRate);
 
 module.exports = router;

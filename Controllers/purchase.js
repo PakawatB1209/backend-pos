@@ -117,14 +117,20 @@ exports.createPurchase = async (req, res) => {
       const qty = Number(item.quantity) || 0;
       const gwt = Number(item.gross_weight) || 0;
       const swt = Number(item.stone_weight) || 0;
-      const costForeign = Number(item.cost);
 
+      //แปลงทุน (Cost)
+      const costForeign = Number(item.cost) || 0;
       const costMain = costForeign * finalRate;
+
+      // แปลงราคาขาย (Price) ที่เพิ่มเข้ามาใหม่!
+      const priceForeign = Number(item.price) || 0;
+      const priceMain = priceForeign * finalRate;
+
       const unit = String(item.unit || "")
         .trim()
         .toLowerCase();
 
-      // --- 🎯 Logic: ค้นหาคลังที่เหมาะสม (Auto-select) ---
+      // --- ค้นหาคลังที่เหมาะสม (Auto-select) ---
       const productCategory = productCatMap[item.product_id.toString()];
       const autoSelectedWarehouseId = warehouseTypeMap[productCategory];
 
@@ -134,10 +140,10 @@ exports.createPurchase = async (req, res) => {
         headerWarehouseId || // 3. ถ้าเลือกมาจากหัวบิล
         defaultWarehouseId; // 4. คลัง Others (Fallback)
 
-      // --- 🧮 Logic: คิด Amount และ น้ำหนักรวม ตาม Unit ---
+      // --- Logic: คิด Amount และ น้ำหนักรวม ตาม Unit ---
       let calculatedAmountForeign = 0;
       let calculatedAmountMain = 0;
-      let finalGrossWeight = 0; // 🟢 ต้องสร้างตัวแปรนี้เพิ่ม
+      let finalGrossWeight = 0;
 
       if (unit === "g" || unit === "gram" || unit === "grams") {
         calculatedAmountForeign = costForeign * gwt;
@@ -156,20 +162,25 @@ exports.createPurchase = async (req, res) => {
 
       return {
         ...item,
-        warehouse_id: finalWarehouseId, // 🟢 ใช้คลังที่ผ่าน Logic แล้ว
+        warehouse_id: finalWarehouseId,
         quantity: qty,
-        cost_foreign: costForeign,
-        amount_foreign: calculatedAmountForeign,
-        amount: Number(calculatedAmountMain.toFixed(4)),
-        cost: Number(costMain.toFixed(4)),
-
-        _calculated_total_gross: finalGrossWeight,
-
-        price: Number(item.price) || 0,
+        unit: item.unit || "Pcs",
         stone_weight: swt,
         gross_weight: gwt,
         net_weight: Number(item.net_weight) || 0,
-        unit: item.unit || "Pcs",
+        _calculated_total_gross: finalGrossWeight,
+
+        // บันทึก ทุน (Cost)
+        cost_foreign: costForeign,
+        cost: Number(costMain.toFixed(4)),
+
+        // บันทึก ยอดรวม (Amount)
+        amount_foreign: calculatedAmountForeign,
+        amount: Number(calculatedAmountMain.toFixed(4)),
+
+        // บันทึก ราคาขาย (Price) ที่แปลงแล้ว!
+        price_foreign: priceForeign,
+        price: Number(priceMain.toFixed(4)),
       };
     });
 

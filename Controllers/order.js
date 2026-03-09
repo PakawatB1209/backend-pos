@@ -155,7 +155,7 @@ exports.createOrder = async (req, res) => {
       const itemTotal = item.qty * item.unit_price;
       subTotal += itemTotal;
 
-      // 🟢 ไม่แยก Warehouse แล้ว รวมยอดตาม Product ID เลย
+      // ไม่แยก Warehouse แล้ว รวมยอดตาม Product ID เลย
       const pid = item.product_id;
       if (!stockMap[pid]) {
         stockMap[pid] = 0;
@@ -178,7 +178,7 @@ exports.createOrder = async (req, res) => {
 
     // 4. วนลูปเช็คสต็อกและตัดของ (Process Stock)
     for (const [pid, requiredQty] of Object.entries(stockMap)) {
-      // 🟢 ค้นหาสต็อกของสินค้านี้ (โดยไม่สน Warehouse)
+      // ค้นหาสต็อกของสินค้านี้ (โดยไม่สน Warehouse)
       // ระบบจะหาเองว่าสินค้านี้อยู่ที่ Warehouse ไหน
       const stock = await Stock.findOne({
         product_id: pid,
@@ -192,7 +192,7 @@ exports.createOrder = async (req, res) => {
         );
       }
 
-      // 🟢 ตัดสต็อก (Deduct)
+      // ตัดสต็อก (Deduct)
       // ใช้ _id ของ stock ที่เพิ่งหาเจอ เพื่อความชัวร์ว่าตัดถูกตัว
       await Stock.findByIdAndUpdate(
         stock._id,

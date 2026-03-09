@@ -90,7 +90,7 @@ const getCurrentRate = async (targetCurrency, specificDate = null) => {
     return 1;
   }
 
-  // ✅ 1. ประกาศตัวแปรนี้ไว้แล้ว
+  // 1. ประกาศตัวแปรนี้ไว้แล้ว
   const targetDateStr = specificDate
     ? specificDate.split("T")[0]
     : getDateString(0);
@@ -123,7 +123,7 @@ const getCurrentRate = async (targetCurrency, specificDate = null) => {
       if (dataDetail && dataDetail.length > 0 && dataDetail[0].mid_rate) {
         const rate = Number.parseFloat(dataDetail[0].mid_rate);
 
-        // ✅ 2. แก้ตรงนี้: เปลี่ยน todayStr -> targetDateStr
+        // 2. แก้ตรงนี้: เปลี่ยน todayStr -> targetDateStr
         await ExchangeRate.findOneAndUpdate(
           {
             date: targetDateStr, // บันทึกว่าเป็นเรทของ "วันที่เราต้องการ"
@@ -131,7 +131,7 @@ const getCurrentRate = async (targetCurrency, specificDate = null) => {
           },
           {
             rate: rate,
-            // ✅ 3. แก้ตรงนี้ด้วย: เปลี่ยน todayStr -> targetDateStr
+            // 3. แก้ตรงนี้ด้วย: เปลี่ยน todayStr -> targetDateStr
             source:
               checkDate === targetDateStr ? "BOT" : `BOT_Fallback_${checkDate}`,
           },
@@ -143,7 +143,7 @@ const getCurrentRate = async (targetCurrency, specificDate = null) => {
         );
 
         console.log(
-          `✅ Saved rate ${rate} (from ${checkDate}) as Rate for ${targetDateStr}`,
+          `Saved rate ${rate} (from ${checkDate}) as Rate for ${targetDateStr}`,
         );
 
         return rate;
@@ -186,7 +186,8 @@ exports.getRate = async (req, res) => {
       const ratePurchaseToTHB = await getCurrentRate(currency, date);
       const rateBaseToTHB = await getCurrentRate(mainCurrency, date);
 
-      finalRate = ratePurchaseToTHB / rateBaseToTHB;
+      const crossRate = ratePurchaseToTHB / rateBaseToTHB;
+      finalRate = Number(crossRate.toFixed(6));
     }
 
     const fallbackDate = getDateString(0);

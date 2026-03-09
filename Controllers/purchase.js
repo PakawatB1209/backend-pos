@@ -13,6 +13,92 @@ const Company = require("../models/Company"); // เพิ่ม Import
 
 const { getCurrentRate } = require("../Controllers/exchangeRate");
 
+function calculateItemWeights(product) {
+  // 1. ดึงชื่อ Category (รองรับทั้ง name และ master_name)
+  let category = "";
+  if (product.category && product.category.name) {
+    category = product.category.name.toLowerCase();
+  } else if (product.category && product.category.master_name) {
+    category = product.category.master_name.toLowerCase();
+  } else if (typeof product.category === "string") {
+    category = product.category.toLowerCase();
+  }
+
+  // ลบช่องว่างออกเพื่อให้เช็คง่ายขึ้น (ป้องกันพิมพ์ "Product Master" หรือ "productmaster")
+  const catClean = category.replace(/\s+/g, "");
+
+  let s_weight = 0;
+  let s_weight_unit = "g";
+  let nwt = Number(product.net_weight) || 0;
+  let gwt = 0;
+
+  // ---------------------------------------------------------
+  // หมวด Others / Accessory / Stone
+  // ---------------------------------------------------------
+  if (
+    catClean.includes("others") ||
+    catClean.includes("accessory") ||
+    catClean.includes("stone")
+  ) {
+    const itemWeight = Number(product.weight) || 0;
+    const itemUnit = (product.unit || "g").toLowerCase();
+
+    s_weight = itemWeight;
+    s_weight_unit = itemUnit.includes("ct") ? "cts" : "g";
+
+    // Gwt บังคับเป็น g
+    gwt = s_weight_unit === "cts" ? itemWeight * 0.2 : itemWeight;
+  }
+  // ---------------------------------------------------------
+  // หมวด Product Master / Semi-Mount
+  // ---------------------------------------------------------
+  else {
+    let totalCts = 0;
+    let totalGrams = 0;
+
+    // 1. หินหลัก (เช็คจาก primary_stone)
+    if (product.primary_stone) {
+      const mainW = Number(product.primary_stone.weight) || 0;
+      const mainU = (product.primary_stone.unit || "cts").toLowerCase();
+      if (mainU.includes("ct")) totalCts += mainW;
+      else if (mainU.includes("g")) totalGrams += mainW;
+    }
+
+    // 2. หินรอง (เช็คจาก additional_stones)
+    if (Array.isArray(product.additional_stones)) {
+      product.additional_stones.forEach((stone) => {
+        const stoneW = Number(stone.weight) || 0;
+        const stoneU = (stone.unit || "cts").toLowerCase();
+        if (stoneU.includes("ct")) totalCts += stoneW;
+        else if (stoneU.includes("g")) totalGrams += stoneW;
+      });
+    }
+
+    // จัดการ S.Weight
+    if (totalCts > 0 && totalGrams === 0) {
+      s_weight = totalCts;
+      s_weight_unit = "cts";
+    } else if (totalGrams > 0 && totalCts === 0) {
+      s_weight = totalGrams;
+      s_weight_unit = "g";
+    } else if (totalCts > 0 && totalGrams > 0) {
+      s_weight = totalGrams + totalCts * 0.2; // มีหน่วยผสม แปลงเป็น g ให้หมด
+      s_weight_unit = "g";
+    }
+
+    // คำนวณ Gwt = น้ำหนักตัวเรือน (nwt) + น้ำหนักหินทั้งหมดในหน่วยกรัม
+    const stonesInGrams = totalGrams + totalCts * 0.2;
+    gwt = nwt + stonesInGrams;
+  }
+
+  return {
+    s_weight: Number(s_weight.toFixed(2)),
+    s_weight_unit,
+    nwt: Number(nwt.toFixed(2)),
+    gwt: Number(gwt.toFixed(2)),
+  };
+}
+
 const generatePurchaseNumber = async (compId) => {
   const date = new Date();
   const year = date.getFullYear();
@@ -468,6 +554,14 @@ function mapValidItem(
     .toLowerCase();
   const whId = warehouseMap[whKey] || fallbackId;
 
+  // เรียกใช้ฟังก์ชันคำนวณน้ำหนักจาก Master Data
+  const calculated = calculateItemWeights(product);
+
+  // ถ้า Excel ไม่มีข้อมูลน้ำหนัก (เป็นค่าว่างหรือ 0) ให้ใช้ค่า calculated จาก Master
+  const final_s_weight = parseNum(row["S.Weight"]) || calculated.s_weight;
+  const final_nwt = parseNum(row["Net Weight (g)"]) || calculated.nwt;
+  const final_gwt = parseNum(row["Gross Weight (g)"]) || calculated.gwt;
+
   return {
     product_id: product._id,
     code: product.product_code,
@@ -479,9 +573,12 @@ function mapValidItem(
     cost: parseNum(row["Cost"]),
     price: parseNum(row["Price"], product.price),
     amount: qty * parseNum(row["Cost"]),
-    gross_weight: parseNum(row["Gross Weight (g)"]),
-    net_weight: parseNum(row["Net Weight (g)"], detail.net_weight),
-    stone_weight: detail.primary_stone?.weight || 0,
+
+    // อัปเดตช่องน้ำหนักให้ตรงตามเงื่อนไขวงการเครื่องประดับ
+    stone_weight: final_s_weight,
+    net_weight: final_nwt,
+    gross_weight: final_gwt,
+
     unit: row["Purchase Unit"] || product.unit || "pcs",
   };
 }
@@ -652,5 +749,87 @@ exports.getProductPurchaseHistory = async (req, res) => {
   } catch (error) {
     console.error("History Error:", error);
     res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+//  API สำหรับส่งข้อมูลเข้า Popup Select Product (ลืม)
+exports.getProductsForPurchasePopup = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("comp_id").lean();
+    if (!user || !user.comp_id) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User not associated with company" });
+    }
+
+    const products = await Product.find({ comp_id: user.comp_id })
+      .select(
+        "product_code product_name file price unit category type product_detail_id",
+      )
+      .populate("product_detail_id")
+      .lean();
+
+    const formattedProducts = products.map((product) => {
+      // เรียกใช้ฟังก์ชันคำนวณน้ำหนัก
+      const calculatedWeights = calculateItemWeights(product);
+
+      return {
+        _id: product._id,
+        code: product.product_code,
+        name: product.product_name,
+        image: product.file && product.file.length > 0 ? product.file[0] : "",
+        category: product.category,
+        type: product.type,
+        unit: product.unit,
+        price: product.price,
+
+        // ส่งค่าน้ำหนัก 3 ช่องนี้ไปให้หน้าบ้านด้วย
+        s_weight: calculatedWeights.s_weight,
+        s_weight_unit: calculatedWeights.s_weight_unit,
+        nwt: calculatedWeights.nwt,
+        gwt: calculatedWeights.gwt,
+      };
+    });
+
+    res.status(200).json({ success: true, data: formattedProducts });
+  } catch (error) {
+    console.error("Get Products for Popup Error:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+exports.testCalculateWeight = (req, res) => {
+  try {
+    // รับข้อมูล Array data จาก Postman (JSON ที่คุณส่งมาให้ดูนั่นแหละครับ)
+    const products = req.body.data || [];
+
+    // วนลูปคำนวณแล้วจัดเรียงให้ดูง่ายๆ
+    const results = products.map((p) => {
+      const calc = calculateItemWeights(p); // เรียกใช้ฟังก์ชัน
+
+      return {
+        code: p.product_code,
+        name: p.product_name,
+        category: p.category ? p.category.master_name : "",
+        // ข้อมูลต้นทาง
+        original_data: {
+          weight: p.weight,
+          unit: p.unit,
+          nwt: p.net_weight,
+          accessories: p.accessories,
+        },
+        // ผลลัพธ์ที่คำนวณเสร็จแล้ว
+        calculated_result: calc,
+      };
+    });
+
+    res.json({
+      success: true,
+      message: "ทดสอบการคำนวณสำเร็จ",
+      count: results.length,
+      data: results,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
   }
 };

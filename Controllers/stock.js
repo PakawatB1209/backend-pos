@@ -179,33 +179,36 @@ exports.list = async (req, res) => {
 
       // --- จัดการ Category ---
       if (category && category !== "All") {
-        if (mongoose.isValidObjectId(category)) {
-          productQuery.product_category = category;
-        } else {
-          const categoryMaster = await mongoose
-            .model("masters")
-            .findOne({
-              master_name: {
-                $regex: new RegExp(`^${escapeRegex(category)}$`, "i"),
-              },
-              comp_id: user.comp_id,
-            })
-            .lean();
+        const categoryNames = category.split(",");
 
-          if (categoryMaster) {
-            productQuery.product_category = categoryMaster._id;
-          } else {
-            return res.status(200).json({
-              success: true,
-              count: 0,
-              total_record: 0,
-              total_page: 0,
-              current_page: page,
-              limit: limit,
-              data: [],
-            });
-          }
+        const categoryMasters = await mongoose
+          .model("masters")
+          .find({
+            master_name: {
+              $in: categoryNames.map(
+                (c) => new RegExp(`^${escapeRegex(c)}$`, "i"),
+              ),
+            },
+            comp_id: user.comp_id,
+          })
+          .select("_id")
+          .lean();
+
+        if (categoryMasters.length === 0) {
+          return res.status(200).json({
+            success: true,
+            count: 0,
+            total_record: 0,
+            total_page: 0,
+            current_page: page,
+            limit: limit,
+            data: [],
+          });
         }
+
+        productQuery.product_category = {
+          $in: categoryMasters.map((c) => c._id),
+        };
       }
 
       // --- จัดการ Search ---
@@ -269,7 +272,7 @@ exports.list = async (req, res) => {
 
       const qty = item.quantity || 0;
       const cost = item.cost || 0;
-      const unit = String(product.unit || "")
+      const unit = String(item.unit || "pcs")
         .trim()
         .toLowerCase();
       const totalGwt = item.total_gross_weight || 0;
@@ -467,6 +470,10 @@ exports.getStockDetail = async (req, res) => {
         path: "product_id",
         populate: [
           {
+            path: "product_category",
+            select: "master_name",
+          },
+          {
             path: "product_detail_id",
             populate: [
               { path: "masters.master_id", select: "master_name master_type" },
@@ -477,6 +484,12 @@ exports.getStockDetail = async (req, res) => {
               { path: "primary_stone.cutting", select: "master_name" },
               { path: "primary_stone.quality", select: "master_name" },
               { path: "primary_stone.clarity", select: "master_name" },
+
+              { path: "additional_stones.stone_name", select: "master_name" },
+              { path: "additional_stones.shape", select: "master_name" },
+              { path: "additional_stones.cutting", select: "master_name" },
+              { path: "additional_stones.quality", select: "master_name" },
+              { path: "additional_stones.clarity", select: "master_name" },
             ],
           },
           {
@@ -522,7 +535,7 @@ exports.getStockDetail = async (req, res) => {
       // 🟢 1. เปลี่ยนมาแสดงวันที่นำเข้าล่าสุด (ถ้าไม่มีให้ใช้ updatedAt)
       date: stock.last_in_date || stock.updatedAt,
 
-      unit: detail.unit || "Pcs",
+      unit: (detail.unit || "pcs").toLowerCase(),
       qty: stock.quantity || 0,
 
       // 🟢 2. ต้นทุนเฉลี่ย (Weighted Average Cost)
@@ -539,7 +552,7 @@ exports.getStockDetail = async (req, res) => {
       status: (stock.quantity || 0) > 0 ? "In Stock" : "Out of Stock",
 
       product_details: {
-        category: product.product_category || "-",
+        category: product.product_category?.master_name || "-",
         code: product.product_code || "-",
         product_name: product.product_name || "-",
         item_type: findMaster("item_type"),
@@ -547,6 +560,7 @@ exports.getStockDetail = async (req, res) => {
         metal: findMaster("metal"),
         metal_color: findMaster("metal_color"),
         description: detail.description || "-",
+        weight: detail.weight || product.weight || 0,
         nwt: detail.net_weight || 0,
         gwt: detail.gross_weight || 0, // น้ำหนักต่อชิ้น (จาก Master)
       },
@@ -561,6 +575,17 @@ exports.getStockDetail = async (req, res) => {
         quality: getMasterName(detail.primary_stone?.quality),
         clarity: getMasterName(detail.primary_stone?.clarity),
       },
+
+      additional_stones: (detail.additional_stones || []).map((s) => ({
+        stone_name: getMasterName(s.stone_name),
+        shape: getMasterName(s.shape),
+        size: s.size || "-",
+        s_weight: s.weight || 0,
+        color: s.color || "-",
+        cutting: getMasterName(s.cutting),
+        quality: getMasterName(s.quality),
+        clarity: getMasterName(s.clarity),
+      })),
 
       accessories: (product.related_accessories || []).map((acc) => {
         const accProd = acc.product_id;

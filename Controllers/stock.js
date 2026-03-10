@@ -272,16 +272,19 @@ exports.list = async (req, res) => {
 
       const qty = item.quantity || 0;
       const cost = item.cost || 0;
-      const unit = String(item.unit || "pcs")
-        .trim()
-        .toLowerCase();
       const totalGwt = item.total_gross_weight || 0;
+      const stockUnit = String(item.unit).trim();
+      const unitLower = stockUnit.toLowerCase();
 
       // คำนวณ Amount ให้ตรงตามหน่วย
       let finalAmount = 0;
-      if (unit === "g" || unit === "gram" || unit === "grams") {
+      if (unitLower === "g" || unitLower === "gram" || unitLower === "grams") {
         finalAmount = totalGwt * cost;
-      } else if (unit === "cts" || unit === "ct" || unit === "carat") {
+      } else if (
+        unitLower === "cts" ||
+        unitLower === "ct" ||
+        unitLower === "carat"
+      ) {
         finalAmount = totalGwt * cost;
       } else {
         finalAmount = qty * cost;
@@ -296,7 +299,7 @@ exports.list = async (req, res) => {
         category: catObj.master_name || "-",
         warehouse: warehouse.warehouse_name || "Unknown",
         date: item.last_in_date || item.updatedAt,
-        unit: product.unit || "Pcs",
+        unit: stockUnit || "-",
         qty: qty,
         cost: cost,
         amount: Number(finalAmount.toFixed(4)),
@@ -535,7 +538,7 @@ exports.getStockDetail = async (req, res) => {
       // 🟢 1. เปลี่ยนมาแสดงวันที่นำเข้าล่าสุด (ถ้าไม่มีให้ใช้ updatedAt)
       date: stock.last_in_date || stock.updatedAt,
 
-      unit: (detail.unit || "pcs").toLowerCase(),
+      unit: (stock.unit || "-").toLowerCase(),
       qty: stock.quantity || 0,
 
       // 🟢 2. ต้นทุนเฉลี่ย (Weighted Average Cost)

@@ -19,6 +19,7 @@ const StockSchema = new mongoose.Schema(
     },
     comp_id: { type: mongoose.Schema.ObjectId, ref: "comp", required: true },
     quantity: { type: Number, default: 0, min: 0 },
+    unit: { type: String },
     cost: {
       type: Number,
       default: 0,

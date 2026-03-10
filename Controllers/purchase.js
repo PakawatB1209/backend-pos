@@ -364,6 +364,7 @@ exports.createPurchase = async (req, res) => {
           $set: {
             cost: finalAvgCost,
             price: finalAvgPrice,
+            unit: item.unit,
             last_in_date: date || new Date(),
           },
         },

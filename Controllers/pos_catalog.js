@@ -17,11 +17,6 @@ exports.getPosItemTypes = async (req, res) => {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
     const user = await User.findById(req.user.id).select("comp_id").lean();
-    if (!user || !user.comp_id) {
-      return res
-        .status(400)
-        .json({ success: false, message: "User not associated with company." });
-    }
     const comp_id = user.comp_id;
 
     const { category_id } = req.query;
@@ -39,12 +34,21 @@ exports.getPosItemTypes = async (req, res) => {
           is_active: true,
         },
       },
-      { $sort: { createdAt: -1 } },
       {
         $addFields: {
+          // 🟢 จุดสำคัญ: รวมศูนย์การดึงชื่อประเภทสินค้า (รองรับทั้งพลอยและสินค้าทั่วไป)
+          // มันจะหาจาก item_type ก่อน ถ้าไม่มีไปหา product_item_type และ stone_name ตามลำดับ
+          rawType: {
+            $ifNull: ["$item_type", "$product_item_type", "$stone_name"],
+          },
+        },
+      },
+      {
+        $addFields: {
+          // พยายามแปลงเป็น ObjectId เพื่อไป Lookup ชื่อสวยๆ จากตาราง Masters
           convertedId: {
             $convert: {
-              input: "$product_item_type",
+              input: "$rawType",
               to: "objectId",
               onError: null,
               onNull: null,
@@ -62,24 +66,28 @@ exports.getPosItemTypes = async (req, res) => {
       },
       {
         $addFields: {
-          foundName: { $arrayElemAt: ["$master_info.master_name", 0] },
-        },
-      },
-      {
-        $addFields: {
-          finalName: { $ifNull: ["$foundName", "$product_item_type"] },
+          // ถ้ามีข้อมูลใน Masters ให้เอา master_name มาโชว์ ถ้าไม่มีให้ใช้ชื่อดิบที่พิมพ์ไว้
+          finalName: {
+            $ifNull: [
+              { $arrayElemAt: ["$master_info.master_name", 0] },
+              "$rawType",
+              "Uncategorized", // Fallback สุดท้ายถ้าไม่มีชื่อเลย
+            ],
+          },
         },
       },
       {
         $group: {
           _id: "$finalName",
           originalId: { $first: "$convertedId" },
+          // ดึงรูปแรกของสินค้าในกลุ่มนี้มาเป็นหน้าปก (เช่น รูปเพชร หรือ รูปแหวน)
           cover_image: { $first: { $arrayElemAt: ["$file", 0] } },
           count: { $sum: 1 },
         },
       },
       {
         $project: {
+          // ถ้าเป็น ID ให้ส่ง ID กลับไป ถ้าไม่มีให้ส่งชื่อ (String) กลับไปเป็น ID แทน
           _id: { $ifNull: ["$originalId", "$_id"] },
           name: "$_id",
           image: "$cover_image",
@@ -137,6 +145,7 @@ exports.getPosProducts = async (req, res) => {
         const nameMap = {
           "Product Master": "productmaster",
           Stone: "stone",
+          "Stone/Diamond": "stone",
           "Semi-Mount": "semimount",
           Accessories: "accessory",
           Others: "others",
@@ -154,9 +163,15 @@ exports.getPosProducts = async (req, res) => {
     }
 
     const query = { comp_id, is_active: true };
-
     if (category) query.product_category = category;
-    if (item_type) query.product_item_type = item_type;
+
+    if (item_type) {
+      query.$or = [
+        { product_item_type: item_type },
+        { item_type: item_type },
+        { stone_name: item_type },
+      ];
+    }
 
     if (search) {
       query.$or = [
@@ -166,24 +181,19 @@ exports.getPosProducts = async (req, res) => {
     }
 
     if (view_mode === "inventory") {
-      const stockQueryFilter = { comp_id };
+      const stockQueryFilter = { comp_id, quantity: { $gt: 0 } };
       if (targetWarehouseId) stockQueryFilter.warehouse_id = targetWarehouseId;
-
       const stockRecords = await Stock.find(stockQueryFilter)
         .select("product_id")
         .lean();
-
-      const productIdsInStock = stockRecords.map((s) => s.product_id);
-      query._id = { $in: productIdsInStock };
+      query._id = { $in: stockRecords.map((s) => s.product_id) };
     }
 
     const total = await Product.countDocuments(query);
 
+    // 🟢 แก้ไข: ยกเลิก Populate ซ้อน (เอาออกได้เลยเพราะเราดึงจาก Product โดยตรง)
     const products = await Product.find(query)
-      .populate("product_detail_id", "unit size price")
-      .select(
-        "product_code product_name file product_detail_id product_category",
-      )
+      .populate("product_detail_id", "size price unit") // ดึงมาแค่ข้อมูลที่จำเป็นพอ
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(Number(limit))
@@ -192,16 +202,11 @@ exports.getPosProducts = async (req, res) => {
     let stocks = [];
     if (products.length > 0) {
       const productIds = products.map((p) => p._id);
-
       const stockQuery = {
         product_id: { $in: productIds },
         comp_id: comp_id,
+        ...(targetWarehouseId && { warehouse_id: targetWarehouseId }),
       };
-
-      if (targetWarehouseId) {
-        stockQuery.warehouse_id = targetWarehouseId;
-      }
-
       stocks = await Stock.find(stockQuery).lean();
     }
 
@@ -214,9 +219,20 @@ exports.getPosProducts = async (req, res) => {
         (sum, s) => sum + s.quantity,
         0,
       );
+      const totalWeight = productStocks.reduce(
+        (sum, s) => sum + (s.total_gross_weight || 0),
+        0,
+      );
 
-      const stockPrice =
-        productStocks.length > 0 ? productStocks[0].price : null;
+      const displayPrice =
+        productStocks.length > 0 && productStocks[0].price
+          ? productStocks[0].price
+          : product.product_detail_id?.price || 0;
+
+      const displayUnit =
+        productStocks.length > 0 && productStocks[0].unit
+          ? productStocks[0].unit
+          : product.unit || product.product_detail_id?.unit || "Pcs";
 
       let coverImage = null;
       if (product.file && product.file.length > 0) {
@@ -225,21 +241,22 @@ exports.getPosProducts = async (req, res) => {
           : `${baseUrl}${product.file[0]}`;
       }
 
+      // 🟢 ส่งข้อมูลไปให้ครบจบในที่เดียว ดึง metal และ color จากระดับนอกสุดได้เลย!
       return {
         _id: product._id,
         product_code: product.product_code,
         product_name: product.product_name,
         image: coverImage,
+        unit: displayUnit,
 
-        unit: product.product_detail_id?.unit || "",
-        size: product.product_detail_id?.size || "",
+        // ข้อมูล สเปกพื้นฐาน สำหรับโชว์ในการ์ดสินค้า (รูปภาพ 2)
+        size: product.product_detail_id?.size || product.size || "-",
+        metal: product.metal || "-", // ดึงตรงๆ จาก Product
+        metal_color: product.color || "-", // ดึงตรงๆ จาก Product (ถ้าชื่อฟิลด์เป็น metal_color ก็เปลี่ยนตามชื่อคุณ)
 
-        price:
-          stockPrice !== null
-            ? stockPrice
-            : product.product_detail_id?.price || 0,
-
+        price: displayPrice,
         quantity: totalQuantity,
+        total_weight: totalWeight,
         warehouse_id: targetWarehouseId,
       };
     });
@@ -258,7 +275,6 @@ exports.getPosProducts = async (req, res) => {
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
-
 // คลิกสินค้าใน List เพื่อดูสเปก (โหลดไปโชว์ในหน้า Editor / Details)
 exports.getPosProductDetail = async (req, res) => {
   try {

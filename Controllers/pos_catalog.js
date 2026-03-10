@@ -18,95 +18,90 @@ exports.getPosItemTypes = async (req, res) => {
     }
     const user = await User.findById(req.user.id).select("comp_id").lean();
     const comp_id = user.comp_id;
-
     const { category_id } = req.query;
+
     if (!category_id) {
       return res
         .status(400)
         .json({ success: false, message: "Category ID is required" });
     }
 
-    const itemTypes = await Product.aggregate([
-      {
-        $match: {
-          product_category: new mongoose.Types.ObjectId(category_id),
-          comp_id: comp_id,
-          is_active: true,
-        },
-      },
-      {
-        $addFields: {
-          // 🟢 จุดสำคัญ: รวมศูนย์การดึงชื่อประเภทสินค้า (รองรับทั้งพลอยและสินค้าทั่วไป)
-          // มันจะหาจาก item_type ก่อน ถ้าไม่มีไปหา product_item_type และ stone_name ตามลำดับ
-          rawType: {
-            $ifNull: ["$item_type", "$product_item_type", "$stone_name"],
-          },
-        },
-      },
-      {
-        $addFields: {
-          // พยายามแปลงเป็น ObjectId เพื่อไป Lookup ชื่อสวยๆ จากตาราง Masters
-          convertedId: {
-            $convert: {
-              input: "$rawType",
-              to: "objectId",
-              onError: null,
-              onNull: null,
-            },
-          },
-        },
-      },
-      {
-        $lookup: {
-          from: "masters",
-          localField: "convertedId",
-          foreignField: "_id",
-          as: "master_info",
-        },
-      },
-      {
-        $addFields: {
-          // ถ้ามีข้อมูลใน Masters ให้เอา master_name มาโชว์ ถ้าไม่มีให้ใช้ชื่อดิบที่พิมพ์ไว้
-          finalName: {
-            $ifNull: [
-              { $arrayElemAt: ["$master_info.master_name", 0] },
-              "$rawType",
-              "Uncategorized", // Fallback สุดท้ายถ้าไม่มีชื่อเลย
-            ],
-          },
-        },
-      },
-      {
-        $group: {
-          _id: "$finalName",
-          originalId: { $first: "$convertedId" },
-          // ดึงรูปแรกของสินค้าในกลุ่มนี้มาเป็นหน้าปก (เช่น รูปเพชร หรือ รูปแหวน)
-          cover_image: { $first: { $arrayElemAt: ["$file", 0] } },
-          count: { $sum: 1 },
-        },
-      },
-      {
-        $project: {
-          // ถ้าเป็น ID ให้ส่ง ID กลับไป ถ้าไม่มีให้ส่งชื่อ (String) กลับไปเป็น ID แทน
-          _id: { $ifNull: ["$originalId", "$_id"] },
-          name: "$_id",
-          image: "$cover_image",
-          count: 1,
-        },
-      },
-      { $sort: { name: 1 } },
-    ]);
+    // 1. ดึง Product ออกมาทั้งหมดแบบดิบๆ
+    const products = await Product.find({
+      product_category: category_id,
+      comp_id: comp_id,
+      is_active: true,
+    }).lean();
+
+    // 2. ดึง ProductDetail ทั้งหมดที่เกี่ยวข้อง (ดึงแยกตารางมาเลย ชัวร์กว่า)
+    const detailIds = products
+      .map((p) => p.product_detail_id)
+      .filter((id) => id);
+    const details = await ProductDetail.find({
+      _id: { $in: detailIds },
+    }).lean();
+
+    // 3. ดึง Masters ทั้งหมดมาตุนไว้ (เผื่อต้องแปลง ID เป็นชื่อ)
+    const masters = await Masters.find({ comp_id: comp_id }).lean();
 
     const baseUrl = `${req.protocol}://${req.get("host")}/uploads/product/`;
-    const formattedData = itemTypes.map((type) => ({
-      ...type,
-      image: type.image
-        ? type.image.startsWith("http")
-          ? type.image
-          : `${baseUrl}${type.image}`
-        : null,
-    }));
+    const grouped = {};
 
+    // 4. วนลูปจับคู่ข้อมูลด้วย Javascript (วิธีนี้ฉลาดและไม่มีบั๊ก)
+    products.forEach((p) => {
+      // เอา Product จับคู่กับ Detail
+      const detail =
+        details.find(
+          (d) => d._id.toString() === p.product_detail_id?.toString(),
+        ) || {};
+
+      // 🔍 กวาดหาชื่อหิน/ชื่อประเภท จากทุกซอกทุกมุมของตาราง
+      let rawName =
+        p.type_stone ||
+        detail.type_stone ||
+        p.stone_name ||
+        detail.stone_name ||
+        p.item_type ||
+        detail.item_type ||
+        p.product_item_type ||
+        detail.product_item_type ||
+        detail.primary_stone?.stone_name; // เผื่อซ่อนลึก
+
+      // 🛠️ ถ้าสิ่งที่ดึงมาได้ ดันเป็น ObjectId (ยาว 24 ตัว) ให้วิ่งไปหาชื่อสวยๆ ในตาราง Master
+      if (rawName) {
+        const rawStr = rawName.toString();
+        if (/^[0-9a-fA-F]{24}$/.test(rawStr)) {
+          const master = masters.find((m) => m._id.toString() === rawStr);
+          if (master) rawName = master.master_name;
+        }
+      }
+
+      // ถ้าหาจนสุดทางแล้วยังว่างเปล่า ค่อยให้เป็น Uncategorized
+      if (!rawName || rawName.toString().trim() === "") {
+        rawName = "Uncategorized";
+      } else {
+        rawName = rawName.toString().trim();
+      }
+
+      // 📁 เริ่มจัดกลุ่ม (เอาชื่อที่ได้มาสร้าง Folder)
+      if (!grouped[rawName]) {
+        let img = p.file && p.file.length > 0 ? p.file[0] : null;
+        if (img && !img.startsWith("http")) img = `${baseUrl}${img}`;
+
+        grouped[rawName] = {
+          _id: rawName,
+          name: rawName,
+          image: img,
+          count: 0,
+        };
+      }
+      grouped[rawName].count += 1;
+    });
+
+    // 5. แปลงข้อมูลส่งกลับหน้าบ้าน สวยๆ
+    const formattedData = Object.values(grouped).sort((a, b) =>
+      a.name.localeCompare(b.name),
+    );
     res.json({ success: true, data: formattedData });
   } catch (error) {
     console.error("Get Menu Error:", error);
@@ -114,6 +109,7 @@ exports.getPosItemTypes = async (req, res) => {
   }
 };
 
+// list Product ของ catalog
 // list Product ของ catalog
 exports.getPosProducts = async (req, res) => {
   try {
@@ -153,7 +149,6 @@ exports.getPosProducts = async (req, res) => {
         const warehouseType =
           nameMap[masterCat.master_name] ||
           masterCat.master_name.toLowerCase().replace(/ /g, "");
-
         const warehouse = await Warehouse.findOne({
           comp_id,
           warehouse_type: warehouseType,
@@ -165,19 +160,73 @@ exports.getPosProducts = async (req, res) => {
     const query = { comp_id, is_active: true };
     if (category) query.product_category = category;
 
+    // 🟢 ระบบค้นหาขั้นเทพ: สลับร่าง String -> ID เพื่อค้นหาหิน
+    const andConditions = [];
+
     if (item_type) {
-      query.$or = [
-        { product_item_type: item_type },
-        { item_type: item_type },
-        { stone_name: item_type },
-      ];
+      const cleanType = item_type.trim();
+      const isObjId = /^[0-9a-fA-F]{24}$/.test(cleanType); // เช็คว่าเป็น ID ไหม
+
+      let targetIds = [];
+
+      if (isObjId) {
+        // 💍 ถ้าหน้าบ้านส่ง ID มา (พวกแหวน) ก็เอา ID ไปใช้เลย
+        targetIds.push(cleanType);
+      } else {
+        // 💎 ถ้าหน้าบ้านส่งชื่อหินมา (Aquamarine) ต้องวิ่งไปแปลเป็น ID จาก Master ก่อน
+        const masterRecords = await Masters.find({
+          master_name: cleanType,
+          comp_id: comp_id,
+        })
+          .select("_id")
+          .lean();
+        targetIds = masterRecords.map((m) => m._id.toString());
+      }
+
+      // ถ้าหน้าบ้านส่งชื่อแปลกๆ มา แล้วหาใน Master ไม่เจอเลย ให้ผลลัพธ์เป็น 0 ไปเลย
+      if (targetIds.length > 0) {
+        // มุดลงไปหาใน ProductDetail ด้วย ID ที่แปลมาได้
+        const matchedDetails = await ProductDetail.find({
+          $or: [
+            { "primary_stone.stone_name": { $in: targetIds } }, // <--- ข้อมูลจริงซ่อนอยู่ตรงนี้!
+            { type_stone: { $in: targetIds } },
+            { stone_name: { $in: targetIds } },
+            { item_type: { $in: targetIds } },
+          ],
+        })
+          .select("_id")
+          .lean();
+
+        const detailIds = matchedDetails.map((d) => d._id);
+
+        const typeConditions = [
+          { product_item_type: { $in: targetIds } }, // หาจากเปลือกนอกสุด
+        ];
+
+        // ถ้ามุดเจอใน ProductDetail ก็เอามามัดรวมกัน
+        if (detailIds.length > 0) {
+          typeConditions.push({ product_detail_id: { $in: detailIds } });
+        }
+
+        andConditions.push({ $or: typeConditions });
+      } else {
+        // หาไม่เจอ = ให้ query เป็น false เพื่อตีกลับ []
+        andConditions.push({ _id: null });
+      }
     }
 
+    // ระบบค้นหาข้อความ
     if (search) {
-      query.$or = [
-        { product_code: { $regex: search, $options: "i" } },
-        { product_name: { $regex: search, $options: "i" } },
-      ];
+      andConditions.push({
+        $or: [
+          { product_code: { $regex: search, $options: "i" } },
+          { product_name: { $regex: search, $options: "i" } },
+        ],
+      });
+    }
+
+    if (andConditions.length > 0) {
+      query.$and = andConditions;
     }
 
     if (view_mode === "inventory") {
@@ -186,14 +235,20 @@ exports.getPosProducts = async (req, res) => {
       const stockRecords = await Stock.find(stockQueryFilter)
         .select("product_id")
         .lean();
-      query._id = { $in: stockRecords.map((s) => s.product_id) };
+
+      if (query.$and) {
+        query.$and.push({
+          _id: { $in: stockRecords.map((s) => s.product_id) },
+        });
+      } else {
+        query._id = { $in: stockRecords.map((s) => s.product_id) };
+      }
     }
 
     const total = await Product.countDocuments(query);
 
-    // 🟢 แก้ไข: ยกเลิก Populate ซ้อน (เอาออกได้เลยเพราะเราดึงจาก Product โดยตรง)
     const products = await Product.find(query)
-      .populate("product_detail_id", "size price unit") // ดึงมาแค่ข้อมูลที่จำเป็นพอ
+      .populate("product_detail_id") // ดึงสเปกมาทั้งหมด
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(Number(limit))
@@ -214,7 +269,6 @@ exports.getPosProducts = async (req, res) => {
       const productStocks = stocks.filter(
         (s) => s.product_id.toString() === product._id.toString(),
       );
-
       const totalQuantity = productStocks.reduce(
         (sum, s) => sum + s.quantity,
         0,
@@ -228,7 +282,6 @@ exports.getPosProducts = async (req, res) => {
         productStocks.length > 0 && productStocks[0].price
           ? productStocks[0].price
           : product.product_detail_id?.price || 0;
-
       const displayUnit =
         productStocks.length > 0 && productStocks[0].unit
           ? productStocks[0].unit
@@ -241,19 +294,15 @@ exports.getPosProducts = async (req, res) => {
           : `${baseUrl}${product.file[0]}`;
       }
 
-      // 🟢 ส่งข้อมูลไปให้ครบจบในที่เดียว ดึง metal และ color จากระดับนอกสุดได้เลย!
       return {
         _id: product._id,
         product_code: product.product_code,
         product_name: product.product_name,
         image: coverImage,
         unit: displayUnit,
-
-        // ข้อมูล สเปกพื้นฐาน สำหรับโชว์ในการ์ดสินค้า (รูปภาพ 2)
         size: product.product_detail_id?.size || product.size || "-",
-        metal: product.metal || "-", // ดึงตรงๆ จาก Product
-        metal_color: product.color || "-", // ดึงตรงๆ จาก Product (ถ้าชื่อฟิลด์เป็น metal_color ก็เปลี่ยนตามชื่อคุณ)
-
+        metal: product.metal || "-",
+        metal_color: product.color || "-",
         price: displayPrice,
         quantity: totalQuantity,
         total_weight: totalWeight,
@@ -275,6 +324,7 @@ exports.getPosProducts = async (req, res) => {
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
+
 // คลิกสินค้าใน List เพื่อดูสเปก (โหลดไปโชว์ในหน้า Editor / Details)
 exports.getPosProductDetail = async (req, res) => {
   try {

@@ -3,6 +3,7 @@ const Counter = require("../models/Counter");
 const User = require("../models/User");
 const Stock = require("../models/Stock");
 const CustomSession = require("../models/CustomSession");
+const mongoose = require("mongoose");
 
 // exports.createOrder = async (req, res) => {
 //   try {
@@ -141,7 +142,7 @@ exports.createOrder = async (req, res) => {
     const counterKey = `order_${comp_id}_${yearMonth}`;
 
     const counter = await Counter.findOneAndUpdate(
-      { name: counterKey },
+      { _id: counterKey },
       { $inc: { seq: 1 } },
       { upsert: true, new: true, session },
     );

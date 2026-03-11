@@ -40,7 +40,7 @@ router.get(
 router.get(
   "/export-stocks",
   auth,
-  // checkPermission("Stock", "Export"),
+  checkPermission("Stock", "Export"),
   exportStocksExcel,
 );
 

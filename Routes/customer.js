@@ -36,7 +36,7 @@ router.get(
 router.get(
   "/export-customers",
   auth,
-  // checkPermission("Customer", "Export"),
+  checkPermission("Customer", "Export"),
   exportCustomersExcel,
 );
 

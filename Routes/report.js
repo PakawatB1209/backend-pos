@@ -18,7 +18,7 @@ router.get(
 
 // ดึงข้อมูล Report ไปโชว์บนตารางหน้าเว็บ
 router.get(
-  "/orders",
+  "/report/orders",
   auth,
   // checkPermission("Report", "view"),
   getOrderReport,

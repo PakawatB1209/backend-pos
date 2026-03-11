@@ -71,39 +71,46 @@ exports.getDayBookList = async (req, res) => {
 
 exports.getOrderReport = async (req, res) => {
   try {
-    // 1. ตรวจสอบสิทธิ์การใช้งาน (ต้องล็อกอินและมี Company ID)
-    if (!req.user || !req.user.comp_id) {
+    // 1. ตรวจสอบสิทธิ์การใช้งาน (ต้องล็อกอิน)
+    if (!req.user || !req.user.id) {
       return res
         .status(401)
-        .json({ success: false, message: "Unauthorized: Missing Company ID" });
+        .json({ success: false, message: "Unauthorized: No User ID" });
     }
 
-    // 2. รับค่าพารามิเตอร์จากหน้าบ้าน (Query String)
-    // order_type = ประเภทบิล ("Sell" หรือ "Custom")
-    // page = หน้าที่ต้องการดู (ค่าเริ่มต้นคือหน้า 1)
-    // limit = จำนวนรายการต่อหน้า (ค่าเริ่มต้นคือ 20)
+    const currentUser = await User.findById(req.user.id)
+      .select("comp_id")
+      .lean();
+    if (!currentUser || !currentUser.comp_id) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: Missing Company ID in DB",
+      });
+    }
+    const comp_id = currentUser.comp_id; // ได้ comp_id มาแล้ว!
+
+    // 2. รับค่าพารามิเตอร์จากหน้าบ้าน
     const { order_type, page = 1, limit = 20 } = req.query;
 
-    // 3. คำนวณสำหรับการแบ่งหน้า (Pagination)
+    // 3. คำนวณสำหรับการแบ่งหน้า
     const pageNumber = parseInt(page, 10);
     const limitNumber = parseInt(limit, 10);
-    const skip = (pageNumber - 1) * limitNumber; // คำนวณว่าต้องข้ามข้อมูลไปกี่ตัว
+    const skip = (pageNumber - 1) * limitNumber;
 
-    // 4. สร้างเงื่อนไขในการค้นหา (Query Condition)
-    const query = { comp_id: req.user.comp_id }; // ดึงเฉพาะข้อมูลของบริษัทตัวเอง
+    // 4. สร้างเงื่อนไขในการค้นหา (ใช้ comp_id ที่หามาได้)
+    const query = { comp_id: comp_id };
 
     if (order_type) {
-      query.order_type = order_type; // ถ้าหน้าบ้านส่ง order_type มา ให้กรองตามประเภทนั้นๆ
+      query.order_type = order_type;
     }
 
-    // 5. นับจำนวนบิลทั้งหมดที่ตรงเงื่อนไข (เพื่อเอาไปทำปุ่มเปลี่ยนหน้าในหน้าบ้าน)
+    // 5. นับจำนวนบิลทั้งหมด
     const totalOrders = await Order.countDocuments(query);
 
-    // 6. ดึงข้อมูลจาก Database พร้อมเชื่อมโยง (Populate) ข้อมูลจากตารางอื่นๆ
+    // 6. ดึงข้อมูลจาก Database พร้อมเชื่อมโยง
     const orders = await Order.find(query)
-      .populate("customer_id", "name") // ดึงชื่อลูกค้ามาจากตาราง Customer
-      .populate("sale_staff_id", "username") // ดึงชื่อพนักงานขาย
-      // กลุ่ม Populate ดึงชื่อ Master Data จาก ID ที่เก็บไว้ใน Spec
+      .populate("customer_id", "name")
+      .populate("sale_staff_id", "username")
       .populate("items.custom_spec.item_type_id", "master_name")
       .populate("items.custom_spec.metal_id", "master_name")
       .populate("items.custom_spec.stone_name_id", "master_name")
@@ -111,67 +118,53 @@ exports.getOrderReport = async (req, res) => {
       .populate("items.custom_spec.cutting", "master_name")
       .populate("items.custom_spec.quality", "master_name")
       .populate("items.custom_spec.clarity", "master_name")
-      .sort({ createdAt: -1 }) // เรียงลำดับจากวันที่สร้างล่าสุดขึ้นก่อน (ใหม่ไปเก่า)
-      .skip(skip) // ข้ามข้อมูลหน้าก่อนหน้า
-      .limit(limitNumber); // จำกัดจำนวนข้อมูลตาม limit ที่ตั้งไว้
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNumber);
 
-    // 7. แปลงรูปแบบข้อมูล (Format Data) ให้ตรงกับโครงสร้างตาราง (DataGrid) ของหน้าบ้าน
+    // 7. แปลงรูปแบบข้อมูลให้ตรงกับ DataGrid
     const formattedOrders = orders.map((order) => {
-      // 7.1 กำหนดยอดเงินที่จะโชว์ในแถวหลัก (แถวที่ยังไม่กดขยาย)
-      // - ถ้าระบบสั่งทำ (Custom) จะโชว์ยอด "มัดจำรวม" (total_deposit)
-      // - ถ้าระบบขายปกติ (Sell) จะโชว์ยอด "ขายรวม" (grand_total)
       const headerAmount =
         order.order_type === "Custom"
           ? order.total_deposit || 0
           : order.grand_total || 0;
 
-      // 7.2 แปลงข้อมูลสินค้ารายชิ้น (แถวที่กดลูกศรขยายลงมาดูรายละเอียด)
       const formattedItems = order.items.map((item) => {
         const spec = item.custom_spec || {};
-
         return {
           _id: item._id,
-          // --- ข้อมูลทั่วไปของบิล ---
-          sell_id: order.order_no, // เลขที่บิล (อ้างอิงจากหัวบิล)
-          customer: order.customer_id?.name || "-", // ชื่อลูกค้า
-          date: order.order_date, // วันที่ขาย
+          sell_id: order.order_no,
+          customer: order.customer_id?.name || "-",
+          date: order.order_date,
 
-          // --- ข้อมูลสินค้า ---
-          image: item.image, // รูปสินค้า
-          code: item.product_code, // รหัสสินค้า
-          product_name: item.product_name, // ชื่อสินค้า
+          image: item.image,
+          code: item.product_code,
+          product_name: item.product_name,
 
-          // --- สเปกของตัวเรือน (ดึงออกจากก้อน custom_spec ให้อยู่ชั้นนอกสุด เพื่อให้หน้าบ้านใช้ง่าย) ---
           category: spec.item_type_name || "-",
           item_type: spec.item_type_name || "-",
-          product_size: spec.size || spec.product_size || "-", // ขนาดแหวน/ตัวเรือน
-          metal: spec.metal_name || "-", // ชนิดทอง (เช่น 18K)
-          metal_color: spec.metal_color || "-", // สีทอง (เช่น Rose Gold)
-          gwt: spec.gwt || 0, // น้ำหนักรวม
-          nwt: spec.nwt || 0, // น้ำหนักสุทธิ
+          product_size: spec.size || spec.product_size || "-",
+          metal: spec.metal_name || "-",
+          metal_color: spec.metal_color || "-",
+          gwt: spec.gwt || 0,
+          nwt: spec.nwt || 0,
 
-          // --- สเปกของพลอย (Stone) ---
           stone_name: spec.stone_name || "-",
           shape: spec.stone_shape_name || "-",
-          size: spec.stone_size || "-", // ขนาดพลอย
-          s_weight: spec.s_weight || 0, // น้ำหนักพลอย
-          color: spec.stone_color || "-", // สีพลอย
+          size: spec.stone_size || "-",
+          s_weight: spec.s_weight || 0,
+          color: spec.stone_color || "-",
           cutting: spec.cutting_name || "-",
           quality: spec.quality_name || "-",
           clarity: spec.clarity_name || "-",
 
-          // --- ราคาและส่วนลด ---
-          qty: item.qty || 1, // จำนวนชิ้น
-          tax: order.tax_rate ? `${order.tax_rate}%` : "0%", // เติม % ให้ค่าภาษี
-          price: item.original_price || item.unit_price || 0, // ราคาตั้งต้น
-
-          // เช็คว่าส่วนลดเป็น % หรือจำนวนเงิน แล้วแปลงให้อ่านง่าย
+          qty: item.qty || 1,
+          tax: order.tax_rate ? `${order.tax_rate}%` : "0%",
+          price: item.original_price || item.unit_price || 0,
           discount:
             item.discount_percent && item.discount_percent > 0
               ? `${item.discount_percent}%`
               : item.discount_amount || 0,
-
-          // กำหนดยอดเงินรายชิ้น (Custom โชว์ Deposit ชิ้นนั้น / Sell โชว์ราคารวมชิ้นนั้น)
           amount:
             order.order_type === "Custom"
               ? item.deposit || 0
@@ -179,30 +172,29 @@ exports.getOrderReport = async (req, res) => {
         };
       });
 
-      // 7.3 ประกอบร่างข้อมูลหัวบิล เข้ากับ ข้อมูลรายชิ้น
       return {
         _id: order._id,
         order_no: order.order_no,
         order_date: order.order_date,
         customer_name: order.customer_id?.name || "-",
         total_items: order.total_items || 0,
-        header_amount: headerAmount, // ยอดเงินสำหรับแถวหลัก
+        header_amount: headerAmount,
         order_type: order.order_type,
-        items: formattedItems, // โยนข้อมูลสินค้ารายชิ้นที่จัดระเบียบแล้วใส่เข้าไป
+        items: formattedItems,
       };
     });
 
-    // 8. ส่งข้อมูลกลับไปให้หน้าบ้าน (Frontend)
+    // 8. ส่งข้อมูลกลับไปให้หน้าบ้าน
     res.json({
       success: true,
-      count: formattedOrders.length, // จำนวนรายการในหน้านี้
-      total: totalOrders, // จำนวนรายการทั้งหมดใน Database
+      count: formattedOrders.length,
+      total: totalOrders,
       pagination: {
         currentPage: pageNumber,
-        totalPages: Math.ceil(totalOrders / limitNumber), // คำนวณจำนวนหน้าทั้งหมด
+        totalPages: Math.ceil(totalOrders / limitNumber) || 1, // กันกรณีหาร 0 แล้วได้ Infinity
         limit: limitNumber,
       },
-      data: formattedOrders, // ข้อมูลตารางพร้อมวาดขึ้นจอ
+      data: formattedOrders,
     });
   } catch (error) {
     console.error("Get Custom Order Report Error:", error);
@@ -216,18 +208,29 @@ exports.getOrderReport = async (req, res) => {
 
 exports.exportOrderReportExcel = async (req, res) => {
   try {
-    if (!req.user || !req.user.comp_id) {
-      return res.status(401).json({ success: false, message: "Unauthorized" });
+    if (!req.user || !req.user.id) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Unauthorized: No User ID" });
     }
+    const currentUser = await User.findById(req.user.id)
+      .select("comp_id")
+      .lean();
+    if (!currentUser || !currentUser.comp_id) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: Missing Company ID in Database",
+      });
+    }
+    const comp_id = currentUser.comp_id;
 
-    const { order_type } = req.query; // รับค่ามาว่าจะเป็น Sell หรือ Custom
-    const query = { comp_id: req.user.comp_id };
+    const { order_type } = req.query;
+    const query = { comp_id: comp_id };
 
     if (order_type) {
       query.order_type = order_type;
     }
 
-    // 1. ดึงข้อมูลทั้งหมดมา (ไม่ใส่ skip, ไม่ใส่ limit)
     const orders = await Order.find(query)
       .populate("customer_id", "name")
       .populate("sale_staff_id", "username")
@@ -240,11 +243,9 @@ exports.exportOrderReportExcel = async (req, res) => {
       .populate("items.custom_spec.clarity", "master_name")
       .sort({ createdAt: -1 });
 
-    // 2. สร้างไฟล์ Excel
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet(`${order_type || "All"}_Report`);
 
-    // 3. กำหนดหัวคอลัมน์ (Header) ให้ตรงกับหน้า UI
     worksheet.columns = [
       { header: "Order ID", key: "order_no", width: 15 },
       { header: "Date", key: "date", width: 20 },
@@ -264,15 +265,12 @@ exports.exportOrderReportExcel = async (req, res) => {
       { header: "Total Order Amount", key: "total_order_amount", width: 20 },
     ];
 
-    // 4. วนลูปยัดข้อมูลใส่ Excel (แปลงข้อมูลให้อยู่ในรูปแบบบรรทัดเดียว Flat Data)
     orders.forEach((order) => {
-      // ยอดรวมบิล
       const headerAmount =
         order.order_type === "Custom"
           ? order.total_deposit || 0
           : order.grand_total || 0;
 
-      // เนื่องจาก 1 บิลมีหลายชิ้น เราจึงต้องวนลูป items เพื่อสร้างบรรทัดใน Excel
       order.items.forEach((item) => {
         const spec = item.custom_spec || {};
 
@@ -304,15 +302,13 @@ exports.exportOrderReportExcel = async (req, res) => {
           price: item.original_price || item.unit_price || 0,
           discount: discountStr,
           amount: itemAmount,
-          total_order_amount: headerAmount, // ใส่ยอดรวมหัวบิลแนบไปด้วยทุกบรรทัด
+          total_order_amount: headerAmount,
         });
       });
     });
 
-    // 5. ปรับแต่ง Header เล็กน้อยให้ตัวหนา
     worksheet.getRow(1).font = { bold: true };
 
-    // 6. ตั้งค่า Header สำหรับส่งไฟล์กลับไปให้เบราว์เซอร์ดาวน์โหลด
     res.setHeader(
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -322,7 +318,6 @@ exports.exportOrderReportExcel = async (req, res) => {
       `attachment; filename=${order_type || "Order"}_Report.xlsx`,
     );
 
-    // 7. ส่งไฟล์ออกไป
     await workbook.xlsx.write(res);
     res.end();
   } catch (error) {

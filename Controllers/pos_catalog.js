@@ -158,7 +158,7 @@ exports.getPosProducts = async (req, res) => {
     } = req.query;
     const baseUrl = `${req.protocol}://${req.get("host")}/uploads/product/`;
 
-    // let targetWarehouseId = null;
+    let targetWarehouseId = null;
     // if (category) {
     //   const masterCat = await Masters.findById(category);
     //   if (masterCat) {

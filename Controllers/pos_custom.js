@@ -244,7 +244,7 @@ exports.updateCustomSessionItem = async (req, res) => {
   }
 }; // อัปเดตจำนวน (Qty) ในหน้าตะกร้า Custom (ปุ่ม + / -)/อัปเดทค่า Deposit มัดจำ
 
-exports.generateOrderNumber = async (comp_id, typeCode = "ORD") => {
+const generateOrderNumber = async (comp_id, typeCode = "ORD") => {
   const date = new Date();
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -265,6 +265,7 @@ exports.generateOrderNumber = async (comp_id, typeCode = "ORD") => {
 
   return `${prefix}-${String(nextSeq).padStart(4, "0")}`;
 };
+exports.generateOrderNumber = generateOrderNumber;
 
 exports.finishCustomOrder = async (req, res) => {
   const session = await mongoose.startSession();
@@ -287,6 +288,7 @@ exports.finishCustomOrder = async (req, res) => {
       throw new Error("ไม่มีสินค้าในรายการตะกร้า");
 
     const orderNo = await generateOrderNumber(user.comp_id, "CST");
+    let calculatedTotalItems = 0;
     let orderItems = [];
 
     for (const item of items) {

@@ -18,20 +18,44 @@ exports.getPosItemTypes = async (req, res) => {
     }
     const user = await User.findById(req.user.id).select("comp_id").lean();
     const comp_id = user.comp_id;
-    const { category_id } = req.query;
+    const { category } = req.query;
 
-    if (!category_id) {
+    if (!category) {
       return res
         .status(400)
-        .json({ success: false, message: "Category ID is required" });
+        .json({ success: false, message: "Category is required" });
     }
 
-    // 1. ดึง Product ออกมาทั้งหมดแบบดิบๆ
+    /* resolve category slug → ObjectId */
+
+    const masterCategory = await Masters.findOne({
+      master_name: { $regex: new RegExp(`^${category}$`, "i") },
+      comp_id: comp_id,
+    }).select("_id");
+
+    if (!masterCategory) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid category",
+      });
+    }
+
+    const categoryId = masterCategory._id;
+
+    /* query product */
+
     const products = await Product.find({
-      product_category: category_id,
+      product_category: categoryId,
       comp_id: comp_id,
       is_active: true,
     }).lean();
+
+    // 1. ดึง Product ออกมาทั้งหมดแบบดิบๆ
+    // const products = await Product.find({
+    //   product_category: category_id,
+    //   comp_id: comp_id,
+    //   is_active: true,
+    // }).lean();
 
     // 2. ดึง ProductDetail ทั้งหมดที่เกี่ยวข้อง (ดึงแยกตารางมาเลย ชัวร์กว่า)
     const detailIds = products
@@ -134,31 +158,51 @@ exports.getPosProducts = async (req, res) => {
     } = req.query;
     const baseUrl = `${req.protocol}://${req.get("host")}/uploads/product/`;
 
-    let targetWarehouseId = null;
+    // let targetWarehouseId = null;
+    // if (category) {
+    //   const masterCat = await Masters.findById(category);
+    //   if (masterCat) {
+    //     const nameMap = {
+    //       "Product Master": "productmaster",
+    //       Stone: "stone",
+    //       "Stone/Diamond": "stone",
+    //       "Semi-Mount": "semimount",
+    //       Accessories: "accessory",
+    //       Others: "others",
+    //     };
+    //     const warehouseType =
+    //       nameMap[masterCat.master_name] ||
+    //       masterCat.master_name.toLowerCase().replace(/ /g, "");
+    //     const warehouse = await Warehouse.findOne({
+    //       comp_id,
+    //       warehouse_type: warehouseType,
+    //     });
+    //     if (warehouse) targetWarehouseId = warehouse._id;
+    //   }
+    // }
+
+    const query = { comp_id, is_active: true };
+
+    let categoryObjectId = null;
+
     if (category) {
-      const masterCat = await Masters.findById(category);
-      if (masterCat) {
-        const nameMap = {
-          "Product Master": "productmaster",
-          Stone: "stone",
-          "Stone/Diamond": "stone",
-          "Semi-Mount": "semimount",
-          Accessories: "accessory",
-          Others: "others",
-        };
-        const warehouseType =
-          nameMap[masterCat.master_name] ||
-          masterCat.master_name.toLowerCase().replace(/ /g, "");
-        const warehouse = await Warehouse.findOne({
+      if (mongoose.Types.ObjectId.isValid(category)) {
+        categoryObjectId = category;
+      } else {
+        const masterCat = await Masters.findOne({
+          master_name: { $regex: new RegExp(`^${category}$`, "i") },
           comp_id,
-          warehouse_type: warehouseType,
         });
-        if (warehouse) targetWarehouseId = warehouse._id;
+
+        if (masterCat) categoryObjectId = masterCat._id;
       }
     }
 
-    const query = { comp_id, is_active: true };
-    if (category) query.product_category = category;
+    if (categoryObjectId) {
+      query.product_category = categoryObjectId;
+    }
+
+    // if (category) query.product_category = category;
 
     // 🟢 ระบบค้นหาขั้นเทพ: สลับร่าง String -> ID เพื่อค้นหาหิน
     const andConditions = [];

@@ -19,7 +19,7 @@ exports.createStock = async (req, res) => {
       });
     }
 
-    const { warehouse_id, product_id, quantity } = req.body;
+    const { warehouse_id, product_id, quantity, unit } = req.body;
 
     if (!warehouse_id || !product_id || !quantity) {
       return res.status(400).json({
@@ -40,6 +40,7 @@ exports.createStock = async (req, res) => {
           comp_id: user.comp_id,
           warehouse_id: warehouse_id,
           product_id: product_id,
+          unit: unit || "pcs",
           last_in_date: date || new Date(),
         },
       },

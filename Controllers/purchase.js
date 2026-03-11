@@ -199,6 +199,18 @@ exports.createPurchase = async (req, res) => {
     // -------------------------------------------------------------
     // 4. เตรียมข้อมูล Item และคำนวณค่าเงินรายชิ้น (Unit Conversion)
     // -------------------------------------------------------------
+    for (const item of items) {
+      if (!item.gross_weight) throw new Error("Gross weight is required");
+
+      if (!item.quantity) throw new Error("Quantity is required");
+
+      if (!item.unit) throw new Error("Unit is required");
+
+      if (!item.cost) throw new Error("Cost / Unit is required");
+
+      if (!item.price) throw new Error("Sale price is required");
+    }
+
     const processedItems = items.map((item) => {
       const qty = Number(item.quantity) || 0;
       const gwt = Number(item.gross_weight) || 0;
@@ -472,9 +484,10 @@ async function getProductMap(comp_id, allSheetData) {
 
   const products = await Product.find({ comp_id, product_code: { $in: codes } })
     .select(
-      "product_name product_code file product_detail_id price unit category type",
+      "product_name product_code file product_detail_id price unit product_category type",
     )
-    .populate("product_detail_id");
+    .populate("product_detail_id")
+    .populate("product_category", "master_name");
 
   const map = new Map();
   products.forEach((p) => map.set(p.product_code.trim(), p));
@@ -489,22 +502,43 @@ function validateRow(row, codeStr, productMap) {
 
   const norm = (s) =>
     String(s || "")
-      .trim()
-      .toLowerCase();
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "");
 
   if (row["Name"] && norm(row["Name"]) !== norm(product.product_name))
     return `Name Mismatch (Excel: ${row["Name"]}, DB: ${product.product_name})`;
 
-  const dbCat = product.category || product.product_detail_id?.category;
-  if (row["Category"] && norm(row["Category"]) !== norm(dbCat))
+  let dbCat = "";
+
+  if (product.product_category?.master_name) {
+    dbCat = product.product_category.master_name;
+  }
+
+  console.log("Excel Category:", row["Category"]);
+  console.log("DB Category:", dbCat);
+
+  const clean = (s) =>
+    String(s || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "");
+
+  if (row["Category"] && clean(row["Category"]) !== clean(dbCat))
     return `Category Mismatch`;
 
   const dbType = product.type || product.product_detail_id?.type;
-  if (row["Type"] && norm(row["Type"]) !== norm(dbType)) return `Type Mismatch`;
 
-  const excelUnit = row["Product Unit"] || row["Purchase Unit"];
-  if (excelUnit && norm(excelUnit) !== norm(product.unit))
-    return `Unit Mismatch`;
+  if (
+    row["Type"] &&
+    norm(row["Type"]) &&
+    norm(dbType) &&
+    !norm(row["Type"]).includes(norm(dbType))
+  ) {
+    return `Type Mismatch`;
+  }
+
+  // const excelUnit = row["Product Unit"] || row["Purchase Unit"];
+  // if (excelUnit && norm(excelUnit) !== norm(product.unit))
+  //   return `Unit Mismatch`;
 
   const ps = product.product_detail_id?.primary_stone || {};
   if (row["Main Stone"] && norm(row["Main Stone"]) !== norm(ps.stone_name))
@@ -574,9 +608,7 @@ function mapValidItem(
   // ถ้า Excel ไม่มีข้อมูลน้ำหนัก (เป็นค่าว่างหรือ 0) ให้ใช้ค่า calculated จาก Master
   const final_s_weight = parseNum(row["S.Weight"]) || calculated.s_weight;
   const final_nwt = parseNum(row["Net Weight (g)"]) || calculated.nwt;
-  const final_gwt =
-    parseNum(row["Total Gross Weight"] || row["Gross Weight (g)"]) ||
-    calculated.gwt;
+  const final_gwt = parseNum(row["Gross Weight (g)"]) || calculated.gwt;
 
   return {
     product_id: product._id,
@@ -785,6 +817,7 @@ exports.getProductsForPurchasePopup = async (req, res) => {
         "product_code product_name file price unit category type product_detail_id",
       )
       .populate("product_detail_id")
+      .populate("category", "master_name")
       .lean();
 
     const formattedProducts = products.map((product) => {
@@ -796,7 +829,7 @@ exports.getProductsForPurchasePopup = async (req, res) => {
         code: product.product_code,
         name: product.product_name,
         image: product.file && product.file.length > 0 ? product.file[0] : "",
-        category: product.category,
+        category: product.product_category,
         type: product.type,
         unit: product.unit,
         price: product.price,

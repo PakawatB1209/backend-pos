@@ -9,6 +9,7 @@ const {
   getPurchaseById,
   getProductsForPurchasePopup,
   testCalculateWeight,
+  downloadPurchaseTemplate,
 } = require("../Controllers/purchase");
 const { uploadExcel } = require("../Middleware/upload");
 const { auth } = require("../Middleware/auth");
@@ -20,6 +21,8 @@ router.post(
   checkPermission("Purchase", "add"),
   createPurchase,
 );
+
+router.get("/purchase/download-template", auth, downloadPurchaseTemplate);
 
 router.get("/select-products", auth, getProductsForPurchasePopup);
 

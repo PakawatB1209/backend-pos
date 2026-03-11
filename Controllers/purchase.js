@@ -465,7 +465,9 @@ function getAllSheetData(workbook) {
 
 async function getProductMap(comp_id, allSheetData) {
   const codes = allSheetData
-    .map(({ row }) => String(row["Code"] || row["code"] || "").trim())
+    .map(({ row }) =>
+      String(row["Product Code"] || row["Code"] || row["code"] || "").trim(),
+    )
     .filter(Boolean);
 
   const products = await Product.find({ comp_id, product_code: { $in: codes } })
@@ -537,7 +539,7 @@ function mapValidItem(
   othersId,
   baseUrl,
 ) {
-  const qty = parseNum(row["QTY"] || row["Qty"]);
+  const qty = parseNum(row["Quantity"] || row["QTY"] || row["Qty"]);
   if (qty <= 0) return null;
 
   let image = "";
@@ -548,12 +550,23 @@ function mapValidItem(
   }
 
   const detail = product.product_detail_id || {};
-  const whName = row["Warehouse"] || row["Category"] || "";
+  const whType = (row["Warehouse Type"] || "").toString().trim().toLowerCase();
+  const whName = (
+    row["Warehouse Name"] ||
+    row["Warehouse"] ||
+    row["Category"] ||
+    ""
+  )
+    .toString()
+    .trim();
+  const whNameClean = whName.replaceAll(/[^a-zA-Z0-9]/g, "").toLowerCase();
   const whKey = whName
     .toString()
     .replaceAll(/[^a-zA-Z0-9]/g, "")
     .toLowerCase();
-  const whId = warehouseMap[whKey] || fallbackId;
+  const whId = warehouseMap[whType] || warehouseMap[whNameClean] || fallbackId;
+
+  const isOthers = othersId && whId.toString() === othersId.toString();
 
   // เรียกใช้ฟังก์ชันคำนวณน้ำหนักจาก Master Data
   const calculated = calculateItemWeights(product);
@@ -561,7 +574,9 @@ function mapValidItem(
   // ถ้า Excel ไม่มีข้อมูลน้ำหนัก (เป็นค่าว่างหรือ 0) ให้ใช้ค่า calculated จาก Master
   const final_s_weight = parseNum(row["S.Weight"]) || calculated.s_weight;
   const final_nwt = parseNum(row["Net Weight (g)"]) || calculated.nwt;
-  const final_gwt = parseNum(row["Gross Weight (g)"]) || calculated.gwt;
+  const final_gwt =
+    parseNum(row["Total Gross Weight"] || row["Gross Weight (g)"]) ||
+    calculated.gwt;
 
   return {
     product_id: product._id,
@@ -569,11 +584,13 @@ function mapValidItem(
     name: product.product_name,
     image,
     warehouse_id: whId,
-    warehouse_name: whId === othersId ? "Others (Auto)" : whName,
+    warehouse_name: isOthers ? "Others (Auto)" : whName,
     quantity: qty,
-    cost: parseNum(row["Cost"]),
-    price: parseNum(row["Price"], product.price),
-    amount: qty * parseNum(row["Cost"]),
+    cost: parseNum(row["Avg Cost"] || row["Cost"]),
+    price: parseNum(row["Avg Price"] || row["Price"], product.price),
+    amount:
+      parseNum(row["Total Cost Amount"]) ||
+      qty * parseNum(row["Avg Cost"] || row["Cost"]),
 
     // อัปเดตช่องน้ำหนักให้ตรงตามเงื่อนไขวงการเครื่องประดับ
     stone_weight: final_s_weight,
@@ -607,8 +624,8 @@ exports.importPreview = async (req, res) => {
 
     for (const { row } of allSheetData) {
       const codeStr =
-        row["Code"] || row["code"]
-          ? String(row["Code"] || row["code"]).trim()
+        row["Product Code"] || row["Code"] || row["code"]
+          ? String(row["Product Code"] || row["Code"] || row["code"]).trim()
           : "";
 
       // 🛑 ตรวจสอบ Error
@@ -832,5 +849,179 @@ exports.testCalculateWeight = (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+exports.downloadPurchaseTemplate = async (req, res) => {
+  try {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Purchase_Template");
+
+    // 1. กำหนดหัวคอลัมน์ทั้ง 22 คอลัมน์
+    worksheet.columns = [
+      { header: "Code", key: "code", width: 20 },
+      { header: "Name", key: "name", width: 25 },
+      { header: "Category", key: "category", width: 20 },
+      { header: "Type", key: "type", width: 15 },
+      { header: "Gross Weight", key: "gross_weight", width: 25 }, // ขยายช่องนิดนึงให้ใส่คำเตือนพอ
+      { header: "Net Weight", key: "net_weight", width: 25 },
+      { header: "Product Unit", key: "product_unit", width: 15 },
+      { header: "Size", key: "size", width: 15 },
+      { header: "Stone", key: "stone", width: 15 },
+      { header: "Shape", key: "shape", width: 15 },
+      { header: "Color", key: "color", width: 15 },
+      { header: "Clarity", key: "clarity", width: 15 },
+      { header: "Stone Qty", key: "stone_qty", width: 15 },
+      { header: "Stone Weight", key: "stone_weight", width: 15 },
+      { header: "Additional Stones", key: "additional_stones", width: 20 },
+      { header: "Components", key: "components", width: 20 },
+      { header: "Accessories", key: "accessories", width: 20 },
+      { header: "Status", key: "status", width: 15 },
+      { header: "Purchase Unit", key: "purchase_unit", width: 25 },
+      { header: "Qty", key: "qty", width: 25 },
+      { header: "Cost", key: "cost", width: 25 },
+      { header: "Price", key: "price", width: 25 },
+    ];
+
+    // 2. ใส่ข้อมูลตัวอย่าง (Example Data) เปลี่ยนช่องสีแดงเป็นคำว่า "ต้องใส่ค่า"
+    worksheet.addRows([
+      {
+        code: "JW-RING-001",
+        name: "แหวนเพชรชู 18K",
+        category: "productmaster",
+        type: "Ring",
+        gross_weight: "ต้องใส่ค่า (ex. 5.5)",
+        net_weight: "ต้องใส่ค่า (ex. 4.8)",
+        product_unit: "g",
+        size: "52",
+        stone: "Diamond",
+        shape: "Round",
+        color: "D",
+        clarity: "VVS1",
+        stone_qty: 1,
+        stone_weight: 0.5,
+        additional_stones: "-",
+        components: "18K Gold",
+        accessories: "Box",
+        status: "Active",
+        purchase_unit: "ต้องใส่ค่า (ex. pcs)",
+        qty: "ต้องใส่ค่า (ex. 10)",
+        cost: "ต้องใส่ค่า (ex. 15000)",
+        price: "ต้องใส่ค่า (ex. 25000)",
+      },
+      {
+        code: "ST-RUBY-001",
+        name: "ทับทิมสยาม",
+        category: "stone",
+        type: "-",
+        gross_weight: "ต้องใส่ค่า (ex. 0)",
+        net_weight: "ต้องใส่ค่า (ex. 0)",
+        product_unit: "cts",
+        size: "6x4 mm",
+        stone: "Ruby",
+        shape: "Oval",
+        color: "Red",
+        clarity: "VVS",
+        stone_qty: 5,
+        stone_weight: 2.5,
+        additional_stones: "-",
+        components: "-",
+        accessories: "-",
+        status: "Active",
+        purchase_unit: "ต้องใส่ค่า (ex. cts)",
+        qty: "ต้องใส่ค่า (ex. 5)",
+        cost: "ต้องใส่ค่า (ex. 8000)",
+        price: "ต้องใส่ค่า (ex. 12000)",
+      },
+      {
+        code: "ACC-BOX-01",
+        name: "กล่องกำมะหยี่สีแดง",
+        category: "accessory",
+        type: "-",
+        gross_weight: "ต้องใส่ค่า (ex. 150)",
+        net_weight: "ต้องใส่ค่า (ex. 150)",
+        product_unit: "pcs",
+        size: "10x10 cm",
+        stone: "-",
+        shape: "-",
+        color: "-",
+        clarity: "-",
+        stone_qty: 0,
+        stone_weight: 0,
+        additional_stones: "-",
+        components: "-",
+        accessories: "-",
+        status: "Active",
+        purchase_unit: "ต้องใส่ค่า (ex. pcs)",
+        qty: "ต้องใส่ค่า (ex. 100)",
+        cost: "ต้องใส่ค่า (ex. 150)",
+        price: "ต้องใส่ค่า (ex. 300)",
+      },
+    ]);
+
+    const totalColumns = 22;
+
+    // 3. ปรับสไตล์หัวตาราง (แถว 1)
+    const headerRow = worksheet.getRow(1);
+    const redColumns = [
+      "Gross Weight",
+      "Net Weight",
+      "Purchase Unit",
+      "Qty",
+      "Cost",
+      "Price",
+    ]; // ชื่อคอลัมน์ที่บังคับใส่
+
+    for (let col = 1; col <= totalColumns; col++) {
+      const cell = headerRow.getCell(col);
+
+      // ถ้าชื่อคอลัมน์ตรงกับตัวที่บังคับ (สีแดง)
+      if (redColumns.includes(cell.value)) {
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FFFF4C4C" }, // พื้นหลังสีแดงสว่าง
+        };
+        cell.font = { bold: true, color: { argb: "FFFFFFFF" } }; // ตัวหนังสือสีขาว
+      } else {
+        // คอลัมน์อื่นๆ ทั่วไป (สีเทา)
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FFF0F0F0" },
+        };
+        cell.font = { bold: true, color: { argb: "FF000000" } }; // ตัวหนังสือสีดำ
+      }
+    }
+
+    // 4. ทำไฮไลท์แถวตัวอย่าง (แถว 2, 3, 4) เป็นสีเหลืองอ่อน และตัวเอียง
+    [2, 3, 4].forEach((rowNum) => {
+      const row = worksheet.getRow(rowNum);
+      row.font = { italic: true, color: { argb: "FF555555" } };
+
+      for (let col = 1; col <= totalColumns; col++) {
+        row.getCell(col).fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FFFFF2CC" },
+        };
+      }
+    });
+
+    // 5. ส่งไฟล์
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=Purchase_Import_Example.xlsx",
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error("Download Template Error:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
   }
 };

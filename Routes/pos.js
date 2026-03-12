@@ -17,6 +17,8 @@ const {
   saveCustomProduct,
   updateCustomSessionItem,
   finishCustomOrder,
+  previewNextOrderNumber,
+  getCustomSessionDetail,
 } = require("../Controllers/pos_custom");
 
 const {
@@ -44,6 +46,8 @@ router.get("/POS/Product/Detail/:id", auth, getPosProductDetail);
 // หมวด Custom Order (งานสั่งทำ)
 // ==========================================
 
+router.get("/custom/next-order-no", auth, previewNextOrderNumber);
+
 // กดปุ่ม Custom เพื่อเพิ่มสินค้าเข้าจอง (Badge +1)
 router.post("/POS/custom/add-to-custom-session", auth, addToCustomSession);
 
@@ -67,6 +71,7 @@ router.delete(
   deleteCustomSessionItem,
 );
 
+router.get("/POS/custom/:session_id", auth, getCustomSessionDetail);
 // กดปุ่ม Save เพื่อบันทึกสินค้าที่แต่งสเปกเสร็จแล้ว
 router.post("/POS/custom/save-custom-product", auth, saveCustomProduct);
 

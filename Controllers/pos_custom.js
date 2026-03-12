@@ -185,6 +185,239 @@ exports.deleteCustomSessionItem = async (req, res) => {
   }
 }; // ล้างสินค้า custom ที่ละตัว
 
+exports.getCustomSessionDetail = async (req, res) => {
+  try {
+    const { session_id } = req.params;
+    const user = await User.findById(req.user.id).select("comp_id").lean();
+    if (!user || !user.comp_id) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User not associated with company." });
+    }
+
+    const comp_id = user.comp_id;
+    const baseUrl = `${req.protocol}://${req.get("host")}/uploads/product/`;
+
+    // 1. ค้นหา Session และดึงข้อมูล Product เชิงลึก (เหมือน getPosProductDetail)
+    const sessionItem = await CustomSession.findOne({
+      _id: session_id,
+      comp_id: comp_id,
+      sales_staff_id: req.user.id,
+    })
+      .populate({
+        path: "product_id",
+        populate: [
+          { path: "product_category", select: "master_name" },
+          { path: "product_item_type", select: "master_name" },
+          {
+            path: "product_detail_id",
+            populate: [
+              { path: "masters.master_id", select: "master_name master_type" },
+              //พลอยหลัก
+              { path: "primary_stone.stone_name", select: "master_name" },
+              { path: "primary_stone.shape", select: "master_name" },
+              { path: "primary_stone.clarity", select: "master_name" },
+              { path: "primary_stone.quality", select: "master_name" },
+              { path: "primary_stone.cutting", select: "master_name" },
+              //พลอยรอง
+              { path: "additional_stones.stone_name", select: "master_name" },
+              { path: "additional_stones.shape", select: "master_name" },
+              { path: "additional_stones.clarity", select: "master_name" },
+              { path: "additional_stones.quality", select: "master_name" },
+              { path: "additional_stones.cutting", select: "master_name" },
+            ],
+          },
+        ],
+      })
+      .lean();
+
+    if (!sessionItem || !sessionItem.product_id) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Session or Product not found" });
+    }
+
+    const product = sessionItem.product_id;
+    const detail = product.product_detail_id || {};
+
+    // --- ค้นหา Metal และ Color จาก Array "masters" ---
+    let metalObj = null;
+    let metalColorObj = null;
+
+    if (detail.masters && detail.masters.length > 0) {
+      detail.masters.forEach((item) => {
+        const m = item.master_id;
+        if (!m) return;
+        const name = m.master_name || "";
+        if (
+          name.includes("18K") ||
+          name.includes("14K") ||
+          name.includes("9K") ||
+          name.includes("Platinum")
+        ) {
+          metalObj = m;
+        } else if (
+          name.includes("White") ||
+          name.includes("Rose") ||
+          name.includes("Yellow")
+        ) {
+          metalColorObj = m;
+        }
+      });
+    }
+
+    const metalName = metalObj ? metalObj.master_name : "-";
+    const metalColorName = metalColorObj
+      ? metalColorObj.master_name
+      : detail.color || "-";
+
+    // จัดการ Attributes สำหรับแสดงผลในหน้า UI
+    const categoryName = product.product_category?.master_name || "";
+    const catLower = categoryName.toLowerCase();
+    const itemTypeName = product.product_item_type?.master_name || "-";
+
+    let attributes = {
+      main_info: [],
+      stone_info: [],
+      additional_stones: [],
+    };
+
+    if (catLower.includes("stone") || catLower.includes("diamond")) {
+      attributes.main_info = null;
+      const stone = detail.primary_stone || {};
+      attributes.stone_info = [
+        { label: "Code", value: product.product_code },
+        { label: "Stone Name", value: stone.stone_name?.master_name || "-" },
+        { label: "Shape", value: stone.shape?.master_name || "-" },
+        { label: "Color", value: stone.color || "-" },
+        { label: "Clarity", value: stone.clarity?.master_name || "-" },
+        { label: "Cutting", value: stone.cutting?.master_name || "-" },
+        { label: "Quality", value: stone.quality?.master_name || "-" },
+        { label: "Weight", value: stone.weight ? `${stone.weight} cts` : "-" },
+        { label: "Size", value: stone.size || "-" },
+      ];
+    } else {
+      attributes.main_info = [
+        { label: "Code", value: product.product_code },
+        { label: "Category", value: categoryName },
+        { label: "Item type", value: itemTypeName },
+        { label: "Product size", value: detail.product_size || "-" },
+        { label: "Metal", value: metalName },
+        { label: "Metal color", value: metalColorName },
+        {
+          label: "Nwt",
+          value: detail.net_weight ? `${detail.net_weight} g` : "-",
+        },
+        {
+          label: "Gwt",
+          value: detail.gross_weight ? `${detail.gross_weight} g` : "-",
+        },
+      ];
+
+      const stone = detail.primary_stone || {};
+      attributes.stone_info = [
+        { label: "Stone Name", value: stone.stone_name?.master_name || "-" },
+        { label: "Shape", value: stone.shape?.master_name || "-" },
+        { label: "Size", value: stone.size || "-" },
+        {
+          label: "S.Weight",
+          value: stone.weight ? `${stone.weight} cts` : "-",
+        },
+        { label: "Color", value: stone.color || "-" },
+        { label: "Cutting", value: stone.cutting?.master_name || "-" },
+        { label: "Quality", value: stone.quality?.master_name || "-" },
+        { label: "Clarity", value: stone.clarity?.master_name || "-" },
+      ];
+    }
+
+    if (detail.additional_stones && detail.additional_stones.length > 0) {
+      detail.additional_stones.forEach((as) => {
+        attributes.additional_stones.push([
+          { label: "Stone Name", value: as.stone_name?.master_name || "-" },
+          { label: "Shape", value: as.shape?.master_name || "-" },
+          { label: "Size", value: as.size || "-" },
+          { label: "S.Weight", value: as.weight ? `${as.weight} cts` : "-" },
+          { label: "Color", value: as.color || "-" },
+          { label: "Cutting", value: as.cutting?.master_name || "-" },
+          { label: "Quality", value: as.quality?.master_name || "-" },
+          { label: "Clarity", value: as.clarity?.master_name || "-" },
+          { label: "Qty", value: as.qty ? `${as.qty}` : "-" },
+        ]);
+      });
+    }
+
+    // Raw Data (สเปกตั้งต้นจาก Master) สำหรับส่งไปแปะใน Input Form
+    const raw_data = {
+      product_detail_id: detail._id,
+      item_type_id: product.product_item_type?._id,
+      metal_id: metalObj ? metalObj._id : null,
+      metal_color: metalColorName,
+      size: detail.size,
+      product_size: detail.product_size,
+      nwt: detail.net_weight,
+      gwt: detail.gross_weight,
+      description: detail.description,
+      stone: {
+        name_id: detail.primary_stone?.stone_name?._id,
+        shape_id: detail.primary_stone?.shape?._id,
+        clarity_id: detail.primary_stone?.clarity?._id,
+        quality_id: detail.primary_stone?.quality?._id,
+        cutting_id: detail.primary_stone?.cutting?._id,
+        size: detail.primary_stone?.size,
+        weight: detail.primary_stone?.weight,
+        color: detail.primary_stone?.color,
+      },
+      additional_stones: (detail.additional_stones || []).map((as) => ({
+        stone_name_id: as.stone_name?._id || as.stone_name,
+        stone_shape_id: as.shape?._id || as.shape,
+        stone_size: as.size,
+        s_weight: as.weight,
+        stone_color: as.color,
+        cutting: as.cutting?._id || as.cutting,
+        quality: as.quality?._id || as.quality,
+        clarity: as.clarity?._id || as.clarity,
+        qty: as.qty,
+      })),
+    };
+
+    const images = (product.file || []).map((img) =>
+      img.startsWith("http") ? img : `${baseUrl}${img}`,
+    );
+
+    res.json({
+      success: true,
+      data: {
+        session_id: sessionItem._id,
+        customer_id: sessionItem.customer_id,
+        is_saved: sessionItem.is_saved,
+
+        // ข้อมูลสินค้า (เอาไว้แสดงรูป ชื่อ รหัส)
+        _id: product._id,
+        product_code: product.product_code,
+        product_name: product.product_name,
+        images,
+        cover_image: images[0] || null,
+        price: detail.price || 0,
+        qty: sessionItem.qty || 1,
+        deposit: sessionItem.deposit || 0,
+
+        // ข้อมูลสำหรับโชว์ตารางรายละเอียด
+        attributes,
+
+        // สเปกตั้งต้น (จากฐานข้อมูลหลัก)
+        raw_data,
+
+        // 🟢 สเปกที่พนักงาน Custom ไว้ล่าสุด (ถ้าว่างจะเป็น {})
+        // หน้าบ้านต้องเอา custom_spec ตัวนี้ไปเขียนทับ raw_data ก่อนโชว์ในช่อง Input ครับ
+        custom_spec: sessionItem.custom_spec || {},
+      },
+    });
+  } catch (error) {
+    console.error("Get Custom Detail Error:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
 exports.saveCustomProduct = async (req, res) => {
   try {
     const { session_id, customer_id, detail_data } = req.body;
@@ -266,6 +499,28 @@ const generateOrderNumber = async (comp_id, typeCode = "ORD") => {
   return `${prefix}-${String(nextSeq).padStart(4, "0")}`;
 };
 exports.generateOrderNumber = generateOrderNumber;
+
+exports.previewNextOrderNumber = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("comp_id").lean();
+    if (!user || !user.comp_id) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User not found" });
+    }
+
+    // เรียกใช้ฟังก์ชันเดิมของคุณ โดยส่ง "CST" (หรือ "ORD") ไป
+    const nextOrderNo = await generateOrderNumber(user.comp_id, "CST");
+
+    res.json({
+      success: true,
+      order_no: nextOrderNo,
+    });
+  } catch (error) {
+    console.error("Preview Order Number Error:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
 
 exports.finishCustomOrder = async (req, res) => {
   const session = await mongoose.startSession();
@@ -375,6 +630,7 @@ exports.finishCustomOrder = async (req, res) => {
 
       const itemQty = item.qty || 1;
       calculatedTotalItems += itemQty;
+      const itemDeposit = item.deposit || 0;
 
       orderItems.push({
         product_id: item.product_id,
@@ -382,9 +638,11 @@ exports.finishCustomOrder = async (req, res) => {
         product_name: item.product_name,
         image: item.image,
         qty: item.qty || 1,
+        original_price: item.original_price || item.unit_price || 0,
         unit_price: item.unit_price || 0,
         total_item_price: (item.qty || 1) * (item.unit_price || 0),
-        deposit: item.deposit || 0,
+        deposit: itemDeposit,
+        total_deposit: item.total_deposit || itemQty * itemDeposit,
         custom_spec: finalCustomSpec,
       });
     }

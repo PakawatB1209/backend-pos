@@ -109,7 +109,7 @@ exports.getOrderReport = async (req, res) => {
 
     // 6. ดึงข้อมูลจาก Database พร้อมเชื่อมโยง
     const orders = await Order.find(query)
-      .populate("customer_id", "name")
+      .populate("customer_id", "customer_name")
       .populate("sale_staff_id", "username")
       .populate("items.custom_spec.item_type_id", "master_name")
       .populate("items.custom_spec.metal_id", "master_name")
@@ -121,7 +121,6 @@ exports.getOrderReport = async (req, res) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limitNumber);
-
     // 7. แปลงรูปแบบข้อมูลให้ตรงกับ DataGrid
     const formattedOrders = orders.map((order) => {
       const headerAmount =
@@ -134,7 +133,7 @@ exports.getOrderReport = async (req, res) => {
         return {
           _id: item._id,
           sell_id: order.order_no,
-          customer: order.customer_id?.name || "-",
+          customer: order.customer_id?.customer_name || "-",
           date: order.order_date,
 
           image: item.image,
@@ -165,9 +164,11 @@ exports.getOrderReport = async (req, res) => {
             item.discount_percent && item.discount_percent > 0
               ? `${item.discount_percent}%`
               : item.discount_amount || 0,
+          deposit: item.deposit || 0,
+          total_deposit: item.total_deposit || item.qty * (item.deposit || 0),
           amount:
             order.order_type === "Custom"
-              ? item.deposit || 0
+              ? item.total_deposit || item.qty * (item.deposit || 0)
               : item.total_item_price || 0,
         };
       });
@@ -176,7 +177,7 @@ exports.getOrderReport = async (req, res) => {
         _id: order._id,
         order_no: order.order_no,
         order_date: order.order_date,
-        customer_name: order.customer_id?.name || "-",
+        customer_name: order.customer_id?.customer_name || "-",
         total_items: order.total_items || 0,
         header_amount: headerAmount,
         order_type: order.order_type,
@@ -224,6 +225,7 @@ exports.exportOrderReportExcel = async (req, res) => {
     }
     const comp_id = currentUser.comp_id;
 
+    // รับค่า order_type จาก URL (เช่น ?order_type=Sell หรือ ?order_type=Custom)
     const { order_type } = req.query;
     const query = { comp_id: comp_id };
 
@@ -232,7 +234,7 @@ exports.exportOrderReportExcel = async (req, res) => {
     }
 
     const orders = await Order.find(query)
-      .populate("customer_id", "name")
+      .populate("customer_id", "customer_name") // 🟢 แก้เป็น customer_name ให้แล้ว
       .populate("sale_staff_id", "username")
       .populate("items.custom_spec.item_type_id", "master_name")
       .populate("items.custom_spec.metal_id", "master_name")
@@ -279,9 +281,10 @@ exports.exportOrderReportExcel = async (req, res) => {
             ? `${item.discount_percent}%`
             : item.discount_amount || 0;
 
+        // 🟢 แก้ไขยอด Amount รายชิ้น ให้ดึง total_deposit มาใช้ (ถ้าเป็น Custom)
         const itemAmount =
           order.order_type === "Custom"
-            ? item.deposit || 0
+            ? item.total_deposit || item.qty * item.deposit || 0
             : item.total_item_price || 0;
 
         worksheet.addRow({
@@ -289,7 +292,7 @@ exports.exportOrderReportExcel = async (req, res) => {
           date: order.order_date
             ? new Date(order.order_date).toLocaleString("en-GB")
             : "-",
-          customer: order.customer_id?.name || "-",
+          customer: order.customer_id?.customer_name || "-", // 🟢 แก้เป็น customer_name
           code: item.product_code,
           product_name: item.product_name,
           category: spec.item_type_name || "-",

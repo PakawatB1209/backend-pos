@@ -336,7 +336,15 @@ exports.finishSellOrder = async (req, res) => {
         .populate("product_item_type", "master_name")
         .populate({
           path: "product_detail_id",
-          populate: { path: "masters.master_id", select: "master_name" },
+          populate: [
+            { path: "masters.master_id", select: "master_name" },
+            // 🟢 สั่งดึงข้อมูล Master ของพลอยหลักมาด้วย
+            { path: "primary_stone.stone_name", select: "master_name" },
+            { path: "primary_stone.shape", select: "master_name" },
+            { path: "primary_stone.cutting", select: "master_name" },
+            { path: "primary_stone.quality", select: "master_name" },
+            { path: "primary_stone.clarity", select: "master_name" },
+          ],
         })
         .session(session);
 
@@ -376,6 +384,30 @@ exports.finishSellOrder = async (req, res) => {
           metal_name: metalObj ? metalObj.master_name : null,
           metal_color: metalColorObj ? metalColorObj.master_name : detail.color,
           size: detail.size || detail.product_size,
+
+          // 🟢 ยัดข้อมูลน้ำหนัก (Weight)
+          nwt: detail.net_weight || 0,
+          gwt: detail.gross_weight || 0,
+
+          // 🟢 ยัดข้อมูลพลอยหลัก (Primary Stone)
+          stone_name_id: detail.primary_stone?.stone_name?._id,
+          stone_name: detail.primary_stone?.stone_name?.master_name,
+
+          stone_shape_id: detail.primary_stone?.shape?._id,
+          stone_shape_name: detail.primary_stone?.shape?.master_name,
+
+          stone_size: detail.primary_stone?.size,
+          s_weight: detail.primary_stone?.weight || 0,
+          stone_color: detail.primary_stone?.color,
+
+          cutting: detail.primary_stone?.cutting?._id,
+          cutting_name: detail.primary_stone?.cutting?.master_name,
+
+          quality: detail.primary_stone?.quality?._id,
+          quality_name: detail.primary_stone?.quality?.master_name,
+
+          clarity: detail.primary_stone?.clarity?._id,
+          clarity_name: detail.primary_stone?.clarity?.master_name,
         };
       } else if (item.custom_spec) {
         sellSpec = item.custom_spec;

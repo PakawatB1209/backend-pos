@@ -549,84 +549,151 @@ exports.finishCustomOrder = async (req, res) => {
     for (const item of items) {
       let finalCustomSpec = {};
 
+      // 🟢 1. ดึงสเปกต้นฉบับจาก Product (เผื่อพนักงานไม่ได้แก้อะไรเลย จะได้มีของเดิมไปโชว์)
+      const productRecord = await mongoose
+        .model("product")
+        .findById(item.product_id)
+        .populate("product_item_type", "master_name")
+        .populate({
+          path: "product_detail_id",
+          populate: [
+            { path: "masters.master_id", select: "master_name" },
+            { path: "primary_stone.stone_name", select: "master_name" },
+            { path: "primary_stone.shape", select: "master_name" },
+            { path: "primary_stone.cutting", select: "master_name" },
+            { path: "primary_stone.quality", select: "master_name" },
+            { path: "primary_stone.clarity", select: "master_name" },
+          ],
+        })
+        .session(session);
+
+      let baseSpec = {};
+      if (productRecord) {
+        const detail = productRecord.product_detail_id || {};
+        let metalObj = null;
+        let metalColorObj = null;
+
+        if (detail.masters && detail.masters.length > 0) {
+          detail.masters.forEach((mItem) => {
+            const m = mItem.master_id;
+            if (!m) return;
+            const name = m.master_name || "";
+            if (
+              name.includes("18K") ||
+              name.includes("14K") ||
+              name.includes("9K") ||
+              name.includes("Platinum")
+            ) {
+              metalObj = m;
+            } else if (
+              name.includes("White") ||
+              name.includes("Rose") ||
+              name.includes("Yellow")
+            ) {
+              metalColorObj = m;
+            }
+          });
+        }
+
+        baseSpec = {
+          item_type_id: productRecord.product_item_type?._id,
+          item_type_name: productRecord.product_item_type?.master_name,
+          metal_id: metalObj?._id,
+          metal_name: metalObj?.master_name,
+          metal_color: metalColorObj?.master_name || detail.color,
+          size: detail.size || detail.product_size,
+          nwt: detail.net_weight || 0,
+          gwt: detail.gross_weight || 0,
+          stone_name_id: detail.primary_stone?.stone_name?._id,
+          stone_name: detail.primary_stone?.stone_name?.master_name,
+          stone_shape_id: detail.primary_stone?.shape?._id,
+          stone_shape_name: detail.primary_stone?.shape?.master_name,
+          stone_size: detail.primary_stone?.size,
+          s_weight: detail.primary_stone?.weight || 0,
+          stone_color: detail.primary_stone?.color,
+          cutting: detail.primary_stone?.cutting?._id,
+          cutting_name: detail.primary_stone?.cutting?.master_name,
+          quality: detail.primary_stone?.quality?._id,
+          quality_name: detail.primary_stone?.quality?.master_name,
+          clarity: detail.primary_stone?.clarity?._id,
+          clarity_name: detail.primary_stone?.clarity?.master_name,
+        };
+      }
+
+      // 🟢 2. ดึง Custom Spec ที่พนักงานแก้ไขจากตะกร้า
+      let customOverrides = {};
       if (item.session_id) {
-        // ดึงข้อมูลตะกร้า + Populate Master ทุกตัวที่ต้องใช้
-        const sessionData = await CustomSession.findById(item.session_id)
-          .populate("custom_spec.item_type_id", "master_name")
-          .populate("custom_spec.metal_id", "master_name")
-          .populate("custom_spec.stone_name_id", "master_name")
-          .populate("custom_spec.stone_shape_id", "master_name")
-          .populate("custom_spec.cutting", "master_name")
-          .populate("custom_spec.quality", "master_name")
-          .populate("custom_spec.clarity", "master_name")
-          // Populate พลอยรองด้วย
-          .populate(
-            "custom_spec.additional_stones.stone_name_id",
-            "master_name",
-          )
-          .populate(
-            "custom_spec.additional_stones.stone_shape_id",
-            "master_name",
-          )
-          .populate("custom_spec.additional_stones.cutting", "master_name")
-          .populate("custom_spec.additional_stones.quality", "master_name")
-          .populate("custom_spec.additional_stones.clarity", "master_name")
-          .session(session);
-
+        const sessionData = await CustomSession.findById(
+          item.session_id,
+        ).session(session);
         if (sessionData && sessionData.custom_spec) {
-          const spec = sessionData.custom_spec;
-
-          finalCustomSpec = {
-            ...(spec.toObject ? spec.toObject() : spec), // ดึงข้อมูลดิบทั้งหมดมาก่อน
-
-            // ยัดชื่อ String สำหรับพลอยหลักและ General
-            item_type_name: spec.item_type_id?.master_name,
-            item_type_id: spec.item_type_id?._id || spec.item_type_id,
-
-            metal_name: spec.metal_id?.master_name,
-            metal_id: spec.metal_id?._id || spec.metal_id,
-
-            stone_name: spec.stone_name_id?.master_name,
-            stone_name_id: spec.stone_name_id?._id || spec.stone_name_id,
-
-            stone_shape_name: spec.stone_shape_id?.master_name,
-            stone_shape_id: spec.stone_shape_id?._id || spec.stone_shape_id,
-
-            cutting_name: spec.cutting?.master_name,
-            cutting: spec.cutting?._id || spec.cutting,
-
-            quality_name: spec.quality?.master_name,
-            quality: spec.quality?._id || spec.quality,
-
-            clarity_name: spec.clarity?.master_name,
-            clarity: spec.clarity?._id || spec.clarity,
-          };
-
-          // ยัดชื่อ String สำหรับพลอยรอง (ถ้ามี)
-          if (
-            finalCustomSpec.additional_stones &&
-            finalCustomSpec.additional_stones.length > 0
-          ) {
-            finalCustomSpec.additional_stones =
-              finalCustomSpec.additional_stones.map((astone) => ({
-                ...astone,
-                stone_name: astone.stone_name_id?.master_name,
-                stone_name_id:
-                  astone.stone_name_id?._id || astone.stone_name_id,
-                stone_shape_name: astone.stone_shape_id?.master_name,
-                stone_shape_id:
-                  astone.stone_shape_id?._id || astone.stone_shape_id,
-                cutting_name: astone.cutting?.master_name,
-                cutting: astone.cutting?._id || astone.cutting,
-                quality_name: astone.quality?.master_name,
-                quality: astone.quality?._id || astone.quality,
-                clarity_name: astone.clarity?.master_name,
-                clarity: astone.clarity?._id || astone.clarity,
-              }));
-          }
+          customOverrides = sessionData.custom_spec; // หน้าตาจะเป็นแบบ raw_data
         }
         await CustomSession.findByIdAndDelete(item.session_id, { session });
       }
+
+      // 🟢 3. แปลง ID ที่แก้มา ให้กลับเป็นชื่อ Master (เพราะ Database เก็บเป็น ID)
+      const stoneOverrides = customOverrides.stone || {};
+      const idsToFetch = [
+        customOverrides.item_type_id,
+        customOverrides.metal_id,
+        stoneOverrides.name_id,
+        stoneOverrides.shape_id,
+        stoneOverrides.clarity_id,
+        stoneOverrides.quality_id,
+        stoneOverrides.cutting_id,
+      ].filter((id) => id && mongoose.isValidObjectId(id));
+
+      const mastersMap = {};
+      if (idsToFetch.length > 0) {
+        const mastersList = await mongoose
+          .model("masters")
+          .find({ _id: { $in: idsToFetch } })
+          .select("master_name")
+          .lean();
+        mastersList.forEach(
+          (m) => (mastersMap[m._id.toString()] = m.master_name),
+        );
+      }
+
+      // 🟢 4. ผสมข้อมูล (เอาที่แก้ทับของเดิมให้สมบูรณ์)
+      finalCustomSpec = {
+        item_type_id: customOverrides.item_type_id || baseSpec.item_type_id,
+        item_type_name:
+          mastersMap[customOverrides.item_type_id] || baseSpec.item_type_name,
+
+        metal_id: customOverrides.metal_id || baseSpec.metal_id,
+        metal_name: mastersMap[customOverrides.metal_id] || baseSpec.metal_name,
+        metal_color: customOverrides.metal_color || baseSpec.metal_color,
+
+        size:
+          customOverrides.size || customOverrides.product_size || baseSpec.size,
+        nwt: customOverrides.nwt || baseSpec.nwt,
+        gwt: customOverrides.gwt || baseSpec.gwt,
+
+        stone_name_id: stoneOverrides.name_id || baseSpec.stone_name_id,
+        stone_name: mastersMap[stoneOverrides.name_id] || baseSpec.stone_name,
+
+        stone_shape_id: stoneOverrides.shape_id || baseSpec.stone_shape_id,
+        stone_shape_name:
+          mastersMap[stoneOverrides.shape_id] || baseSpec.stone_shape_name,
+
+        stone_size: stoneOverrides.size || baseSpec.stone_size,
+        s_weight: stoneOverrides.weight || baseSpec.s_weight,
+        stone_color: stoneOverrides.color || baseSpec.stone_color,
+
+        cutting: stoneOverrides.cutting_id || baseSpec.cutting,
+        cutting_name:
+          mastersMap[stoneOverrides.cutting_id] || baseSpec.cutting_name,
+
+        quality: stoneOverrides.quality_id || baseSpec.quality,
+        quality_name:
+          mastersMap[stoneOverrides.quality_id] || baseSpec.quality_name,
+
+        clarity: stoneOverrides.clarity_id || baseSpec.clarity,
+        clarity_name:
+          mastersMap[stoneOverrides.clarity_id] || baseSpec.clarity_name,
+      };
 
       const itemQty = item.qty || 1;
       calculatedTotalItems += itemQty;

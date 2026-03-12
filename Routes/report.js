@@ -12,7 +12,7 @@ const { checkPermission } = require("../Middleware/checkPermission");
 router.get(
   "/day-book",
   auth,
-  // checkPermission("Report", "view"),
+  checkPermission("Report", "view"),
   getDayBookList,
 );
 
@@ -20,7 +20,7 @@ router.get(
 router.get(
   "/report/orders",
   auth,
-  // checkPermission("Report", "view"),
+  checkPermission("Report", "view"),
   getOrderReport,
 );
 
@@ -28,7 +28,7 @@ router.get(
 router.get(
   "/orders/export-excel",
   auth,
-  // checkPermission("Report", "view"),
+  checkPermission("Report", "view"),
   exportOrderReportExcel,
 );
 module.exports = router;

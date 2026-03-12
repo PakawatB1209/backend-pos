@@ -27,6 +27,9 @@ const {
   updateSellSessionItem,
   deleteSellSessionItem,
   clearSellSession,
+  finishSellOrder,
+  searchProductsForSell,
+  previewNextSellOrderNumber,
 } = require("../Controllers/pos_sell");
 
 // ==========================================
@@ -81,11 +84,17 @@ router.post("/POS/custom/finish-custom-order", auth, finishCustomOrder);
 // หมวด Sell Order (ขายหน้าร้าน / ตะกร้าสินค้า)
 // ==========================================
 
+//ค้นหาสินค้าเพื่อนำมาขาย (ใช้ GET เพราะเป็นการดึงข้อมูล)
+router.get("/sell/search", auth, searchProductsForSell);
+
 // เพิ่มสินค้าลงตะกร้าขาย (Sell Session) จากหน้า POS
 router.post("/POS/sell/add", auth, addToSellSession);
 
 // ดึงรายการสินค้าในตะกร้าขายทั้งหมดมาแสดง (โชว์ฝั่งซ้ายของจอ)
 router.get("/POS/sell/list", auth, getSellSessionList);
+
+//ดึงดูเลขที่บิลขายล่วงหน้า (ใช้ GET เพราะเป็นการดึงข้อมูล)
+router.get("/sell/next-order-no", auth, previewNextSellOrderNumber);
 
 // อัปเดตข้อมูลรายชิ้นในตะกร้าขาย (เช่น เปลี่ยนจำนวน, แก้ราคา หรือใส่ส่วนลดรายชิ้น)
 router.put("/POS/sell/update/:session_id", auth, updateSellSessionItem);
@@ -95,4 +104,7 @@ router.delete("/POS/sell/delete/:session_id", auth, deleteSellSessionItem);
 
 // ล้างตะกร้าขายทั้งหมด (กดปุ่ม Clear มุมซ้ายล่าง)
 router.delete("/POS/sell/clear", auth, clearSellSession);
+
+//ยืนยันการขาย / ชำระเงิน (ใช้ POST เพราะเป็นการส่งข้อมูลชุดใหญ่ไปบันทึกและตัดสต็อก)
+router.post("/sell/finish", auth, finishSellOrder);
 module.exports = router;

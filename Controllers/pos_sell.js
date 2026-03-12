@@ -8,14 +8,24 @@ const { generateOrderNumber } = require("./pos_custom");
 
 exports.searchProductsForSell = async (req, res) => {
   try {
-    if (!req.user || !req.user.comp_id) {
-      return res.status(401).json({ success: false, message: "Unauthorized" });
+    // 🟢 1. เช็คแค่ว่ามี Token และมี req.user.id ไหม
+    if (!req.user || !req.user.id) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Unauthorized (No Token)" });
     }
 
-    const { keyword } = req.query; // คำที่พิมพ์ในช่องค้นหา
-    const comp_id = req.user.comp_id;
+    // 🟢 2. เอา user id ไปค้นหา comp_id จากตาราง User
+    const user = await User.findById(req.user.id).select("comp_id").lean();
+    if (!user || !user.comp_id) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User not associated with company." });
+    }
 
-    //หาเฉพาะสินค้าที่ Active และตรงกับบริษัท
+    const { keyword } = req.query;
+    const comp_id = user.comp_id; // 🟢 3. ดึง comp_id มาเก็บไว้ใช้งานต่อ
+
     let query = {
       comp_id: comp_id,
       is_active: true,
@@ -72,8 +82,13 @@ exports.searchProductsForSell = async (req, res) => {
 
     // (Optional) ถ้าอยากให้ซ่อนสินค้าที่สต็อกหมด (qty = 0) ไม่ให้โชว์ใน Dropdown เลย ให้เปิดคอมเมนต์บรรทัดนี้ครับ:
     // formattedData = formattedData.filter((item) => item.qty_in_stock > 0);
-
-    res.json({ success: true, data: formattedData });
+    const totalFound = await Product.countDocuments(query);
+    res.json({
+      success: true,
+      data: formattedData,
+      count: formattedData.length,
+      total_found: totalFound,
+    });
   } catch (error) {
     console.error("Search Products Error:", error);
     res.status(500).json({ success: false, message: "Server Error" });
@@ -315,25 +330,55 @@ exports.finishSellOrder = async (req, res) => {
       await stockItem.save({ session });
 
       // ดึงข้อมูลสินค้าต้นทางมาทำ Snapshot ให้ Sell Order
-      const productDetail = await mongoose
+      const productRecord = await mongoose
         .model("product")
         .findById(item.product_id)
-        .populate("item_type_id", "master_name")
-        .populate("metal_id", "master_name")
+        .populate("product_item_type", "master_name")
+        .populate({
+          path: "product_detail_id",
+          populate: { path: "masters.master_id", select: "master_name" },
+        })
         .session(session);
 
       let sellSpec = {};
-      if (productDetail) {
+      if (productRecord) {
+        const detail = productRecord.product_detail_id || {};
+
+        let metalObj = null;
+        let metalColorObj = null;
+
+        if (detail.masters && detail.masters.length > 0) {
+          detail.masters.forEach((mItem) => {
+            const m = mItem.master_id;
+            if (!m) return;
+            const name = m.master_name || "";
+            if (
+              name.includes("18K") ||
+              name.includes("14K") ||
+              name.includes("9K") ||
+              name.includes("Platinum")
+            ) {
+              metalObj = m;
+            } else if (
+              name.includes("White") ||
+              name.includes("Rose") ||
+              name.includes("Yellow")
+            ) {
+              metalColorObj = m;
+            }
+          });
+        }
+
         sellSpec = {
-          item_type_id: productDetail.item_type_id?._id,
-          item_type_name: productDetail.item_type_id?.master_name,
-          metal_id: productDetail.metal_id?._id,
-          metal_name: productDetail.metal_id?.master_name,
-          metal_color: productDetail.metal_color,
-          size: productDetail.size,
+          item_type_id: productRecord.product_item_type?._id,
+          item_type_name: productRecord.product_item_type?.master_name,
+          metal_id: metalObj ? metalObj._id : null,
+          metal_name: metalObj ? metalObj.master_name : null,
+          metal_color: metalColorObj ? metalColorObj.master_name : detail.color,
+          size: detail.size || detail.product_size,
         };
       } else if (item.custom_spec) {
-        sellSpec = item.custom_spec; // กรณีหน้าบ้านส่งมาครบ
+        sellSpec = item.custom_spec;
       }
 
       calculatedTotalItems += item.qty || 1;
@@ -385,5 +430,27 @@ exports.finishSellOrder = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   } finally {
     session.endSession();
+  }
+};
+
+exports.previewNextSellOrderNumber = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("comp_id").lean();
+    if (!user || !user.comp_id) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User not found" });
+    }
+
+    // 🟢 เรียกใช้ฟังก์ชัน generate โดยส่งคำว่า "SA" ไป (ให้ตรงกับตอน finishSellOrder)
+    const nextOrderNo = await generateOrderNumber(user.comp_id, "SA");
+
+    res.json({
+      success: true,
+      order_no: nextOrderNo,
+    });
+  } catch (error) {
+    console.error("Preview Sell Order Number Error:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
   }
 };

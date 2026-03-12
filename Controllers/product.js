@@ -1218,31 +1218,42 @@ exports.updateProduct = async (req, res) => {
         });
       }
     }
-    if (data.related_accessories && Array.isArray(data.related_accessories)) {
-      productUpdate.related_accessories = data.related_accessories.map(
-        (acc, i) => {
-          const old = currentProduct.related_accessories?.[i] || {};
 
+    let parsedAccessories = data.related_accessories;
+
+    // 1. กรณีใช้ FormData ข้อมูลมักจะมาเป็น String (เช่น "[]") ต้องแปลงเป็น Array ก่อน
+    if (typeof parsedAccessories === "string") {
+      try {
+        parsedAccessories = JSON.parse(parsedAccessories);
+      } catch (err) {
+        // ถ้า parse ไม่ได้ (เช่น หน้าบ้านส่ง "" หรือ "null" มาตอนลบออกหมด) ให้มองเป็น Array ว่าง
+        parsedAccessories = [];
+      }
+    }
+
+    // 2. เช็คเงื่อนไขเพื่อบันทึก หรือ ลบทิ้ง
+    if (parsedAccessories !== undefined) {
+      if (Array.isArray(parsedAccessories) && parsedAccessories.length > 0) {
+        // เคสที่ 1: มีข้อมูล Accessories ส่งมา (อัปเดตตามปกติ)
+        productUpdate.related_accessories = parsedAccessories.map((acc, i) => {
+          const old = currentProduct.related_accessories?.[i] || {};
           return {
             product_id: acc.product_id ?? old.product_id,
-
             weight:
               acc.weight !== undefined && acc.weight !== ""
                 ? Number(acc.weight)
                 : (old.weight ?? 0),
-
             unit: acc.unit ?? old.unit ?? "g",
-
             size: acc.size ?? old.size ?? "",
-
             metal: acc.metal ?? old.metal ?? "",
-
             description: acc.description ?? old.description ?? "",
           };
-        },
-      );
+        });
+      } else {
+        // เคสที่ 2: ถ้าส่ง Array ว่าง [] หรือค่าว่าง "" มา แปลว่าตั้งใจลบออกให้หมด!
+        productUpdate.related_accessories = [];
+      }
     }
-
     // ลบ key ที่เป็น undefined จริงๆ ออก (แต่ null เก็บไว้เพื่อลบค่าใน DB)
     Object.keys(productUpdate).forEach(
       (key) => productUpdate[key] === undefined && delete productUpdate[key],

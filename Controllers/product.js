@@ -1196,7 +1196,28 @@ exports.updateProduct = async (req, res) => {
       }),
     };
 
-    if (newFilesArray.length > 0) productUpdate.file = newFilesArray;
+    if (newFilesArray.length > 0) {
+      // เคส 1: มีการอัปโหลดรูปใหม่เข้ามา (แทนที่รูปเดิม)
+      productUpdate.file = newFilesArray;
+    } else if (
+      data.file === "" ||
+      data.file === "null" ||
+      data.file === null ||
+      data.image === "" ||
+      data.image === "null" ||
+      data.image === null
+    ) {
+      // เคส 2: ถ้าไม่มีรูปใหม่ แต่ใน req.body ดันส่งค่าว่างมา (แปลว่าหน้าบ้านน่าจะเคลียร์รูปทิ้งแล้ว)
+      productUpdate.file = []; // สั่งเคลียร์รูปใน Database
+
+      // ลบไฟล์รูปเก่าทิ้งจากโฟลเดอร์ uploads ด้วย
+      if (currentProduct.file && currentProduct.file.length > 0) {
+        currentProduct.file.forEach((oldFile) => {
+          const oldPath = path.join("./uploads/product", oldFile);
+          if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+        });
+      }
+    }
     if (data.related_accessories && Array.isArray(data.related_accessories)) {
       productUpdate.related_accessories = data.related_accessories.map(
         (acc, i) => {

@@ -35,17 +35,34 @@ exports.createStock = async (req, res) => {
         comp_id: user.comp_id,
       },
       {
-        $inc: { quantity: quantity },
+        $inc: { quantity: Number(quantity) },
+
+        // update ทุกครั้งที่ stock เข้า
+        $set: {
+          unit: unit || "pcs",
+          last_in_date: new Date(),
+        },
+
+        // ใช้เฉพาะตอน insert
         $setOnInsert: {
           comp_id: user.comp_id,
           warehouse_id: warehouse_id,
           product_id: product_id,
-          unit: unit || "pcs",
-          last_in_date: date || new Date(),
         },
       },
       { new: true, upsert: true },
     );
+
+    await StockTransaction.create({
+      comp_id: user.comp_id,
+      product_id,
+      warehouse_id,
+      type: "in",
+      action_type: "STOCK_IN",
+      qty: quantity,
+      balance_after: updatedStock.quantity,
+      created_by: userId,
+    });
 
     // await StockTransaction.create({
     //   product_id: product_id,

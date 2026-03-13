@@ -494,73 +494,157 @@ async function getProductMap(comp_id, allSheetData) {
   return map;
 }
 
+// function validateRow(row, codeStr, productMap) {
+//   if (!codeStr) return "Missing Product Code";
+
+//   const product = productMap.get(codeStr);
+//   if (!product) return "Product Not Found in Database";
+
+//   const norm = (s) =>
+//     String(s || "")
+//       .toLowerCase()
+//       .replace(/[^a-z0-9]/g, "");
+
+//   if (row["Name"] && norm(row["Name"]) !== norm(product.product_name))
+//     return `Name Mismatch (Excel: ${row["Name"]}, DB: ${product.product_name})`;
+
+//   let dbCat = "";
+
+//   if (product.product_category?.master_name) {
+//     dbCat = product.product_category.master_name;
+//   }
+
+//   console.log("Excel Category:", row["Category"]);
+//   console.log("DB Category:", dbCat);
+
+//   const clean = (s) =>
+//     String(s || "")
+//       .toLowerCase()
+//       .replace(/[^a-z0-9]/g, "");
+
+//   if (row["Category"] && clean(row["Category"]) !== clean(dbCat))
+//     return `Category Mismatch`;
+
+//   const dbType = product.type || product.product_detail_id?.type;
+
+//   if (
+//     row["Type"] &&
+//     norm(row["Type"]) &&
+//     norm(dbType) &&
+//     !norm(row["Type"]).includes(norm(dbType))
+//   ) {
+//     return `Type Mismatch`;
+//   }
+
+//   // const excelUnit = row["Product Unit"] || row["Purchase Unit"];
+//   // if (excelUnit && norm(excelUnit) !== norm(product.unit))
+//   //   return `Unit Mismatch`;
+
+//   const ps = product.product_detail_id?.primary_stone || {};
+//   if (row["Main Stone"] && norm(row["Main Stone"]) !== norm(ps.stone_name))
+//     return `Main Stone Mismatch`;
+//   if (row["Main Shape"] && norm(row["Main Shape"]) !== norm(ps.shape))
+//     return `Main Shape Mismatch`;
+//   if (row["Main Color"] && norm(row["Main Color"]) !== norm(ps.color))
+//     return `Main Color Mismatch`;
+//   if (row["Main Clarity"] && norm(row["Main Clarity"]) !== norm(ps.clarity))
+//     return `Main Clarity Mismatch`;
+
+//   if (row["Main Qty"]) {
+//     if (parseNum(row["Main Qty"]) !== (Number(ps.stone_qty) || 0))
+//       return `Main Qty Mismatch`;
+//   }
+//   if (row["Main Weight"]) {
+//     if (
+//       parseNum(row["Main Weight"]).toFixed(2) !==
+//       (Number(ps.weight) || 0).toFixed(2)
+//     )
+//       return `Main Weight Mismatch`;
+//   }
+
+//   return null;
+// }
+
 function validateRow(row, codeStr, productMap) {
   if (!codeStr) return "Missing Product Code";
 
   const product = productMap.get(codeStr);
-  if (!product) return "Product Not Found in Database";
+  if (!product) return "Product Not Found";
 
   const norm = (s) =>
     String(s || "")
       .toLowerCase()
       .replace(/[^a-z0-9]/g, "");
 
-  if (row["Name"] && norm(row["Name"]) !== norm(product.product_name))
-    return `Name Mismatch (Excel: ${row["Name"]}, DB: ${product.product_name})`;
+  const detail = product.product_detail_id || {};
+  const ps = detail.primary_stone || {};
 
-  let dbCat = "";
+  const category = product.product_category?.master_name?.toLowerCase() || "";
 
-  if (product.product_category?.master_name) {
-    dbCat = product.product_category.master_name;
+  /* ---------------- BASE PRODUCT ---------------- */
+
+  if (row["Name"] && norm(row["Name"]) !== norm(product.product_name)) {
+    return "Name Mismatch";
   }
 
-  console.log("Excel Category:", row["Category"]);
-  console.log("DB Category:", dbCat);
+  if (row["Size"] && norm(row["Size"]) !== norm(detail.size)) {
+    return "Size Mismatch";
+  }
 
-  const clean = (s) =>
-    String(s || "")
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, "");
+  if (row["Type"]) {
+    const dbType = product.product_item_type?.master_name;
 
-  if (row["Category"] && clean(row["Category"]) !== clean(dbCat))
-    return `Category Mismatch`;
+    if (norm(row["Type"]) !== norm(dbType)) {
+      return "Type Mismatch";
+    }
+  }
 
-  const dbType = product.type || product.product_detail_id?.type;
+  /* ---------------- STONE VALIDATION ---------------- */
+
+  if (category === "stone" || category === "productmaster") {
+    if (
+      row["Stone"] &&
+      norm(row["Stone"]) !== norm(ps.stone_name?.master_name)
+    ) {
+      return "Stone Mismatch";
+    }
+
+    if (row["Shape"] && norm(row["Shape"]) !== norm(ps.shape?.master_name)) {
+      return "Shape Mismatch";
+    }
+
+    if (row["Color"] && norm(row["Color"]) !== norm(ps.color)) {
+      return "Color Mismatch";
+    }
+
+    if (
+      row["Clarity"] &&
+      norm(row["Clarity"]) !== norm(ps.clarity?.master_name)
+    ) {
+      return "Clarity Mismatch";
+    }
+  }
+
+  /* ---------------- METAL VALIDATION ---------------- */
 
   if (
-    row["Type"] &&
-    norm(row["Type"]) &&
-    norm(dbType) &&
-    !norm(row["Type"]).includes(norm(dbType))
+    category === "productmaster" ||
+    category === "semimount" ||
+    category === "accessory"
   ) {
-    return `Type Mismatch`;
-  }
+    const masters = detail.masters || [];
 
-  // const excelUnit = row["Product Unit"] || row["Purchase Unit"];
-  // if (excelUnit && norm(excelUnit) !== norm(product.unit))
-  //   return `Unit Mismatch`;
+    const metal = masters.find((m) => m.master_id?.master_type === "metal");
 
-  const ps = product.product_detail_id?.primary_stone || {};
-  if (row["Main Stone"] && norm(row["Main Stone"]) !== norm(ps.stone_name))
-    return `Main Stone Mismatch`;
-  if (row["Main Shape"] && norm(row["Main Shape"]) !== norm(ps.shape))
-    return `Main Shape Mismatch`;
-  if (row["Main Color"] && norm(row["Main Color"]) !== norm(ps.color))
-    return `Main Color Mismatch`;
-  if (row["Main Clarity"] && norm(row["Main Clarity"]) !== norm(ps.clarity))
-    return `Main Clarity Mismatch`;
-
-  if (row["Main Qty"]) {
-    if (parseNum(row["Main Qty"]) !== (Number(ps.stone_qty) || 0))
-      return `Main Qty Mismatch`;
-  }
-  if (row["Main Weight"]) {
     if (
-      parseNum(row["Main Weight"]).toFixed(2) !==
-      (Number(ps.weight) || 0).toFixed(2)
-    )
-      return `Main Weight Mismatch`;
+      row["Metal"] &&
+      norm(row["Metal"]) !== norm(metal?.master_id?.master_name)
+    ) {
+      return "Metal Mismatch";
+    }
   }
+
+  /* ---------------- PASS ---------------- */
 
   return null;
 }

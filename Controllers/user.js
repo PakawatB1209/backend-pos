@@ -514,10 +514,28 @@ exports.getUserRole = async (req, res) => {
 
 exports.list = async (req, res) => {
   try {
-    const { comp_id, user_role } = req.query;
-    const query = {};
+    // 🟢 1. ตรวจสอบว่าล็อกอินมาหรือยัง
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
 
-    if (comp_id) query.comp_id = comp_id;
+    // 🟢 2. ไปดึงข้อมูลว่าคนที่ยิง API นี้ อยู่บริษัทอะไร
+    const currentUser = await User.findById(req.user.id)
+      .select("comp_id")
+      .lean();
+    if (!currentUser || !currentUser.comp_id) {
+      return res.status(403).json({
+        success: false,
+        message: "Permission Denied: Company ID missing",
+      });
+    }
+
+    const { user_role } = req.query;
+
+    // 🟢 3. บังคับล็อกเงื่อนไขเลยว่า "ต้องเป็นบริษัทเดียวกันเท่านั้น"
+    const query = { comp_id: currentUser.comp_id };
+
+    // ถ้าหน้าบ้านอยากกรองตาม Role (เช่น หาเฉพาะคนที่เป็น "Admin") ค่อยเพิ่มเข้าไป
     if (user_role) query.user_role = user_role;
 
     const page = parseInt(req.query.page, 10) || 1;
@@ -526,7 +544,7 @@ exports.list = async (req, res) => {
 
     const [users, total] = await Promise.all([
       User.find(query)
-        .select("-__v")
+        .select("-__v -user_password") // 🟢 แนะนำให้ซ่อน user_password ไม่ให้หลุดไปหน้าบ้านด้วยครับเพื่อความปลอดภัย
         .populate("comp_id")
         .populate("permissions")
         .sort({ createdAt: -1 })
@@ -1032,7 +1050,6 @@ exports.resetPassUserbyAdmin = async (req, res) => {
 exports.resetPassUserbyAdmin_send = async (req, res) => {
   try {
     const adminId = req.user.id;
-
     const { id } = req.params;
     const { user_password } = req.body;
 
@@ -1055,6 +1072,15 @@ exports.resetPassUserbyAdmin_send = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
+    // 🟢 ดักจับทันที: ถ้าไม่มีอีเมล ให้ฟ้องหน้าบ้านและหยุดทำงาน
+    if (!userToReset.user_email) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "ไม่สามารถส่งอีเมลได้ เนื่องจากพนักงานคนนี้ไม่มีข้อมูลอีเมลในระบบ กรุณาเพิ่มอีเมลให้พนักงานก่อน",
+      });
+    }
+
     const adminUser = await User.findById(adminId).select(
       "comp_id user_role user_email",
     );
@@ -1074,12 +1100,14 @@ exports.resetPassUserbyAdmin_send = async (req, res) => {
       });
     }
 
+    // เข้ารหัสและเซฟข้อมูล
     const salt = await bcrypt.genSalt(10);
     userToReset.user_password = await bcrypt.hash(user_password, salt);
     userToReset.password_changed_at = null;
 
     await userToReset.save();
 
+    // เริ่มเตรียมส่งเมล
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -1093,8 +1121,6 @@ exports.resetPassUserbyAdmin_send = async (req, res) => {
       replyTo: adminUser.user_email,
       to: userToReset.user_email,
       subject: `[Notification] Your password has been reset by Admin`,
-
-      // แบบ Text
       text: `
 Hello ${userToReset.user_name},
 
@@ -1105,36 +1131,30 @@ This is a notification that your password has been reset by the Administrator.
 --------------------------
 Username : ${userToReset.user_name}
 Password : ${user_password}
-Date     : ${new Date().toLocaleString("th-TH")}
+Date     : ${new Date().toLocaleString("en-GB")}
 
 Please login and change your password immediately if this was not requested by you.
 
 Best regards,
 IT Support Team
       `,
-
-      // แบบ HTML
       html: `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8" />
 </head>
-
 <body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background-color:#F3F4F6;">
   <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
     <tr>
       <td align="center">
-
         <table width="600" cellpadding="0" cellspacing="0"
           style="background:#FFFFFF;border-radius:12px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,0.1);">
-
           <tr>
             <td style="background:linear-gradient(135deg,#1E3A8A,#2563EB);padding:24px 36px;color:#FFFFFF;font-size:20px;font-weight:bold;">
               YOUR COMPANY
             </td>
           </tr>
-
           <tr>
             <td style="padding:40px 36px;color:#374151;">
               
@@ -1157,8 +1177,7 @@ IT Support Team
                     Name :
                   </td>
                   <td width="65%" style="color:#374151; border-bottom:1px solid #DBEAFE;">
-                    ${user.user_name}
-                  </td>
+                    ${userToReset.user_name} </td>
                 </tr>
 
                 <tr>
@@ -1166,8 +1185,7 @@ IT Support Team
                     Email Address :
                   </td>
                   <td style="color:#374151; border-bottom:1px solid #DBEAFE;">
-                    ${user.user_email}
-                  </td>
+                    ${userToReset.user_email} </td>
                 </tr>
 
                 <tr>
@@ -1175,8 +1193,7 @@ IT Support Team
                     Phone Number :
                   </td>
                   <td style="color:#374151;">
-                    ${user.user_phone || "<i>Not provided</i>"}
-                  </td>
+                    ${userToReset.user_phone || "<i>Not provided</i>"} </td>
                 </tr>
 
               </table>
@@ -1196,12 +1213,9 @@ IT Support Team
                 Best regards,<br />
                 <strong>IT Support Team</strong>
               </p>
-
             </td>
           </tr>
-
         </table>
-
       </td>
     </tr>
   </table>
@@ -1226,7 +1240,7 @@ IT Support Team
     console.error("Error resetting password:", err);
     res.status(500).json({
       success: false,
-      message: "Server error",
+      message: "Server error: " + err.message, // ปล่อย message แปะไปด้วย เผื่อมีพังตรงอื่นจะได้รู้สาเหตุ
     });
   }
 };

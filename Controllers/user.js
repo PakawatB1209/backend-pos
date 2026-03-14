@@ -1195,7 +1195,14 @@ IT Support Team
                   <td style="color:#374151;">
                     ${userToReset.user_phone || "<i>Not provided</i>"} </td>
                 </tr>
-
+                <tr>
+                  <td style="color:#991B1B; font-weight:bold; background-color:#FEE2E2;">
+                    New Password :
+                  </td>
+                  <td style="color:#991B1B; font-weight:bold; font-size:18px; background-color:#FEE2E2; letter-spacing: 1px;">
+                    ${user_password}
+                  </td>
+                </tr>
               </table>
 
               <p style="font-size:16px;line-height:1.5;">
